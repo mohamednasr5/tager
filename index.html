@@ -1131,30 +1131,53 @@ window.renderClients = function() {
 
   container.innerHTML = clients.map(([key, c]) => {
     const debt = c.totalDebt || 0;
+    const totalPurchases = c.totalPurchases || 0;
+    const totalPaid = c.totalPaid || 0;
     const hasDebt = debt > 0;
+    const paidPct = totalPurchases > 0 ? Math.min(100, Math.round((totalPaid / totalPurchases) * 100)) : 0;
     return `
-      <div class="client-card ${hasDebt ? 'has-debt' : 'paid'}">
+      <div class="client-card ${hasDebt ? 'has-debt' : 'paid'}" onclick="showClientAccount('${key}')">
         <div class="client-header">
-          <div>
-            <div class="client-name">👤 ${c.name}</div>
-            <div class="client-phone">📱 ${c.phone}</div>
-            ${c.shopName ? `<div style="font-size:11px;color:var(--text-secondary)">🏪 ${c.shopName}</div>` : ''}
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:44px;height:44px;border-radius:50%;background:${hasDebt?'linear-gradient(135deg,rgba(255,71,87,0.3),rgba(255,71,87,0.1))':'linear-gradient(135deg,rgba(0,200,150,0.3),rgba(0,200,150,0.1))'};border:2px solid ${hasDebt?'var(--danger)':'var(--emerald)'};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">
+              ${hasDebt?'👤':'✅'}
+            </div>
+            <div>
+              <div class="client-name">${c.name}</div>
+              <div class="client-phone">📱 ${c.phone}</div>
+              ${c.shopName ? `<div style="font-size:10px;color:var(--text-secondary)">🏪 ${c.shopName}</div>` : ''}
+            </div>
           </div>
-          <div class="client-balance">
-            <div class="balance-label">الرصيد</div>
-            <div class="balance-amount ${hasDebt ? 'debt' : 'paid'}">${formatNum(Math.abs(debt))}</div>
-            <div style="font-size:10px;text-align:left;color:${hasDebt?'var(--danger)':'var(--emerald)'}">ج.م ${hasDebt?'مدين':'مسوي'}</div>
+          <div class="client-balance" style="text-align:left;min-width:90px">
+            <div class="balance-label" style="font-size:10px">${hasDebt?'⚠️ المتبقي':'✅ الحساب'}</div>
+            <div class="balance-amount ${hasDebt ? 'debt' : 'paid'}" style="font-size:${debt >= 1000000?'14px':debt>=100000?'16px':'18px'}">${formatNum(Math.abs(debt))}</div>
+            <div style="font-size:9px;color:${hasDebt?'var(--danger)':'var(--emerald)'}">ج.م ${hasDebt?'مدين':'مسوي'}</div>
           </div>
         </div>
-        <div style="display:flex;gap:6px;font-size:11px;color:var(--text-secondary);margin-bottom:8px">
-          <span>📦 ${c.invoiceCount||0} فاتورة</span>
-          <span>•</span>
-          <span>💰 إجمالي ${formatNum(c.totalPurchases||0)} ج.م</span>
+
+        <!-- Progress bar -->
+        <div style="margin:10px 0 6px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:4px">
+            <span>المدفوع ${formatNum(totalPaid)} ج.م</span>
+            <span>${paidPct}%</span>
+          </div>
+          <div style="height:5px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden">
+            <div style="height:100%;width:${paidPct}%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px;transition:width 0.5s"></div>
+          </div>
         </div>
-        <div class="client-actions">
-          ${hasDebt ? `<button class="btn btn-success btn-sm" style="flex:1" onclick="showPaymentModal('${key}','${c.name}',${debt})">💳 دفع</button>` : ''}
-          <button class="btn btn-outline btn-sm" style="flex:1" onclick="showClientHistory('${key}','${c.name}')">📋 الفواتير</button>
-          <a href="https://wa.me/2${c.phone}?text=${encodeURIComponent(buildClientStatement(c))}" target="_blank" class="btn btn-whatsapp btn-sm" style="flex:1;text-decoration:none">📲</a>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <div style="display:flex;gap:10px;font-size:10px;color:var(--text-secondary)">
+            <span>📦 ${c.invoiceCount||0} فاتورة</span>
+            <span>•</span>
+            <span>💰 ${formatNum(totalPurchases)} ج.م</span>
+          </div>
+          ${hasDebt
+            ? `<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--emerald),#00875a);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;color:white;box-shadow:0 3px 12px rgba(0,200,150,0.4)">
+                💳 دفع
+              </div>`
+            : `<div style="font-size:11px;color:var(--emerald);font-weight:600">مسوّي ✓</div>`
+          }
         </div>
       </div>
     `;
@@ -1176,69 +1199,224 @@ function buildClientStatement(client) {
 }
 
 // ============================================================
-// PAYMENT MODAL
+// CLIENT ACCOUNT - FULL SCREEN (click on card)
 // ============================================================
-window.showPaymentModal = function(clientKey, clientName, currentDebt) {
+window.showClientAccount = function(clientKey) {
+  const c = window.appState.clients[clientKey];
+  if (!c) return;
+
+  const debt = c.totalDebt || 0;
+  const totalPurchases = c.totalPurchases || 0;
+  const totalPaid = c.totalPaid || 0;
+  const hasDebt = debt > 0;
+  const paidPct = totalPurchases > 0 ? Math.min(100, Math.round((totalPaid / totalPurchases) * 100)) : 0;
+
+  // Get client invoices
+  const clientInvoices = Object.entries(window.appState.invoices)
+    .filter(([,i]) => i.phone === c.phone)
+    .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
+
+  const invoicesHtml = clientInvoices.length === 0
+    ? `<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد فواتير</div>`
+    : clientInvoices.slice(0,5).map(([id,inv]) => `
+        <div onclick="closeModal();showInvoiceDetail('${id}')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;cursor:pointer;border:1px solid var(--glass-border)">
+          <div>
+            <div style="font-size:13px;font-weight:600">📅 ${inv.dateStr}</div>
+            <div style="font-size:10px;color:var(--text-secondary);margin-top:2px">${(inv.items||[]).map(i=>i.fish).join(' • ')}</div>
+          </div>
+          <div style="text-align:left">
+            <div style="font-size:15px;font-weight:900;color:var(--gold)">${formatNum(inv.total)} ج.م</div>
+            <div style="font-size:10px;color:var(--cyan-glow)">اضغط للتفاصيل ←</div>
+          </div>
+        </div>
+      `).join('');
+
+  const waText = encodeURIComponent(buildClientStatement(c));
+
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
+  modal.id = 'client-account-modal';
   modal.innerHTML = `
-    <div class="modal-sheet">
+    <div class="modal-sheet" style="max-height:92vh">
       <div class="modal-handle"></div>
-      <div class="modal-title">💳 تسجيل دفعة</div>
-      <div style="text-align:center;margin-bottom:16px">
-        <div style="font-size:14px;color:var(--text-secondary)">${clientName}</div>
-        <div style="font-size:24px;font-weight:900;color:var(--danger)">${formatNum(currentDebt)} ج.م</div>
-        <div style="font-size:12px;color:var(--text-secondary)">الرصيد الحالي</div>
+
+      <!-- Client Identity -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(0,180,216,0.3),rgba(21,101,192,0.2));border:2px solid var(--cyan-glow);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">
+          👤
+        </div>
+        <div style="flex:1">
+          <div style="font-size:18px;font-weight:900;color:var(--text-primary)">${c.name}</div>
+          <div style="font-size:12px;color:var(--cyan-glow)">📱 ${c.phone}</div>
+          ${c.shopName?`<div style="font-size:11px;color:var(--text-secondary)">🏪 ${c.shopName}</div>`:''}
+        </div>
+        <a href="https://wa.me/2${c.phone}?text=${waText}" target="_blank" style="text-decoration:none;background:linear-gradient(135deg,#25D366,#128C7E);padding:8px 12px;border-radius:10px;font-size:20px">📲</a>
       </div>
-      <div class="form-group">
-        <label class="form-label">المبلغ المدفوع (ج.م)</label>
-        <input type="number" id="payment-amount" class="form-input" placeholder="0" min="0" max="${currentDebt}" style="font-size:18px;text-align:center">
+
+      <!-- Balance Summary Cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+        <div style="background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);border-radius:12px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--danger);margin-bottom:4px">⚠️ المتبقي</div>
+          <div style="font-size:${debt>=1000000?'12px':debt>=100000?'14px':'16px'};font-weight:900;color:var(--danger)">${formatNum(debt)}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
+        </div>
+        <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--emerald);margin-bottom:4px">✅ المدفوع</div>
+          <div style="font-size:${totalPaid>=1000000?'12px':totalPaid>=100000?'14px':'16px'};font-weight:900;color:var(--emerald)">${formatNum(totalPaid)}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
+        </div>
+        <div style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.3);border-radius:12px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--cyan-glow);margin-bottom:4px">💰 الإجمالي</div>
+          <div style="font-size:${totalPurchases>=1000000?'12px':totalPurchases>=100000?'14px':'16px'};font-weight:900;color:var(--cyan-glow)">${formatNum(totalPurchases)}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
+        </div>
       </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:16px;padding:12px;background:var(--glass);border-radius:10px">
-        <span style="color:var(--text-secondary);font-size:13px">المتبقي بعد الدفع</span>
-        <span id="remaining-preview" style="font-weight:900;font-size:16px;color:var(--emerald)">${formatNum(currentDebt)} ج.م</span>
+
+      <!-- Progress Bar -->
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);margin-bottom:6px">
+          <span>نسبة السداد</span>
+          <span style="color:var(--emerald);font-weight:700">${paidPct}%</span>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden">
+          <div id="pay-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px;transition:width 0.8s cubic-bezier(0.25,0.8,0.25,1)"></div>
+        </div>
       </div>
-      <button class="btn btn-success" onclick="processPayment('${clientKey}',${currentDebt})">✅ تأكيد الدفع</button>
-      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+
+      ${hasDebt ? `
+      <!-- PAYMENT SECTION -->
+      <div style="background:linear-gradient(135deg,rgba(0,200,150,0.1),rgba(0,180,216,0.05));border:1px solid rgba(0,200,150,0.3);border-radius:16px;padding:16px;margin-bottom:14px">
+        <div style="font-size:14px;font-weight:700;color:var(--emerald);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          💳 تسجيل دفعة جديدة
+        </div>
+
+        <!-- Amount Input -->
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:6px">اكتب المبلغ المدفوع (ج.م)</label>
+          <input type="number" id="payment-amount" inputmode="numeric"
+            style="width:100%;padding:16px;border-radius:12px;border:2px solid rgba(0,200,150,0.4);background:rgba(0,200,150,0.08);color:white;font-family:'Cairo',sans-serif;font-size:24px;font-weight:900;text-align:center;outline:none;transition:all 0.3s"
+            placeholder="0" min="0" max="${debt}"
+            oninput="updatePayPreview(${debt})"
+            onfocus="this.style.borderColor='var(--emerald)';this.style.boxShadow='0 0 0 4px rgba(0,200,150,0.2)'"
+            onblur="this.style.borderColor='rgba(0,200,150,0.4)';this.style.boxShadow='none'">
+        </div>
+
+        <!-- Quick Amount Buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+          <button onclick="setPayAmount(${Math.round(debt*0.25)},${debt})" style="padding:8px 4px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s" onmousedown="this.style.background='rgba(0,200,150,0.2)'" onmouseup="this.style.background='rgba(255,255,255,0.05)'">
+            25%<br><span style="font-size:10px;color:var(--text-secondary)">${formatNum(Math.round(debt*0.25))}</span>
+          </button>
+          <button onclick="setPayAmount(${Math.round(debt*0.5)},${debt})" style="padding:8px 4px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s" onmousedown="this.style.background='rgba(0,200,150,0.2)'" onmouseup="this.style.background='rgba(255,255,255,0.05)'">
+            50%<br><span style="font-size:10px;color:var(--text-secondary)">${formatNum(Math.round(debt*0.5))}</span>
+          </button>
+          <button onclick="setPayAmount(${Math.round(debt*0.75)},${debt})" style="padding:8px 4px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s" onmousedown="this.style.background='rgba(0,200,150,0.2)'" onmouseup="this.style.background='rgba(255,255,255,0.05)'">
+            75%<br><span style="font-size:10px;color:var(--text-secondary)">${formatNum(Math.round(debt*0.75))}</span>
+          </button>
+          <button onclick="setPayAmount(${debt},${debt})" style="padding:8px 4px;border-radius:10px;border:1px solid rgba(0,200,150,0.5);background:rgba(0,200,150,0.15);color:var(--emerald);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s">
+            كل<br>المبلغ
+          </button>
+        </div>
+
+        <!-- Preview: remaining after payment -->
+        <div id="pay-preview-box" style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(0,0,0,0.2);border-radius:10px;margin-bottom:12px">
+          <div>
+            <div style="font-size:11px;color:var(--text-secondary)">المتبقي بعد الدفع</div>
+            <div id="remaining-preview" style="font-size:22px;font-weight:900;color:var(--danger);transition:all 0.3s">${formatNum(debt)} ج.م</div>
+          </div>
+          <div style="text-align:left">
+            <div style="font-size:11px;color:var(--text-secondary)">الدفعة</div>
+            <div id="payment-preview" style="font-size:18px;font-weight:900;color:var(--emerald);transition:all 0.3s">0 ج.م</div>
+          </div>
+        </div>
+
+        <button onclick="processPayment('${clientKey}',${debt})"
+          style="width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(0,200,150,0.4);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px"
+          onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+          ✅ تأكيد الدفع
+        </button>
+      </div>
+      ` : `
+      <div style="text-align:center;padding:16px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:14px;margin-bottom:14px">
+        <div style="font-size:32px;margin-bottom:6px">✅</div>
+        <div style="font-size:15px;font-weight:700;color:var(--emerald)">الحساب مسوّي بالكامل</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">لا يوجد أي مبلغ متبقي</div>
+      </div>
+      `}
+
+      <!-- Recent Invoices -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+          📋 آخر الفواتير <span style="font-size:11px;color:var(--glass-border)">(${clientInvoices.length} إجمالاً)</span>
+        </div>
+        ${invoicesHtml}
+        ${clientInvoices.length > 5 ? `<div style="text-align:center;font-size:12px;color:var(--cyan-glow);padding:6px">+ ${clientInvoices.length-5} فاتورة أخرى</div>` : ''}
+      </div>
+
+      <button onclick="closeModal()" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer">
+        إغلاق
+      </button>
     </div>
   `;
   modal.onclick = (e) => { if (e.target === modal) closeModal(); };
   document.getElementById('modals-container').appendChild(modal);
 
-  document.getElementById('payment-amount').addEventListener('input', function() {
-    const paid = Math.min(parseFloat(this.value)||0, currentDebt);
-    const rem = Math.max(currentDebt - paid, 0);
-    document.getElementById('remaining-preview').textContent = formatNum(rem) + ' ج.م';
-  });
+  // Animate progress bar after mount
+  setTimeout(() => {
+    const bar = document.getElementById('pay-progress-bar');
+    if (bar) bar.style.width = paidPct + '%';
+  }, 100);
+};
+
+window.setPayAmount = function(amount, maxDebt) {
+  const input = document.getElementById('payment-amount');
+  if (input) { input.value = amount; updatePayPreview(maxDebt); }
+};
+
+window.updatePayPreview = function(maxDebt) {
+  const val = Math.min(parseFloat(document.getElementById('payment-amount')?.value)||0, maxDebt);
+  const rem = Math.max(maxDebt - val, 0);
+  const remEl = document.getElementById('remaining-preview');
+  const payEl = document.getElementById('payment-preview');
+  if (remEl) { remEl.textContent = formatNum(rem) + ' ج.م'; remEl.style.color = rem===0?'var(--emerald)':'var(--danger)'; }
+  if (payEl) { payEl.textContent = formatNum(val) + ' ج.م'; }
 };
 
 window.processPayment = async function(clientKey, currentDebt) {
-  const amount = parseFloat(document.getElementById('payment-amount').value) || 0;
-  if (amount <= 0) return showToast('❌ يرجى إدخال مبلغ صحيح');
-  
+  const input = document.getElementById('payment-amount');
+  const amount = parseFloat(input?.value) || 0;
+  if (amount <= 0) return showToast('❌ يرجى إدخال مبلغ أكبر من صفر');
+
   const actualPaid = Math.min(amount, currentDebt);
   const newDebt = Math.max(currentDebt - actualPaid, 0);
-  
+
+  // Disable button
+  const btn = document.querySelector('#client-account-modal button[onclick*="processPayment"]');
+  if (btn) { btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...'; btn.disabled = true; }
+
   try {
     const clientRef = ref(db, 'clients/' + clientKey);
     const snap = await get(clientRef);
     const existing = snap.val() || {};
-    
+
     await update(clientRef, {
       totalDebt: newDebt,
       totalPaid: (existing.totalPaid || 0) + actualPaid
     });
 
-    // Log payment
     await push(ref(db, 'payments'), {
-      clientKey, amount: actualPaid, date: new Date().toISOString(),
+      clientKey,
+      clientName: existing.name,
+      amount: actualPaid,
+      remainingAfter: newDebt,
+      date: new Date().toISOString(),
       dateStr: new Date().toLocaleDateString('ar-EG')
     });
 
     closeModal();
-    showToast(`✅ تم تسجيل دفعة ${formatNum(actualPaid)} ج.م`);
+    showToast(`✅ تم تسجيل ${formatNum(actualPaid)} ج.م — المتبقي: ${formatNum(newDebt)} ج.م`);
   } catch (err) {
     showToast('❌ خطأ: ' + err.message);
+    if (btn) { btn.innerHTML = '✅ تأكيد الدفع'; btn.disabled = false; }
   }
 };
 
@@ -1341,40 +1519,9 @@ window.showFishPrices = function(fishName, btn) {
   `;
 };
 
-// ============================================================
-// CLIENT HISTORY MODAL
-// ============================================================
-window.showClientHistory = function(clientKey, clientName) {
-  const invoices = Object.entries(window.appState.invoices)
-    .filter(([,i]) => {
-      const client = window.appState.clients[clientKey];
-      return i.phone === client?.phone;
-    })
-    .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
-
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="modal-sheet">
-      <div class="modal-handle"></div>
-      <div class="modal-title">📋 فواتير ${clientName}</div>
-      <div style="max-height:60vh;overflow-y:auto">
-        ${invoices.length === 0 ? '<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير</div></div>' :
-        invoices.map(([id, inv]) => `
-          <div class="history-item" onclick="closeModal();showInvoiceDetail('${id}')">
-            <div class="history-header">
-              <span style="font-size:13px">📅 ${inv.dateStr}</span>
-              <span class="history-amount">${formatNum(inv.total)} ج.م</span>
-            </div>
-            <div class="history-meta">${(inv.items||[]).map(i=>i.fish).join(' • ')}</div>
-          </div>
-        `).join('')}
-      </div>
-      <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
-    </div>
-  `;
-  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
-  document.getElementById('modals-container').appendChild(modal);
+// showClientHistory → now handled inside showClientAccount
+window.showClientHistory = function(clientKey) {
+  showClientAccount(clientKey);
 };
 
 // ============================================================
