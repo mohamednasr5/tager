@@ -812,11 +812,11 @@ function addFishItem(fishName) {
       </button>
       <button id="${id}-unit-box20" onclick="setFishUnit('${id}','box20')"
         style="padding:7px 4px;border-radius:9px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;line-height:1.3">
-        📦 بوكشة 20<br><span style="font-size:9px;font-weight:400">(= 20 كيلو)</span>
+        📦 بوكسة 20<br><span style="font-size:9px;font-weight:400">(20 وقة = 25 ك)</span>
       </button>
       <button id="${id}-unit-box25" onclick="setFishUnit('${id}','box25')"
         style="padding:7px 4px;border-radius:9px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;line-height:1.3">
-        📦 بوكشة 25<br><span style="font-size:9px;font-weight:400">(= 25 كيلو)</span>
+        📦 بوكشة 25<br><span style="font-size:9px;font-weight:400">(= 25 ك)</span>
       </button>
     </div>
 
@@ -866,10 +866,10 @@ function removeFishItem(fishName) {
 // وحدات القياس المتاحة
 // ============================================================
 const UNITS = {
-  kg:    { label: 'كيلو',        short: 'ك',       kgFactor: 1,    color: 'var(--cyan-glow)', border: '2px solid var(--cyan-glow)', bg: 'rgba(0,180,216,0.15)' },
-  wqa:   { label: 'وقة',         short: 'وقة',     kgFactor: 1.25, color: 'var(--warning)',   border: '2px solid var(--warning)',   bg: 'rgba(255,165,0,0.15)' },
-  box20: { label: 'بوكشة (20ك)', short: 'بوكشة20', kgFactor: 20,   color: 'var(--emerald)',   border: '2px solid var(--emerald)',   bg: 'rgba(0,200,150,0.15)' },
-  box25: { label: 'بوكشة (25ك)', short: 'بوكشة25', kgFactor: 25,   color: '#c084fc',          border: '2px solid #c084fc',          bg: 'rgba(192,132,252,0.15)' },
+  kg:    { label: 'كيلو',               short: 'ك',       kgFactor: 1,     color: 'var(--cyan-glow)', border: '2px solid var(--cyan-glow)', bg: 'rgba(0,180,216,0.15)' },
+  wqa:   { label: 'وقة',                short: 'وقة',     kgFactor: 1.25,  color: 'var(--warning)',   border: '2px solid var(--warning)',   bg: 'rgba(255,165,0,0.15)' },
+  box20: { label: 'بوكسة 20 وقة (25ك)', short: 'بوكسة20', kgFactor: 25,    color: 'var(--emerald)',   border: '2px solid var(--emerald)',   bg: 'rgba(0,200,150,0.15)' },
+  box25: { label: 'بوكشة (25ك)',            short: 'بوكشة25', kgFactor: 25,    color: '#c084fc',       border: '2px solid #c084fc',          bg: 'rgba(192,132,252,0.15)' },
 };
 
 window.setFishUnit = function(id, unit) {
@@ -1104,7 +1104,7 @@ window.saveInvoice = async function() {
 function showInvoicePreview(invoice, invoiceId) {
   const itemsHtml = invoice.items.map(item => {
     const unit       = item.unit || 'kg';
-    const unitLabel  = item.unitLabel || (unit === 'kg' ? 'كيلو' : unit === 'wqa' ? 'وقة' : unit === 'box20' ? 'بوكشة (20ك)' : 'بوكشة (25ك)');
+    const unitLabel  = item.unitLabel || (unit === 'kg' ? 'كيلو' : unit === 'wqa' ? 'وقة' : unit === 'box20' ? 'بوكسة 20 وقة (25ك)' : 'بوكشة (25ك)');
     const qtyDisplay = item.qty !== undefined ? item.qty : item.kg;
     const priceDisplay = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
     const kgEquiv    = item.kg || 0;
@@ -1221,7 +1221,7 @@ function buildInvoiceText(invoice) {
   invoice.items.forEach((i,idx) => {
     const sub        = (i.subtotal||0).toFixed(2);
     const unit       = i.unit || 'kg';
-    const unitLabel  = i.unitLabel || (unit==='kg'?'كيلو':unit==='wqa'?'وقة':unit==='box20'?'بوكشة (20ك)':'بوكشة (25ك)');
+    const unitLabel  = i.unitLabel || (unit==='kg'?'كيلو':unit==='wqa'?'وقة':unit==='box20'?'بوكسة 20 وقة (25ك)':'بوكشة (25ك)');
     const qtyDisplay = i.qty !== undefined ? i.qty : i.kg;
     const prcDisplay = i.pricePerUnit !== undefined ? i.pricePerUnit : i.pricePerKg;
     const decimals   = unit === 'wqa' ? 2 : 0;
@@ -1500,7 +1500,7 @@ async function buildClientStatementFull(client, clientKey) {
         const unit    = item.unit || 'kg';
         const qty     = item.qty !== undefined ? item.qty : item.kg;
         const prc     = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
-        const unitLbl = item.unitLabel || (unit==='kg'?'ك':unit==='wqa'?'وقة':unit==='box20'?'بوكشة20':'بوكشة25');
+        const unitLbl = item.unitLabel || (unit==='kg'?'ك':unit==='wqa'?'وقة':unit==='box20'?'بوكسة20':'بوكشة25');
         const decimals = unit === 'wqa' ? 2 : 0;
         const kgNote  = unit !== 'kg' ? ` (=${(item.kg||0).toFixed(decimals)}ك)` : '';
         text += `   • ${item.fish}: ${qty} ${unitLbl}${kgNote} × ${prc} = ${(item.subtotal||0).toFixed(0)} ج.م\n`;
@@ -2199,7 +2199,7 @@ window.editInvoiceModal = function(invoiceId) {
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <div style="font-size:12px;font-weight:700;color:var(--gold)">🐟 ${item.fish}</div>
               <div style="display:flex;gap:3px;flex-wrap:wrap">
-                ${[['kg','كيلو','var(--cyan-glow)','rgba(0,180,216,0.15)'],['wqa','وقة','var(--warning)','rgba(255,165,0,0.15)'],['box20','20ك📦','var(--emerald)','rgba(0,200,150,0.15)'],['box25','25ك📦','#c084fc','rgba(192,132,252,0.15)']].map(([u,lbl,clr,bg])=>`
+                ${[['kg','كيلو','var(--cyan-glow)','rgba(0,180,216,0.15)'],['wqa','وقة','var(--warning)','rgba(255,165,0,0.15)'],['box20','بوكسة20','var(--emerald)','rgba(0,200,150,0.15)'],['box25','بوكشة25','#c084fc','rgba(192,132,252,0.15)']].map(([u,lbl,clr,bg])=>`
                   <button id="ei-unit-${u}-${idx}" onclick="toggleEditUnit(${idx},'${u}')"
                     style="padding:3px 7px;border-radius:6px;border:${(item.unit||'kg')===u?`2px solid ${clr}`:'1px solid var(--glass-border)'};background:${(item.unit||'kg')===u?bg:'transparent'};color:${(item.unit||'kg')===u?clr:'var(--text-secondary)'};font-family:'Cairo',sans-serif;font-size:9px;font-weight:700;cursor:pointer">
                     ${lbl}
@@ -2600,8 +2600,8 @@ window.toggleEditUnit = function(idx, unit) {
   const _UNITS_DEF = {
     kg:    { label:'كيلو',       color:'var(--cyan-glow)', border:'2px solid var(--cyan-glow)',  bg:'rgba(0,180,216,0.15)' },
     wqa:   { label:'وقة',        color:'var(--warning)',   border:'2px solid var(--warning)',    bg:'rgba(255,165,0,0.15)' },
-    box20: { label:'بوكشة 20ك', color:'var(--emerald)',   border:'2px solid var(--emerald)',    bg:'rgba(0,200,150,0.15)' },
-    box25: { label:'بوكشة 25ك', color:'#c084fc',          border:'2px solid #c084fc',           bg:'rgba(192,132,252,0.15)' },
+    box20: { label:'بوكسة 20 وقة (25ك)', color:'var(--emerald)',   border:'2px solid var(--emerald)',    bg:'rgba(0,200,150,0.15)' },
+    box25: { label:'بوكشة (25ك)', color:'#c084fc',          border:'2px solid #c084fc',           bg:'rgba(192,132,252,0.15)' },
   };
   // Reset all buttons
   ['kg','wqa','box20','box25'].forEach(u => {
