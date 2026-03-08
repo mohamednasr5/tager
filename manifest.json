@@ -2,7 +2,7 @@
   "name": "الحاج أحمد الحديدي - تجارة الأسماك",
   "short_name": "الحديدي للأسماك",
   "description": "نظام محاسبة تجارة الأسماك",
-  "start_url": "/",
+  "start_url": "https://mohamednasr5.github.io/tager",
   "display": "standalone",
   "background_color": "#0a1628",
   "theme_color": "#0a1628",
