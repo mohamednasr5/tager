@@ -32,13 +32,10 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; font-family: 'Cairo', sans-serif; background: var(--ocean-deep); color: var(--text-primary); }
 
-  /* 3D Canvas Background */
   #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-  /* Main App Container */
   #app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
 
-  /* Header */
   .app-header {
     background: linear-gradient(135deg, rgba(10,22,40,0.95) 0%, rgba(13,33,55,0.95) 100%);
     backdrop-filter: blur(20px);
@@ -48,16 +45,13 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     position: relative; z-index: 10;
   }
-  .header-logo {
-    display: flex; align-items: center; gap: 10px;
-  }
+  .header-logo { display: flex; align-items: center; gap: 10px; }
   .logo-icon { font-size: 28px; animation: fishSwim 3s ease-in-out infinite; display: inline-block; }
   @keyframes fishSwim { 0%,100%{transform:translateX(0) rotate(0deg)} 25%{transform:translateX(3px) rotate(2deg)} 75%{transform:translateX(-3px) rotate(-2deg)} }
   .header-title { font-size: 15px; font-weight: 900; color: var(--gold); line-height: 1.2; }
   .header-subtitle { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
   .header-date { font-size: 11px; color: var(--cyan-glow); text-align: left; }
 
-  /* Bottom Navigation */
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
     background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(10,22,40,1) 100%);
@@ -74,20 +68,16 @@
   .nav-item .nav-icon { font-size: 22px; transition: transform 0.3s; }
   .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.15); filter: drop-shadow(0 0 8px var(--cyan-glow)); }
   .nav-item .nav-label { font-size: 10px; font-weight: 600; }
-  .nav-indicator { position: absolute; bottom: 0; height: 3px; background: linear-gradient(90deg,var(--cyan-glow),var(--wave-blue)); border-radius: 3px 3px 0 0; transition: all 0.3s; }
 
-  /* Content Area */
   .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 12px 90px; scroll-behavior: smooth; }
   .content::-webkit-scrollbar { width: 3px; }
   .content::-webkit-scrollbar-track { background: transparent; }
   .content::-webkit-scrollbar-thumb { background: var(--wave-blue); border-radius: 3px; }
 
-  /* Pages */
   .page { display: none; animation: fadeSlideIn 0.4s ease; }
   .page.active { display: block; }
   @keyframes fadeSlideIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
 
-  /* Glass Cards */
   .glass-card {
     background: var(--glass);
     border: 1px solid var(--glass-border);
@@ -103,7 +93,6 @@
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
   }
 
-  /* Section Title */
   .section-title {
     font-size: 13px; font-weight: 700; color: var(--text-secondary);
     text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
@@ -111,7 +100,6 @@
   }
   .section-title::after { content:''; flex:1; height:1px; background:var(--glass-border); }
 
-  /* Dashboard Stats */
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
   .stat-card {
     background: var(--glass);
@@ -130,7 +118,6 @@
   .stat-card.danger { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.08); }
   .stat-card.success { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.08); }
 
-  /* Price Leaders */
   .price-leader-card {
     background: var(--glass);
     border: 1px solid var(--glass-border);
@@ -145,7 +132,6 @@
   .leader-fish { font-size: 11px; color: var(--cyan-glow); }
   .leader-price { font-size: 16px; font-weight: 900; color: var(--gold); }
 
-  /* Form Styles */
   .form-group { margin-bottom: 14px; }
   .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; }
   .form-input, .form-select, .form-textarea {
@@ -156,71 +142,169 @@
     outline: none; transition: all 0.3s;
     -webkit-appearance: none;
   }
-  .form-input:focus, .form-select:focus, .form-textarea:focus {
-    border-color: var(--cyan-glow);
-    background: rgba(0,180,216,0.08);
-    box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
-  }
+  .form-input:focus, .form-select:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
   .form-select option { background: var(--ocean-deep); color: var(--text-primary); }
   .form-input::placeholder { color: rgba(255,255,255,0.3); }
 
-  /* Fish Items in Invoice */
+  /* ===================== FISH CHIPS ===================== */
+  .fish-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .fish-chip {
+    padding: 8px 14px; border-radius: 22px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.25s;
+    font-family: 'Cairo', sans-serif;
+    user-select: none;
+  }
+  .fish-chip:active { transform: scale(0.95); }
+  .fish-chip.selected {
+    border-color: var(--cyan-glow);
+    background: rgba(0,180,216,0.18);
+    color: var(--cyan-glow);
+    box-shadow: 0 0 10px rgba(0,180,216,0.2);
+  }
+
+  /* ===================== FISH ITEM ROW ===================== */
   .fish-item-row {
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 10px;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
     position: relative;
+    animation: fishRowIn 0.3s ease;
   }
-  .fish-item-row .fish-name { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 8px; display: flex; justify-content:space-between; align-items:center; }
-  .fish-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .fish-input-group label { font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 3px; }
+  @keyframes fishRowIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+  .fish-row-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .fish-row-name {
+    font-size: 14px; font-weight: 800; color: var(--gold);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .fish-row-total {
+    font-size: 15px; font-weight: 900; color: var(--emerald);
+    background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.3);
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* Unit buttons grid */
+  .unit-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 5px; margin-bottom: 10px;
+  }
+  .unit-btn {
+    padding: 8px 4px; border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Cairo', sans-serif;
+    font-size: 10px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    text-align: center; line-height: 1.4;
+  }
+  .unit-btn.active-kg    { border: 2px solid var(--cyan-glow); background: rgba(0,180,216,0.15); color: var(--cyan-glow); }
+  .unit-btn.active-wqa   { border: 2px solid var(--warning);   background: rgba(255,165,0,0.15); color: var(--warning); }
+  .unit-btn.active-box20 { border: 2px solid var(--emerald);   background: rgba(0,200,150,0.15); color: var(--emerald); }
+  .unit-btn.active-box25 { border: 2px solid #c084fc;          background: rgba(192,132,252,0.15); color: #c084fc; }
+
+  .unit-info-box {
+    display: none; padding: 7px 12px; border-radius: 8px;
+    font-size: 12px; font-weight: 700; text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .fish-inputs-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+  }
+  .fish-input-group label {
+    font-size: 10px; color: var(--text-secondary);
+    display: block; margin-bottom: 3px; font-weight: 600;
+  }
   .fish-input-group input {
-    width: 100%; padding: 8px 10px; border-radius: 8px;
+    width: 100%; padding: 10px 6px; border-radius: 9px;
     border: 1px solid var(--glass-border);
     background: rgba(255,255,255,0.06);
-    color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 13px;
-    outline: none; text-align: center; transition: all 0.3s;
+    color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+    outline: none; text-align: center; transition: all 0.25s;
+    -webkit-appearance: none;
   }
-  .fish-input-group input:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
-  .fish-total { text-align: left; margin-top: 8px; font-size: 12px; color: var(--emerald); font-weight: 700; }
+  .fish-input-group input:focus {
+    border-color: var(--cyan-glow);
+    background: rgba(0,180,216,0.08);
+    box-shadow: 0 0 0 2px rgba(0,180,216,0.15);
+  }
+  .fish-input-group input.readonly-subtotal {
+    background: rgba(0,200,150,0.08);
+    border-color: rgba(0,200,150,0.3);
+    color: var(--emerald);
+  }
 
-  /* Buttons */
+  /* custom name input for أخرى */
+  .custom-fish-input {
+    width: 100%; padding: 8px 12px; border-radius: 9px;
+    border: 1px solid rgba(255,215,0,0.3);
+    background: rgba(255,215,0,0.06);
+    color: var(--gold); font-family: 'Cairo', sans-serif;
+    font-size: 13px; font-weight: 600; outline: none;
+    margin-bottom: 10px; transition: all 0.2s;
+  }
+  .custom-fish-input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.15); }
+  .custom-fish-input::placeholder { color: rgba(255,215,0,0.4); }
+
+  /* remove button */
+  .remove-fish-btn {
+    position: absolute; top: 10px; left: 10px;
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid rgba(255,71,87,0.4);
+    background: rgba(255,71,87,0.1);
+    color: var(--danger); font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; line-height: 1;
+  }
+  .remove-fish-btn:hover, .remove-fish-btn:active { background: rgba(255,71,87,0.25); transform: scale(1.1); }
+
+  /* Summary */
+  .invoice-summary-card {
+    background: linear-gradient(135deg, rgba(0,180,216,0.08), rgba(21,101,192,0.05));
+    border: 1px solid rgba(0,180,216,0.3);
+    border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .summary-label { font-size: 13px; color: var(--text-secondary); }
+  .summary-value { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .summary-total-label { font-size: 14px; font-weight: 800; color: var(--gold); }
+  .summary-total-value { font-size: 24px; font-weight: 900; color: var(--gold); }
+  .summary-divider { height: 1px; background: rgba(255,215,0,0.2); margin: 8px 0; }
+
+  /* Commission box */
+  .commission-preview {
+    background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 12px; padding: 12px; margin-top: 8px; display: none;
+  }
+
   .btn {
     padding: 12px 20px; border-radius: 12px; border: none;
     font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
     cursor: pointer; transition: all 0.25s; display: inline-flex; align-items: center; gap: 8px;
     justify-content: center; width: 100%; margin-bottom: 8px;
   }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue));
-    color: white; box-shadow: 0 4px 15px rgba(0,180,216,0.4);
-  }
-  .btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,180,216,0.3); }
-  .btn-gold {
-    background: linear-gradient(135deg, #ffd700, #ff8c00);
-    color: #1a1200; box-shadow: 0 4px 15px rgba(255,215,0,0.3);
-  }
-  .btn-success {
-    background: linear-gradient(135deg, var(--emerald), #00875a);
-    color: white; box-shadow: 0 4px 15px rgba(0,200,150,0.3);
-  }
-  .btn-danger {
-    background: linear-gradient(135deg, var(--danger), #c0392b);
-    color: white; box-shadow: 0 4px 15px rgba(255,71,87,0.3);
-  }
-  .btn-whatsapp {
-    background: linear-gradient(135deg, #25D366, #128C7E);
-    color: white; box-shadow: 0 4px 15px rgba(37,211,102,0.3);
-  }
-  .btn-outline {
-    background: transparent; border: 1px solid var(--glass-border);
-    color: var(--text-primary);
-  }
-  .btn-sm { padding: 8px 14px; font-size: 12px; border-radius: 8px; }
+  .btn-primary { background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue)); color: white; box-shadow: 0 4px 15px rgba(0,180,216,0.4); }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1200; box-shadow: 0 4px 15px rgba(255,215,0,0.3); }
+  .btn-success { background: linear-gradient(135deg, var(--emerald), #00875a); color: white; box-shadow: 0 4px 15px rgba(0,200,150,0.3); }
+  .btn-danger { background: linear-gradient(135deg, var(--danger), #c0392b); color: white; }
+  .btn-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; box-shadow: 0 4px 15px rgba(37,211,102,0.3); }
+  .btn-outline { background: transparent; border: 1px solid var(--glass-border); color: var(--text-primary); }
 
-  /* Invoice Preview */
   .invoice-preview {
     background: linear-gradient(135deg, rgba(21,101,192,0.15), rgba(10,22,40,0.95));
     border: 1px solid rgba(21,101,192,0.4);
@@ -233,35 +317,21 @@
   .invoice-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
   .invoice-table th { font-size: 11px; color: var(--text-secondary); padding: 6px 4px; text-align: center; border-bottom: 1px solid var(--glass-border); }
   .invoice-table td { font-size: 12px; padding: 7px 4px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .invoice-total-row { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--glass-border); }
-  .invoice-total-label { font-size: 13px; color: var(--text-secondary); }
-  .invoice-total-value { font-size: 16px; font-weight: 900; color: var(--gold); }
 
-  /* Client Cards */
   .client-card {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.25s;
-    position: relative;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 14px; padding: 14px; margin-bottom: 10px;
+    cursor: pointer; transition: all 0.25s; position: relative;
   }
   .client-card:active { transform: scale(0.98); }
   .client-card.has-debt { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
   .client-card.paid { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.06); }
-  .client-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
   .client-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
   .client-phone { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-  .client-balance { text-align: left; }
-  .balance-label { font-size: 10px; color: var(--text-secondary); }
-  .balance-amount { font-size: 16px; font-weight: 900; }
+  .balance-amount { font-size: 18px; font-weight: 900; }
   .balance-amount.debt { color: var(--danger); }
   .balance-amount.paid { color: var(--emerald); }
-  .client-actions { display: flex; gap: 6px; margin-top: 10px; }
 
-  /* Payment Modal */
   .modal-overlay {
     position: fixed; inset: 0; z-index: 200;
     background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
@@ -274,14 +344,13 @@
     border: 1px solid var(--glass-border);
     border-radius: 24px 24px 0 0;
     padding: 20px 20px max(20px, env(safe-area-inset-bottom));
-    width: 100%; max-height: 80vh; overflow-y: auto;
+    width: 100%; max-height: 85vh; overflow-y: auto;
     animation: slideUp 0.35s cubic-bezier(0.25,0.8,0.25,1);
   }
   @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
   .modal-handle { width: 40px; height: 4px; background: var(--glass-border); border-radius: 2px; margin: 0 auto 16px; }
   .modal-title { font-size: 18px; font-weight: 900; color: var(--gold); text-align: center; margin-bottom: 16px; }
 
-  /* Toast */
   .toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
     background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-surface));
@@ -289,30 +358,14 @@
     border-radius: 12px; padding: 12px 20px;
     font-size: 13px; font-weight: 600; color: var(--text-primary);
     z-index: 500; box-shadow: var(--card-shadow);
-    animation: toastIn 0.3s ease; white-space: nowrap;
-    max-width: 90vw;
+    animation: toastIn 0.3s ease; white-space: nowrap; max-width: 90vw;
   }
   @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 
-  /* Fish selector chips */
-  .fish-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-  .fish-chip {
-    padding: 7px 12px; border-radius: 20px; border: 1px solid var(--glass-border);
-    background: rgba(255,255,255,0.05); color: var(--text-secondary);
-    font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-    font-family: 'Cairo', sans-serif;
-  }
-  .fish-chip.selected { border-color: var(--cyan-glow); background: rgba(0,180,216,0.15); color: var(--cyan-glow); }
-
-  /* History List */
   .history-item {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 12px; padding: 12px; margin-bottom: 8px;
+    cursor: pointer; transition: all 0.2s;
   }
   .history-item:active { transform: scale(0.98); }
   .history-header { display: flex; justify-content: space-between; align-items: center; }
@@ -320,59 +373,42 @@
   .history-amount { font-size: 15px; font-weight: 900; color: var(--gold); }
   .history-meta { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
 
-  /* Search */
   .search-box { position: relative; margin-bottom: 14px; }
-  .search-box input { padding-right: 40px !important; }
   .search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
 
-  /* Empty State */
   .empty-state { text-align: center; padding: 40px 20px; }
   .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
   .empty-text { font-size: 14px; color: var(--text-secondary); }
 
-  /* Loading */
   .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Ripple */
-  .ripple { position: relative; overflow: hidden; }
-  .ripple::after { content: ''; position: absolute; border-radius: 50%; background: rgba(255,255,255,0.15); transform: scale(0); animation: ripple 0.5s linear; pointer-events: none; }
-  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
-
-  /* Badge */
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
-  .badge-gold { background: rgba(255,215,0,0.2); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
-  .badge-cyan { background: rgba(0,180,216,0.2); color: var(--cyan-glow); border: 1px solid rgba(0,180,216,0.3); }
-  .badge-red { background: rgba(255,71,87,0.2); color: var(--danger); border: 1px solid rgba(255,71,87,0.3); }
-
-  /* PWA Install Banner */
-  .install-banner {
-    background: linear-gradient(135deg, rgba(0,180,216,0.2), rgba(21,101,192,0.2));
-    border: 1px solid var(--cyan-glow);
-    border-radius: 14px; padding: 12px 14px;
-    margin-bottom: 12px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .install-banner-text { flex: 1; font-size: 12px; color: var(--text-primary); }
-  .install-banner-btn { padding: 7px 14px; border-radius: 8px; background: var(--cyan-glow); color: var(--ocean-deep); font-weight: 700; font-size: 12px; border: none; cursor: pointer; font-family: 'Cairo', sans-serif; white-space: nowrap; }
-
-  /* Scrollable tabs */
   .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 14px; scrollbar-width: none; }
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Cairo', sans-serif; transition: all 0.2s; }
   .tab-btn.active { background: var(--cyan-glow); border-color: var(--cyan-glow); color: var(--ocean-deep); }
 
-  /* Glowing line */
   .glow-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent); margin: 16px 0; opacity: 0.5; }
 
-  /* Price table */
   .price-table { width: 100%; border-collapse: collapse; }
   .price-table th { font-size: 11px; color: var(--text-secondary); padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--glass-border); }
   .price-table td { font-size: 12px; padding: 8px 6px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .price-table tr:last-child td { border-bottom: none; }
 
-  /* Animations for 3D fish */
-  .fish-3d-container { position: fixed; pointer-events: none; z-index: 0; }
+  .install-banner {
+    background: linear-gradient(135deg, rgba(0,180,216,0.2), rgba(21,101,192,0.2));
+    border: 1px solid var(--cyan-glow); border-radius: 14px; padding: 12px 14px;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+  }
+  .install-banner-text { flex: 1; font-size: 12px; color: var(--text-primary); }
+  .install-banner-btn { padding: 7px 14px; border-radius: 8px; background: var(--cyan-glow); color: var(--ocean-deep); font-weight: 700; font-size: 12px; border: none; cursor: pointer; font-family: 'Cairo', sans-serif; white-space: nowrap; }
+
+  /* no fish selected info */
+  .no-fish-hint {
+    text-align: center; padding: 20px; color: var(--text-secondary);
+    font-size: 13px; border: 1px dashed var(--glass-border);
+    border-radius: 12px; margin-bottom: 8px;
+  }
 </style>
 </head>
 <body>
@@ -392,10 +428,10 @@
   </header>
 
   <div class="content" id="main-content">
-    <!-- Dashboard Page -->
+
+    <!-- HOME PAGE -->
     <div class="page active" id="page-home">
       <div id="install-banner-container"></div>
-      
       <div class="stats-grid">
         <div class="stat-card highlight">
           <div class="stat-icon">💰</div>
@@ -418,163 +454,139 @@
           <div class="stat-label">الفواتير</div>
         </div>
       </div>
-
       <div class="glass-card">
         <div class="section-title">🏆 أعلى الأسعار لكل صنف</div>
-        <div id="price-leaders-list">
-          <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div>
-        </div>
+        <div id="price-leaders-list"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div></div>
       </div>
-
       <div class="glass-card">
         <div class="section-title">📅 آخر الفواتير</div>
-        <div id="recent-invoices-list">
-          <div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div>
-        </div>
+        <div id="recent-invoices-list"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div></div>
       </div>
     </div>
 
-    <!-- New Invoice Page -->
+    <!-- INVOICE PAGE -->
     <div class="page" id="page-invoice">
       <div class="glass-card">
-        <div class="section-title">🧾 فاتورة جديدة</div>
-        
+        <div class="section-title">🧾 بيانات الفاتورة</div>
         <div class="form-group">
           <label class="form-label">🏪 اسم المؤسسة (اختياري)</label>
           <input type="text" id="inv-shop" class="form-input" placeholder="اسم المؤسسة أو المحل">
         </div>
-
         <div class="form-group">
           <label class="form-label">👤 اسم العميل *</label>
           <input type="text" id="inv-client" class="form-input" placeholder="اسم التاجر" list="clients-datalist">
           <datalist id="clients-datalist"></datalist>
         </div>
-
         <div class="form-group">
           <label class="form-label">📱 رقم الهاتف (11 رقم يبدأ بـ 01) *</label>
           <input type="tel" id="inv-phone" class="form-input" placeholder="01xxxxxxxxx" maxlength="11" dir="ltr">
           <div id="phone-error" style="color:var(--danger);font-size:11px;margin-top:4px;display:none">❌ رقم الهاتف غير صحيح</div>
         </div>
-
         <div class="form-group">
-          <label class="form-label">🤝 عمولة التاجر (اختياري)</label>
+          <label class="form-label">🤝 عمولة التاجر % (اختياري)</label>
           <div style="position:relative;display:flex;align-items:center">
-            <input type="number" id="inv-commission" class="form-input"
-              placeholder="0" min="0" max="100" step="0.5"
+            <input type="number" id="inv-commission" class="form-input" placeholder="0" min="0" max="100" step="0.5"
               oninput="updateInvoiceSummary()"
               style="padding-left:50px;font-size:18px;font-weight:700;text-align:center">
             <span style="position:absolute;left:14px;font-size:22px;font-weight:900;color:var(--gold);pointer-events:none">%</span>
           </div>
-          <div id="commission-preview-box" style="margin-top:8px;padding:12px 14px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.25);border-radius:12px;display:none">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-              <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الفاتورة</span>
-              <span id="comm-gross" style="font-size:14px;font-weight:700;color:var(--text-primary)">0 ج.م</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-              <span style="font-size:12px;color:var(--warning)">🤝 عمولة التاجر (<span id="comm-pct-label">0</span>%)</span>
-              <span id="comm-amount" style="font-size:14px;font-weight:700;color:var(--warning)">- 0 ج.م</span>
-            </div>
-            <div style="height:1px;background:rgba(255,215,0,0.25);margin:8px 0"></div>
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span style="font-size:14px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span>
-              <span id="comm-net" style="font-size:20px;font-weight:900;color:var(--gold)">0 ج.م</span>
-            </div>
-          </div>
         </div>
       </div>
 
+      <!-- Fish Selection -->
       <div class="glass-card">
         <div class="section-title">🐟 اختر الأصناف</div>
         <div class="fish-chips" id="fish-chips-container"></div>
+        <div id="no-fish-hint" class="no-fish-hint">اضغط على الأصناف أعلاه لإضافتها للفاتورة</div>
         <div id="fish-items-container"></div>
       </div>
 
-      <div class="glass-card" id="invoice-summary" style="display:none">
-        <div class="section-title">💰 ملخص الفاتورة</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="color:var(--text-secondary);font-size:13px">الإجمالي الكلي</span>
-          <span id="inv-grand-total" style="font-size:22px;font-weight:900;color:var(--gold)">0 ج.م</span>
+      <!-- Summary -->
+      <div id="invoice-summary" style="display:none">
+        <div class="invoice-summary-card">
+          <div class="summary-row">
+            <span class="summary-label">📦 عدد الأصناف</span>
+            <span class="summary-value" id="inv-items-count">0 صنف</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">📦 إجمالي الفاتورة</span>
+            <span class="summary-value" id="inv-gross-display">0 ج.م</span>
+          </div>
+          <div id="commission-row" style="display:none">
+            <div class="summary-row">
+              <span class="summary-label" style="color:var(--warning)">🤝 عمولة (<span id="comm-pct-lbl">0</span>%)</span>
+              <span class="summary-value" style="color:var(--warning)" id="comm-amt-display">- 0 ج.م</span>
+            </div>
+            <div class="summary-divider"></div>
+          </div>
+          <div class="summary-row">
+            <span class="summary-total-label">💰 المتبقى على التاجر</span>
+            <span class="summary-total-value" id="inv-grand-total">0 ج.م</span>
+          </div>
         </div>
+        <button class="btn btn-primary" id="save-invoice-btn" onclick="saveInvoice()">
+          💾 حفظ الفاتورة
+        </button>
       </div>
-
-      <button class="btn btn-primary" id="save-invoice-btn" onclick="saveInvoice()">
-        💾 حفظ الفاتورة
-      </button>
     </div>
 
-    <!-- Clients Page -->
+    <!-- CLIENTS PAGE -->
     <div class="page" id="page-clients">
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="client-search" class="form-input" placeholder="ابحث عن عميل..." oninput="renderClients()" style="padding-right:40px">
       </div>
-
       <div class="tab-bar">
         <button class="tab-btn active" onclick="filterClients('all',this)">الكل</button>
         <button class="tab-btn" onclick="filterClients('debt',this)">عليهم دين</button>
         <button class="tab-btn" onclick="filterClients('paid',this)">مسويين</button>
       </div>
-
-      <div id="clients-list">
-        <div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div>
-      </div>
+      <div id="clients-list"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div></div>
     </div>
 
-    <!-- History Page -->
+    <!-- HISTORY PAGE -->
     <div class="page" id="page-history">
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="history-search" class="form-input" placeholder="ابحث في الفواتير..." oninput="renderHistory()" style="padding-right:40px">
       </div>
-      <div id="history-list">
-        <div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير بعد</div></div>
-      </div>
+      <div id="history-list"><div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير بعد</div></div></div>
     </div>
 
-    <!-- Prices Page -->
+    <!-- PRICES PAGE -->
     <div class="page" id="page-prices">
       <div class="glass-card">
         <div class="section-title">📈 جدول الأسعار بالصنف</div>
         <div class="tab-bar" id="prices-fish-tabs"></div>
-        <div id="prices-content">
-          <div class="empty-state"><div class="empty-icon">💹</div><div class="empty-text">لا توجد بيانات بعد</div></div>
-        </div>
+        <div id="prices-content"><div class="empty-state"><div class="empty-icon">💹</div><div class="empty-text">لا توجد بيانات بعد</div></div></div>
       </div>
     </div>
   </div>
 
-  <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchPage('home',this)">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-label">الرئيسية</span>
+      <span class="nav-icon">🏠</span><span class="nav-label">الرئيسية</span>
     </button>
     <button class="nav-item" onclick="switchPage('invoice',this)">
-      <span class="nav-icon">➕</span>
-      <span class="nav-label">فاتورة</span>
+      <span class="nav-icon">➕</span><span class="nav-label">فاتورة</span>
     </button>
     <button class="nav-item" onclick="switchPage('clients',this)">
-      <span class="nav-icon">👥</span>
-      <span class="nav-label">العملاء</span>
+      <span class="nav-icon">👥</span><span class="nav-label">العملاء</span>
     </button>
     <button class="nav-item" onclick="switchPage('history',this)">
-      <span class="nav-icon">📚</span>
-      <span class="nav-label">السجل</span>
+      <span class="nav-icon">📚</span><span class="nav-label">السجل</span>
     </button>
     <button class="nav-item" onclick="switchPage('prices',this)">
-      <span class="nav-icon">💹</span>
-      <span class="nav-label">الأسعار</span>
+      <span class="nav-icon">💹</span><span class="nav-label">الأسعار</span>
     </button>
   </nav>
 </div>
 
-<!-- Modals Container -->
 <div id="modals-container"></div>
 
-<!-- Firebase SDKs -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, push, set, get, update, remove, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, push, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAGDzSO4r9KQhAiMKs5k3PlIPbIwvXVcmw",
@@ -591,11 +603,18 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // ============================================================
-// FISH TYPES
+// CONSTANTS
 // ============================================================
 const FISH_TYPES = [
   'بوري','طوبار','دباشي','سوبر','نمرة ١','نمرة ٢','نمرة ٣','نمرة ٤','دور','قراميط','بياض','أخرى'
 ];
+
+const UNITS = {
+  kg:    { label: 'كيلو',                short: 'ك',        kgFactor: 1    },
+  wqa:   { label: 'وقة',                 short: 'وقة',      kgFactor: 1.25 },
+  box20: { label: 'بوكشة 20 (25 ك)',     short: 'ب20',      kgFactor: 25   },
+  box25: { label: 'بوكشة 25 ك',          short: 'ب25',      kgFactor: 25   },
+};
 
 // ============================================================
 // STATE
@@ -604,127 +623,57 @@ window.appState = {
   invoices: {},
   clients: {},
   currentFilter: 'all',
-  selectedFishes: [],
   deferredPrompt: null,
+  // Each fish item: { id, fishName, unit, qty, price, subtotal, kg }
+  fishItems: [],
+  nextItemId: 0,
 };
 
 // ============================================================
-// 3D CANVAS BACKGROUND
+// BACKGROUND ANIMATION
 // ============================================================
 function init3DBackground() {
   const canvas = document.getElementById('bg-canvas');
   const ctx = canvas.getContext('2d');
   let W, H, particles = [], fishes = [];
-  
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  // Particles (bubbles)
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
   for (let i = 0; i < 40; i++) {
-    particles.push({
-      x: Math.random() * W, y: Math.random() * H,
-      r: Math.random() * 3 + 1,
-      speed: Math.random() * 0.5 + 0.2,
-      opacity: Math.random() * 0.4 + 0.1,
-      wobble: Math.random() * Math.PI * 2
-    });
+    particles.push({ x:Math.random()*W, y:Math.random()*H, r:Math.random()*3+1, speed:Math.random()*0.5+0.2, opacity:Math.random()*0.4+0.1, wobble:Math.random()*Math.PI*2 });
   }
-
-  // Fish
   const fishEmojis = ['🐟','🐠','🐡'];
   for (let i = 0; i < 5; i++) {
-    fishes.push({
-      x: Math.random() * W, y: Math.random() * H * 0.7 + H * 0.1,
-      size: Math.random() * 16 + 12,
-      speed: Math.random() * 0.8 + 0.3,
-      dir: Math.random() > 0.5 ? 1 : -1,
-      emoji: fishEmojis[Math.floor(Math.random() * fishEmojis.length)],
-      opacity: 0.12 + Math.random() * 0.1,
-      wave: Math.random() * Math.PI * 2,
-      waveAmp: Math.random() * 30 + 15,
-      waveSpeed: Math.random() * 0.02 + 0.01
-    });
+    fishes.push({ x:Math.random()*W, y:Math.random()*H*0.7+H*0.1, size:Math.random()*16+12, speed:Math.random()*0.8+0.3, dir:Math.random()>0.5?1:-1, emoji:fishEmojis[Math.floor(Math.random()*fishEmojis.length)], opacity:0.12+Math.random()*0.1, wave:Math.random()*Math.PI*2, waveAmp:Math.random()*30+15, waveSpeed:Math.random()*0.02+0.01 });
   }
-
-  function drawWave(y, offset, color, opacity) {
-    ctx.save();
-    ctx.globalAlpha = opacity;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    for (let x = 0; x <= W; x += 5) {
-      ctx.lineTo(x, y + Math.sin((x * 0.01) + offset) * 20 + Math.sin((x * 0.007) + offset * 1.3) * 12);
-    }
-    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-    ctx.fillStyle = color; ctx.fill();
-    ctx.restore();
+  function drawWave(y,offset,color,opacity) {
+    ctx.save(); ctx.globalAlpha=opacity; ctx.beginPath(); ctx.moveTo(0,y);
+    for(let x=0;x<=W;x+=5) ctx.lineTo(x,y+Math.sin((x*0.01)+offset)*20+Math.sin((x*0.007)+offset*1.3)*12);
+    ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fillStyle=color; ctx.fill(); ctx.restore();
   }
-
-  let t = 0;
+  let t=0;
   function animate() {
-    ctx.clearRect(0, 0, W, H);
-
-    // Deep ocean gradient
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#040d1a');
-    grad.addColorStop(0.5, '#061525');
-    grad.addColorStop(1, '#050f1e');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-
-    // Caustic light effect (top)
-    for (let i = 0; i < 5; i++) {
-      const x = (W * (i + 1)) / 6;
-      const rg = ctx.createRadialGradient(x, -20, 0, x, H * 0.4, H * 0.5);
-      rg.addColorStop(0, 'rgba(0,120,200,0.06)');
-      rg.addColorStop(1, 'transparent');
-      ctx.fillStyle = rg;
-      ctx.fillRect(0, 0, W, H);
-    }
-
-    // Waves
-    drawWave(H * 0.3, t * 0.5, 'rgba(21,101,192,0.08)', 1);
-    drawWave(H * 0.5, t * 0.3 + 1, 'rgba(0,180,216,0.05)', 1);
-    drawWave(H * 0.7, t * 0.4 + 2, 'rgba(13,33,55,0.15)', 1);
-
-    // Bubbles
+    ctx.clearRect(0,0,W,H);
+    const grad=ctx.createLinearGradient(0,0,0,H); grad.addColorStop(0,'#040d1a'); grad.addColorStop(0.5,'#061525'); grad.addColorStop(1,'#050f1e');
+    ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+    drawWave(H*0.3,t*0.5,'rgba(21,101,192,0.08)',1);
+    drawWave(H*0.5,t*0.3+1,'rgba(0,180,216,0.05)',1);
+    drawWave(H*0.7,t*0.4+2,'rgba(13,33,55,0.15)',1);
     particles.forEach(p => {
-      p.wobble += 0.03;
-      p.x += Math.sin(p.wobble) * 0.3;
-      p.y -= p.speed;
-      if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
-      ctx.save();
-      ctx.globalAlpha = p.opacity;
-      const bg = ctx.createRadialGradient(p.x - p.r * 0.3, p.y - p.r * 0.3, 0, p.x, p.y, p.r);
-      bg.addColorStop(0, 'rgba(100,200,255,0.8)');
-      bg.addColorStop(1, 'rgba(0,100,200,0.1)');
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(100,200,255,0.3)'; ctx.lineWidth = 0.5;
-      ctx.fillStyle = bg; ctx.fill(); ctx.stroke();
-      ctx.restore();
+      p.wobble+=0.03; p.x+=Math.sin(p.wobble)*0.3; p.y-=p.speed;
+      if(p.y<-10){p.y=H+10;p.x=Math.random()*W;}
+      ctx.save(); ctx.globalAlpha=p.opacity;
+      const bg=ctx.createRadialGradient(p.x-p.r*0.3,p.y-p.r*0.3,0,p.x,p.y,p.r);
+      bg.addColorStop(0,'rgba(100,200,255,0.8)'); bg.addColorStop(1,'rgba(0,100,200,0.1)');
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.strokeStyle='rgba(100,200,255,0.3)'; ctx.lineWidth=0.5; ctx.fillStyle=bg; ctx.fill(); ctx.stroke(); ctx.restore();
     });
-
-    // 3D Fish (drawn as emoji with perspective)
     fishes.forEach(f => {
-      f.wave += f.waveSpeed;
-      f.x += f.speed * f.dir;
-      f.y = f.y + Math.sin(f.wave) * 0.5;
-      if (f.x > W + 50) { f.x = -50; f.dir = 1; }
-      if (f.x < -50) { f.x = W + 50; f.dir = -1; }
-      ctx.save();
-      ctx.globalAlpha = f.opacity;
-      ctx.font = `${f.size}px serif`;
-      ctx.textAlign = 'center';
-      ctx.scale(f.dir, 1);
-      ctx.fillText(f.emoji, f.x * f.dir, f.y);
-      ctx.restore();
+      f.wave+=f.waveSpeed; f.x+=f.speed*f.dir; f.y+=Math.sin(f.wave)*0.5;
+      if(f.x>W+50){f.x=-50;} if(f.x<-50){f.x=W+50;}
+      ctx.save(); ctx.globalAlpha=f.opacity; ctx.font=`${f.size}px serif`; ctx.textAlign='center';
+      ctx.scale(f.dir,1); ctx.fillText(f.emoji,f.x*f.dir,f.y); ctx.restore();
     });
-
-    t += 0.01;
-    requestAnimationFrame(animate);
+    t+=0.01; requestAnimationFrame(animate);
   }
   animate();
 }
@@ -734,8 +683,7 @@ function init3DBackground() {
 // ============================================================
 function updateDate() {
   const now = new Date();
-  const opts = { year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('header-date').textContent = now.toLocaleDateString('ar-EG', opts);
+  document.getElementById('header-date').textContent = now.toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
 }
 
 // ============================================================
@@ -753,227 +701,246 @@ window.switchPage = function(page, btn) {
 };
 
 // ============================================================
-// FISH CHIPS INIT
+// ======   INVOICE FORM — REDESIGNED   ======================
 // ============================================================
+
 function initInvoiceForm() {
-  window.appState.selectedFishes = [];
-  const container = document.getElementById('fish-chips-container');
-  container.innerHTML = FISH_TYPES.map(f =>
-    `<div class="fish-chip" onclick="toggleFish('${f}',this)">${f}</div>`
-  ).join('');
-  document.getElementById('fish-items-container').innerHTML = '';
-  document.getElementById('invoice-summary').style.display = 'none';
+  // Reset state
+  window.appState.fishItems = [];
+  window.appState.nextItemId = 0;
+
+  // Reset form fields
   document.getElementById('inv-client').value = '';
   document.getElementById('inv-phone').value = '';
   document.getElementById('inv-shop').value = '';
-  const commEl = document.getElementById('inv-commission'); if(commEl) commEl.value = '';
-  const commBox = document.getElementById('commission-preview-box'); if(commBox) commBox.style.display='none';
+  document.getElementById('inv-commission').value = '';
   document.getElementById('phone-error').style.display = 'none';
+
+  // Render chips
+  renderFishChips();
+
+  // Clear items
+  document.getElementById('fish-items-container').innerHTML = '';
+  document.getElementById('no-fish-hint').style.display = 'block';
+  document.getElementById('invoice-summary').style.display = 'none';
+
   updateClientDatalist();
 }
 
-window.toggleFish = function(fishName, el) {
-  const idx = window.appState.selectedFishes.indexOf(fishName);
-  if (idx === -1) {
-    window.appState.selectedFishes.push(fishName);
-    el.classList.add('selected');
-    addFishItem(fishName);
+function renderFishChips() {
+  const container = document.getElementById('fish-chips-container');
+  const selectedNames = window.appState.fishItems.map(i => i.fishName);
+  container.innerHTML = FISH_TYPES.map(f => `
+    <div class="fish-chip ${selectedNames.includes(f) ? 'selected' : ''}"
+      onclick="toggleFish('${f}', this)">${f}</div>
+  `).join('');
+}
+
+window.toggleFish = function(fishName, chipEl) {
+  const existingIdx = window.appState.fishItems.findIndex(i => i.fishName === fishName);
+  if (existingIdx === -1) {
+    // ADD fish item
+    const id = window.appState.nextItemId++;
+    window.appState.fishItems.push({ id, fishName, unit: 'kg', qty: 0, price: 0, subtotal: 0, kg: 0 });
+    chipEl.classList.add('selected');
+    renderFishItems();
+    // Scroll to the newly added item
+    setTimeout(() => {
+      const el = document.getElementById('fish-row-' + id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   } else {
-    window.appState.selectedFishes.splice(idx, 1);
-    el.classList.remove('selected');
-    removeFishItem(fishName);
+    // REMOVE fish item
+    window.appState.fishItems.splice(existingIdx, 1);
+    chipEl.classList.remove('selected');
+    renderFishItems();
   }
   updateInvoiceSummary();
 };
 
-function addFishItem(fishName) {
+window.removeFishItem = function(id) {
+  const idx = window.appState.fishItems.findIndex(i => i.id === id);
+  if (idx === -1) return;
+  const fishName = window.appState.fishItems[idx].fishName;
+  window.appState.fishItems.splice(idx, 1);
+  // Deselect chip
+  renderFishChips();
+  renderFishItems();
+  updateInvoiceSummary();
+};
+
+function renderFishItems() {
   const container = document.getElementById('fish-items-container');
-  const id = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
-  const isOther = fishName === 'أخرى';
-  const div = document.createElement('div');
-  div.className = 'fish-item-row';
-  div.id = id;
-  div.innerHTML = `
-    <div class="fish-name">
-      🐟 ${fishName}
-      ${isOther ? `<input type="text" id="${id}-custom" class="form-input" placeholder="اكتب اسم الصنف" style="font-size:12px;padding:6px 10px;width:130px" oninput="updateInvoiceSummary()">` : ''}
-      <span style="font-size:12px;color:var(--text-secondary)" id="${id}-total">0 ج.م</span>
-    </div>
+  const hint = document.getElementById('no-fish-hint');
 
-    <!-- وحدة القياس — 4 خيارات -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px">
-      <button id="${id}-unit-kg" onclick="setFishUnit('${id}','kg')"
-        style="padding:7px 4px;border-radius:9px;border:2px solid var(--cyan-glow);background:rgba(0,180,216,0.15);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;line-height:1.3">
-        ⚖️ كيلو
-      </button>
-      <button id="${id}-unit-wqa" onclick="setFishUnit('${id}','wqa')"
-        style="padding:7px 4px;border-radius:9px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;line-height:1.3">
-        🔵 وقة<br><span style="font-size:9px;font-weight:400">(= 1.25 ك)</span>
-      </button>
-      <button id="${id}-unit-box20" onclick="setFishUnit('${id}','box20')"
-        style="padding:7px 4px;border-radius:9px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;line-height:1.3">
-        📦 بوكسة 20<br><span style="font-size:9px;font-weight:400">(20 وقة = 25 ك)</span>
-      </button>
-      <button id="${id}-unit-box25" onclick="setFishUnit('${id}','box25')"
-        style="padding:7px 4px;border-radius:9px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;line-height:1.3">
-        📦 بوكشة 25<br><span style="font-size:9px;font-weight:400">(= 25 ك)</span>
-      </button>
-    </div>
-
-    <!-- تفاصيل التحويل - تظهر عند غير كيلو -->
-    <div id="${id}-unit-info" style="display:none;background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.25);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;font-weight:700;color:var(--warning);text-align:center">
-      📐 <span id="${id}-unit-convert"></span>
-    </div>
-
-    <div class="fish-inputs">
-      <div class="fish-input-group">
-        <label id="${id}-qty-label">الكيلو</label>
-        <input type="number" id="${id}-qty" placeholder="0" min="0" step="0.5"
-          oninput="calcFishTotal('${id}')"
-          style="font-size:14px;font-weight:700;text-align:center">
-      </div>
-      <div class="fish-input-group">
-        <label id="${id}-price-label">سعر الكيلو</label>
-        <input type="number" id="${id}-price" placeholder="0" min="0"
-          oninput="calcFishTotal('${id}')"
-          style="text-align:center">
-      </div>
-      <div class="fish-input-group">
-        <label>الإجمالي</label>
-        <input type="number" id="${id}-subtotal" placeholder="0" readonly
-          style="background:rgba(0,200,150,0.08);color:var(--emerald);text-align:center">
-      </div>
-    </div>
-
-    <!-- Hidden fields -->
-    <input type="hidden" id="${id}-kg" value="0">
-    <input type="hidden" id="${id}-unit" value="kg">
-  `;
-  container.appendChild(div);
-  document.getElementById('invoice-summary').style.display = 'block';
-}
-
-function removeFishItem(fishName) {
-  const id = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
-  const el = document.getElementById(id);
-  if (el) el.remove();
-  if (window.appState.selectedFishes.length === 0) {
+  if (window.appState.fishItems.length === 0) {
+    container.innerHTML = '';
+    hint.style.display = 'block';
     document.getElementById('invoice-summary').style.display = 'none';
+    return;
   }
+
+  hint.style.display = 'none';
+  document.getElementById('invoice-summary').style.display = 'block';
+
+  container.innerHTML = window.appState.fishItems.map(item => buildFishRowHTML(item)).join('');
 }
 
-// ============================================================
-// وحدات القياس المتاحة
-// ============================================================
-const UNITS = {
-  kg:    { label: 'كيلو',               short: 'ك',       kgFactor: 1,     color: 'var(--cyan-glow)', border: '2px solid var(--cyan-glow)', bg: 'rgba(0,180,216,0.15)' },
-  wqa:   { label: 'وقة',                short: 'وقة',     kgFactor: 1.25,  color: 'var(--warning)',   border: '2px solid var(--warning)',   bg: 'rgba(255,165,0,0.15)' },
-  box20: { label: 'بوكسة 20 وقة (25ك)', short: 'بوكسة20', kgFactor: 25,    color: 'var(--emerald)',   border: '2px solid var(--emerald)',   bg: 'rgba(0,200,150,0.15)' },
-  box25: { label: 'بوكشة (25ك)',            short: 'بوكشة25', kgFactor: 25,    color: '#c084fc',       border: '2px solid #c084fc',          bg: 'rgba(192,132,252,0.15)' },
-};
+function buildFishRowHTML(item) {
+  const id = item.id;
+  const isOther = item.fishName === 'أخرى';
+  const unit = item.unit || 'kg';
+  const uDef = UNITS[unit] || UNITS.kg;
 
-window.setFishUnit = function(id, unit) {
-  const unitEl = document.getElementById(id + '-unit');
-  const qtyLbl = document.getElementById(id + '-qty-label');
-  const prcLbl = document.getElementById(id + '-price-label');
-  const infoEl = document.getElementById(id + '-unit-info');
+  const unitButtons = Object.entries(UNITS).map(([u, def]) => {
+    const isActive = u === unit;
+    let activeClass = '';
+    if (isActive) activeClass = 'active-' + u;
+    return `<button class="unit-btn ${activeClass}" onclick="setItemUnit(${id},'${u}')">${def.label}</button>`;
+  }).join('');
 
-  // Reset all 4 buttons to inactive
-  ['kg','wqa','box20','box25'].forEach(u => {
-    const btn = document.getElementById(id + '-unit-' + u);
-    if (!btn) return;
-    btn.style.border     = '1px solid var(--glass-border)';
-    btn.style.background = 'transparent';
-    btn.style.color      = 'var(--text-secondary)';
-  });
+  const unitInfoVisible = unit !== 'kg';
+  const kgEq = item.qty * uDef.kgFactor;
+  const kgEqText = unit !== 'kg' ? `${item.qty} ${uDef.label} = ${kgEq.toFixed(unit==='wqa'?2:0)} كيلو` : '';
 
-  // Activate selected
-  const def = UNITS[unit] || UNITS.kg;
-  const activeBtn = document.getElementById(id + '-unit-' + unit);
-  if (activeBtn) {
-    activeBtn.style.border     = def.border;
-    activeBtn.style.background = def.bg;
-    activeBtn.style.color      = def.color;
-  }
+  return `
+    <div class="fish-item-row" id="fish-row-${id}">
+      <button class="remove-fish-btn" onclick="removeFishItem(${id})" title="حذف هذا الصنف">✕</button>
 
-  // Update labels
-  const unitLabel = def.label;
-  if (qtyLbl) qtyLbl.textContent = 'العدد / ' + unitLabel;
-  if (prcLbl) prcLbl.textContent = 'سعر ال' + unitLabel;
-  if (unitEl) unitEl.value = unit;
+      <div class="fish-row-header">
+        <div class="fish-row-name">🐟 ${item.fishName}</div>
+        <div class="fish-row-total" id="fish-total-${id}">${item.subtotal > 0 ? formatNum(item.subtotal) + ' ج.م' : '0 ج.م'}</div>
+      </div>
 
-  // Show/hide info box with matching color
-  if (unit !== 'kg') {
-    if (infoEl) {
-      infoEl.style.display = 'block';
-      infoEl.style.color      = def.color;
-      infoEl.style.background = def.bg;
-      infoEl.style.borderColor = def.color.replace('solid ','');
-    }
-  } else {
-    if (infoEl) infoEl.style.display = 'none';
-  }
+      ${isOther ? `
+        <input type="text" class="custom-fish-input" id="fish-custom-${id}"
+          placeholder="اكتب اسم الصنف..."
+          value="${item.customName || ''}"
+          oninput="window.appState.fishItems.find(x=>x.id===${id}).customName=this.value">
+      ` : ''}
 
-  // Clear qty on switch
-  const qtyInput = document.getElementById(id + '-qty');
-  if (qtyInput) qtyInput.value = '';
-  calcFishTotal(id);
-};
+      <div class="unit-grid">${unitButtons}</div>
 
-window.calcFishTotal = function(id) {
-  const unit     = document.getElementById(id + '-unit')?.value || 'kg';
-  const qty      = parseFloat(document.getElementById(id + '-qty')?.value) || 0;
-  const priceRaw = parseFloat(document.getElementById(id + '-price')?.value) || 0;
-  const def      = UNITS[unit] || UNITS.kg;
+      <div class="unit-info-box" id="fish-info-${id}"
+        style="${unitInfoVisible && item.qty > 0 ? 'display:block;' : 'display:none;'}background:${unit==='wqa'?'rgba(255,165,0,0.08)':unit==='box20'?'rgba(0,200,150,0.08)':'rgba(192,132,252,0.08)'};border:1px solid ${unit==='wqa'?'rgba(255,165,0,0.3)':unit==='box20'?'rgba(0,200,150,0.3)':'rgba(192,132,252,0.3)'};color:${unit==='wqa'?'var(--warning)':unit==='box20'?'var(--emerald)':'#c084fc'}">
+        📐 <span id="fish-convert-${id}">${kgEqText}</span>
+      </div>
 
-  const kgEquiv = qty * def.kgFactor;
-  const subtotal = qty * priceRaw;    // qty × سعر الوحدة = الإجمالي
+      <div class="fish-inputs-row">
+        <div class="fish-input-group">
+          <label id="fish-qty-lbl-${id}">الكمية (${uDef.label})</label>
+          <input type="number" id="fish-qty-${id}"
+            value="${item.qty > 0 ? item.qty : ''}"
+            placeholder="0" min="0" step="0.5"
+            inputmode="decimal"
+            oninput="onFishInput(${id})">
+        </div>
+        <div class="fish-input-group">
+          <label id="fish-price-lbl-${id}">سعر ال${uDef.label}</label>
+          <input type="number" id="fish-price-${id}"
+            value="${item.price > 0 ? item.price : ''}"
+            placeholder="0" min="0"
+            inputmode="decimal"
+            oninput="onFishInput(${id})">
+        </div>
+        <div class="fish-input-group">
+          <label>الإجمالي</label>
+          <input type="number" id="fish-subtotal-${id}"
+            value="${item.subtotal > 0 ? item.subtotal.toFixed(2) : ''}"
+            placeholder="0" readonly class="readonly-subtotal">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Called when qty or price changes
+window.onFishInput = function(id) {
+  const item = window.appState.fishItems.find(x => x.id === id);
+  if (!item) return;
+
+  const qty = parseFloat(document.getElementById('fish-qty-' + id)?.value) || 0;
+  const price = parseFloat(document.getElementById('fish-price-' + id)?.value) || 0;
+  const uDef = UNITS[item.unit] || UNITS.kg;
+
+  item.qty = qty;
+  item.price = price;
+  item.kg = qty * uDef.kgFactor;
+  item.subtotal = qty * price;
+
+  // Update subtotal input
+  const subEl = document.getElementById('fish-subtotal-' + id);
+  if (subEl) subEl.value = item.subtotal > 0 ? item.subtotal.toFixed(2) : '';
+
+  // Update total badge
+  const totalEl = document.getElementById('fish-total-' + id);
+  if (totalEl) totalEl.textContent = formatNum(item.subtotal) + ' ج.م';
 
   // Update conversion info
-  const cvEl   = document.getElementById(id + '-unit-convert');
-  const infoEl = document.getElementById(id + '-unit-info');
-  if (cvEl && unit !== 'kg') {
-    const decimals = unit === 'wqa' ? 2 : 0;
-    cvEl.textContent = qty + ' ' + def.label + ' = ' + kgEquiv.toFixed(decimals) + ' كيلو';
-    if (infoEl && qty > 0) infoEl.style.display = 'block';
-    else if (infoEl && qty === 0) infoEl.style.display = 'none';
+  const infoEl = document.getElementById('fish-info-' + id);
+  const convertEl = document.getElementById('fish-convert-' + id);
+  if (infoEl && item.unit !== 'kg') {
+    if (qty > 0) {
+      const kgEq = qty * uDef.kgFactor;
+      if (convertEl) convertEl.textContent = `${qty} ${uDef.label} = ${kgEq.toFixed(item.unit==='wqa'?2:0)} كيلو`;
+      infoEl.style.display = 'block';
+    } else {
+      infoEl.style.display = 'none';
+    }
   }
 
-  // Store kg equivalent in hidden field
-  const kgHidden = document.getElementById(id + '-kg');
-  if (kgHidden) kgHidden.value = kgEquiv.toFixed(4);
+  updateInvoiceSummary();
+};
 
-  const subEl   = document.getElementById(id + '-subtotal');
-  const totalEl = document.getElementById(id + '-total');
-  if (subEl)   subEl.value         = subtotal.toFixed(2);
-  if (totalEl) totalEl.textContent = subtotal.toFixed(0) + ' ج.م';
+// Called when unit button clicked
+window.setItemUnit = function(id, unit) {
+  const item = window.appState.fishItems.find(x => x.id === id);
+  if (!item) return;
+
+  item.unit = unit;
+  item.qty = 0;
+  item.price = 0;
+  item.subtotal = 0;
+  item.kg = 0;
+
+  // Re-render just this row (replace DOM node)
+  const row = document.getElementById('fish-row-' + id);
+  if (row) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = buildFishRowHTML(item);
+    const newRow = tmp.firstElementChild;
+    row.replaceWith(newRow);
+  }
+
   updateInvoiceSummary();
 };
 
 function updateInvoiceSummary() {
-  let grand = 0;
-  window.appState.selectedFishes.forEach(fishName => {
-    const id = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
-    const val = parseFloat(document.getElementById(id+'-subtotal')?.value) || 0;
-    grand += val;
+  let gross = 0;
+  let count = 0;
+  window.appState.fishItems.forEach(item => {
+    gross += item.subtotal || 0;
+    if ((item.qty || 0) > 0) count++;
   });
-  // Update main total display
-  const totalEl = document.getElementById('inv-grand-total');
-  if (totalEl) totalEl.textContent = grand.toFixed(2) + ' ج.م';
-  // Commission calculation
+
   const commPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
-  const commBox = document.getElementById('commission-preview-box');
-  if (commPct > 0 && grand > 0) {
-    const commAmt = (grand * commPct) / 100;
-    const netAmt  = grand - commAmt;
-    document.getElementById('comm-gross').textContent    = grand.toFixed(2) + ' ج.م';
-    document.getElementById('comm-pct-label').textContent = commPct;
-    document.getElementById('comm-amount').textContent   = '- ' + commAmt.toFixed(2) + ' ج.م';
-    document.getElementById('comm-net').textContent      = netAmt.toFixed(2) + ' ج.م';
-    if (commBox) commBox.style.display = 'block';
-  } else {
-    if (commBox) commBox.style.display = 'none';
-  }
+  const commAmt = (gross * commPct) / 100;
+  const net = gross - commAmt;
+
+  const grossEl = document.getElementById('inv-gross-display');
+  const totalEl = document.getElementById('inv-grand-total');
+  const countEl = document.getElementById('inv-items-count');
+  const commRow = document.getElementById('commission-row');
+  const commPctLbl = document.getElementById('comm-pct-lbl');
+  const commAmtEl = document.getElementById('comm-amt-display');
+
+  if (grossEl) grossEl.textContent = formatNum(gross) + ' ج.م';
+  if (totalEl) totalEl.textContent = formatNum(net) + ' ج.م';
+  if (countEl) countEl.textContent = window.appState.fishItems.length + ' صنف';
+
+  if (commRow) commRow.style.display = commPct > 0 && gross > 0 ? 'block' : 'none';
+  if (commPctLbl) commPctLbl.textContent = commPct;
+  if (commAmtEl) commAmtEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
 }
 
 // ============================================================
@@ -984,12 +951,8 @@ function validatePhone(phone) {
 }
 
 document.getElementById('inv-phone').addEventListener('input', function() {
-  const err = document.getElementById('phone-error');
-  if (this.value.length > 0 && !validatePhone(this.value)) {
-    err.style.display = 'block';
-  } else {
-    err.style.display = 'none';
-  }
+  document.getElementById('phone-error').style.display =
+    this.value.length > 0 && !validatePhone(this.value) ? 'block' : 'none';
 });
 
 // ============================================================
@@ -1002,44 +965,35 @@ window.saveInvoice = async function() {
 
   if (!clientName) return showToast('❌ يرجى إدخال اسم العميل');
   if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
-  if (window.appState.selectedFishes.length === 0) return showToast('❌ يرجى اختيار صنف واحد على الأقل');
+  if (window.appState.fishItems.length === 0) return showToast('❌ يرجى اختيار صنف واحد على الأقل');
 
   const items = [];
   let total = 0;
 
-  for (const fishName of window.appState.selectedFishes) {
-    const id        = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
-    const unit      = document.getElementById(id + '-unit')?.value || 'kg';
-    const qty       = parseFloat(document.getElementById(id + '-qty')?.value) || 0;
-    const kgEquiv   = parseFloat(document.getElementById(id + '-kg')?.value)  || qty;
-    const priceRaw  = parseFloat(document.getElementById(id + '-price')?.value) || 0;
-    const subtotal  = qty * priceRaw;
-    let displayName = fishName;
-    if (fishName === 'أخرى') {
-      displayName = document.getElementById(id + '-custom')?.value || 'أخرى';
-    }
-    if (qty > 0) {
-      const uDef = UNITS[unit] || UNITS.kg;
-      items.push({
-        fish: displayName,
-        unit,
-        unitLabel: uDef.label,
-        qty,
-        kg: kgEquiv,
-        pricePerUnit: priceRaw,
-        pricePerKg: +(priceRaw / uDef.kgFactor).toFixed(4),
-        subtotal
-      });
-      total += subtotal;
-    }
+  for (const item of window.appState.fishItems) {
+    if ((item.qty || 0) <= 0) continue;
+    const uDef = UNITS[item.unit] || UNITS.kg;
+    let displayName = item.fishName;
+    if (item.fishName === 'أخرى' && item.customName) displayName = item.customName;
+
+    items.push({
+      fish: displayName,
+      unit: item.unit,
+      unitLabel: uDef.label,
+      qty: item.qty,
+      kg: item.kg,
+      pricePerUnit: item.price,
+      pricePerKg: +(item.price / uDef.kgFactor).toFixed(4),
+      subtotal: item.subtotal
+    });
+    total += item.subtotal;
   }
 
-  if (items.length === 0) return showToast('❌ يرجى إدخال كميات');
+  if (items.length === 0) return showToast('❌ يرجى إدخال كميات وأسعار');
 
-  // Commission
   const commissionPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
   const commissionAmt = (total * commissionPct) / 100;
-  const netTotal      = total - commissionAmt;   // ما يُحسب على التاجر فعلاً
+  const netTotal = total - commissionAmt;
 
   const btn = document.getElementById('save-invoice-btn');
   btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...';
@@ -1048,32 +1002,25 @@ window.saveInvoice = async function() {
   try {
     const now = new Date();
     const invoice = {
-      clientName, phone, shopName,
-      items,
-      gross: total,           // إجمالي قبل العمولة
-      commissionPct,
-      commissionAmt,
-      total: netTotal,        // المتبقى على التاجر (بعد خصم العمولة)
+      clientName, phone, shopName, items,
+      gross: total, commissionPct, commissionAmt, total: netTotal,
       paid: 0, remaining: netTotal,
       date: now.toISOString(),
       dateStr: now.toLocaleDateString('ar-EG'),
       createdAt: now.getTime()
     };
 
-    // Save invoice
     const invRef = push(ref(db, 'invoices'));
     await set(invRef, invoice);
 
-    // Update client balance — نستخدم netTotal (بعد العمولة)
     const clientKey = phone;
     const clientRef = ref(db, 'clients/' + clientKey);
     const clientSnap = await get(clientRef);
-    
+
     if (clientSnap.exists()) {
       const existing = clientSnap.val();
       await update(clientRef, {
-        name: clientName,
-        phone,
+        name: clientName, phone,
         totalDebt: (existing.totalDebt || 0) + netTotal,
         totalPurchases: (existing.totalPurchases || 0) + netTotal,
         invoiceCount: (existing.invoiceCount || 0) + 1,
@@ -1090,7 +1037,6 @@ window.saveInvoice = async function() {
     showToast('✅ تم حفظ الفاتورة بنجاح!');
     showInvoicePreview(invoice, invRef.key);
   } catch (err) {
-    console.error(err);
     showToast('❌ حدث خطأ: ' + err.message);
   } finally {
     btn.innerHTML = '💾 حفظ الفاتورة';
@@ -1102,33 +1048,23 @@ window.saveInvoice = async function() {
 // INVOICE PREVIEW MODAL
 // ============================================================
 function showInvoicePreview(invoice, invoiceId) {
-  const itemsHtml = invoice.items.map(item => {
-    const unit       = item.unit || 'kg';
-    const unitLabel  = item.unitLabel || (unit === 'kg' ? 'كيلو' : unit === 'wqa' ? 'وقة' : unit === 'box20' ? 'بوكسة 20 وقة (25ك)' : 'بوكشة (25ك)');
-    const qtyDisplay = item.qty !== undefined ? item.qty : item.kg;
-    const priceDisplay = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
-    const kgEquiv    = item.kg || 0;
-    const showKg     = unit !== 'kg';
-    const kgColors   = { wqa:'var(--warning)', box20:'var(--emerald)', box25:'#c084fc' };
-    const kgColor    = kgColors[unit] || 'var(--warning)';
-    const kgInfo     = showKg
-      ? `<div style="font-size:9px;color:${kgColor};margin-top:2px">📐 ${qtyDisplay} ${unitLabel} = ${kgEquiv.toFixed(unit==='wqa'?2:0)} كيلو</div>`
-      : '';
+  const itemsHtml = (invoice.items || []).map(item => {
+    const unit = item.unit || 'kg';
+    const unitLabel = item.unitLabel || UNITS[unit]?.label || 'كيلو';
+    const qty = item.qty !== undefined ? item.qty : item.kg;
+    const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+    const showKg = unit !== 'kg';
+    const kgNote = showKg ? `<div style="font-size:9px;color:var(--warning);margin-top:2px">📐 ${(item.kg||0).toFixed(unit==='wqa'?2:0)} ك</div>` : '';
     return `<tr>
       <td>${item.fish}</td>
-      <td>
-        <div style="font-weight:700">${qtyDisplay}</div>
-        <div style="font-size:9px;color:var(--text-secondary)">${unitLabel}</div>
-        ${kgInfo}
-      </td>
-      <td>
-        <div>${priceDisplay}</div>
-        <div style="font-size:9px;color:var(--text-secondary)">/${unitLabel}</div>
-      </td>
+      <td><div>${qty}</div><div style="font-size:9px;color:var(--text-secondary)">${unitLabel}</div>${kgNote}</td>
+      <td>${prc} ج.م</td>
       <td style="color:var(--gold);font-weight:700">${(item.subtotal||0).toFixed(2)}</td>
     </tr>`;
   }).join('');
 
+  const gross = invoice.gross || invoice.total;
+  const hasComm = invoice.commissionPct > 0;
   const waMsg = encodeURIComponent(buildInvoiceText(invoice));
   const waNum = '2' + invoice.phone;
 
@@ -1138,68 +1074,53 @@ function showInvoicePreview(invoice, invoiceId) {
   modal.innerHTML = `
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">🧾 تفاصيل الفاتورة</div>
-      
+      <div class="modal-title">🧾 الفاتورة</div>
       <div class="invoice-preview">
         <div class="invoice-header">
-          <div class="invoice-shop">${invoice.shopName || 'الحاج أحمد الحديدي'}</div>
-          <div class="invoice-owner">الحاج أحمد الحديدي - تجارة الأسماك</div>
+          <div class="invoice-shop">الحاج أحمد الحديدي</div>
+          <div class="invoice-owner">تجارة الأسماك</div>
           <div class="invoice-date">📅 ${invoice.dateStr}</div>
           <div style="margin-top:8px;font-size:13px"><span style="color:var(--text-secondary)">العميل: </span><strong>${invoice.clientName}</strong></div>
+          ${invoice.shopName ? `<div style="font-size:12px;color:var(--text-secondary)">🏪 ${invoice.shopName}</div>` : ''}
           <div style="font-size:12px;color:var(--cyan-glow)">📱 ${invoice.phone}</div>
         </div>
-        
         <table class="invoice-table">
-          <thead>
-            <tr>
-              <th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th>
-            </tr>
-          </thead>
+          <thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
           <tbody>${itemsHtml}</tbody>
         </table>
-        
-        <!-- Totals breakdown -->
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--glass-border)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="padding-top:10px;border-top:1px solid var(--glass-border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
             <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الفاتورة</span>
-            <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${(invoice.gross || invoice.total).toFixed(2)} ج.م</span>
+            <span style="font-weight:700">${formatNum(gross)} ج.م</span>
           </div>
-          ${invoice.commissionPct > 0 ? `
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-size:12px;color:var(--warning)">🤝 عمولة التاجر (${invoice.commissionPct}%)</span>
-            <span style="font-size:14px;font-weight:700;color:var(--warning)">- ${(invoice.commissionAmt||0).toFixed(2)} ج.م</span>
+          ${hasComm ? `
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--warning)">🤝 عمولة (${invoice.commissionPct}%)</span>
+            <span style="color:var(--warning);font-weight:700">- ${formatNum(invoice.commissionAmt||0)} ج.م</span>
           </div>
           <div style="height:1px;background:rgba(255,215,0,0.3);margin:8px 0"></div>
           ` : ''}
-          <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;justify-content:space-between">
             <span style="font-size:14px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span>
-            <span style="font-size:20px;font-weight:900;color:var(--gold)">${invoice.total.toFixed(2)} ج.م</span>
+            <span style="font-size:20px;font-weight:900;color:var(--gold)">${formatNum(invoice.total)} ج.م</span>
           </div>
         </div>
       </div>
-
       <div class="glow-divider"></div>
-      
-      <a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="btn btn-whatsapp">
-        📲 إرسال الفاتورة واتساب
-      </a>
+      <a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="btn btn-whatsapp">📲 إرسال الفاتورة واتساب</a>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <button class="btn" onclick="closeModal();editInvoiceModal('${invoiceId}')"
-          style="background:linear-gradient(135deg,rgba(255,165,0,0.2),rgba(255,165,0,0.1));border:1px solid rgba(255,165,0,0.4);color:var(--warning)">
-          ✏️ تعديل الفاتورة
+          style="background:rgba(255,165,0,0.15);border:1px solid rgba(255,165,0,0.4);color:var(--warning)">
+          ✏️ تعديل
         </button>
         <button class="btn" onclick="closeModal();confirmDeleteInvoice('${invoiceId}','${invoice.clientName}')"
-          style="background:linear-gradient(135deg,rgba(255,71,87,0.2),rgba(255,71,87,0.1));border:1px solid rgba(255,71,87,0.4);color:var(--danger)">
-          🗑️ حذف الفاتورة
+          style="background:rgba(255,71,87,0.15);border:1px solid rgba(255,71,87,0.4);color:var(--danger)">
+          🗑️ حذف
         </button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button class="btn btn-primary" onclick="closeModal();switchPage('clients',document.querySelectorAll('.nav-item')[2])">
-          👥 العملاء
-        </button>
-        <button class="btn btn-outline" onclick="closeModal();initInvoiceForm()">
-          ➕ فاتورة جديدة
-        </button>
+        <button class="btn btn-primary" onclick="closeModal();switchPage('clients',document.querySelectorAll('.nav-item')[2])">👥 العملاء</button>
+        <button class="btn btn-outline" onclick="closeModal();initInvoiceForm()">➕ فاتورة جديدة</button>
       </div>
     </div>
   `;
@@ -1210,39 +1131,26 @@ function showInvoicePreview(invoice, invoiceId) {
 function buildInvoiceText(invoice) {
   const gross = invoice.gross || invoice.total;
   const hasComm = invoice.commissionPct > 0;
-  let text = '';
-  text += `🐟 *فاتورة - الحاج أحمد الحديدي*\n`;
-  text += `━━━━━━━━━━━━━━━━━━\n`;
+  let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n━━━━━━━━━━━━━━━━━━\n`;
   text += `👤 العميل : ${invoice.clientName}\n`;
   if (invoice.shopName) text += `🏪 المؤسسة: ${invoice.shopName}\n`;
-  text += `📅 التاريخ: ${invoice.dateStr}\n`;
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += `*📦 تفاصيل الأصناف:*\n`;
-  invoice.items.forEach((i,idx) => {
-    const sub        = (i.subtotal||0).toFixed(2);
-    const unit       = i.unit || 'kg';
-    const unitLabel  = i.unitLabel || (unit==='kg'?'كيلو':unit==='wqa'?'وقة':unit==='box20'?'بوكسة 20 وقة (25ك)':'بوكشة (25ك)');
-    const qtyDisplay = i.qty !== undefined ? i.qty : i.kg;
-    const prcDisplay = i.pricePerUnit !== undefined ? i.pricePerUnit : i.pricePerKg;
-    const decimals   = unit === 'wqa' ? 2 : 0;
-    text += `${idx+1}. 🐟 ${i.fish}\n`;
-    text += `    ${qtyDisplay} ${unitLabel} × ${prcDisplay} ج.م = *${sub} ج.م*\n`;
-    if (unit !== 'kg') {
-      text += `    📐 يساوي ${(i.kg||0).toFixed(decimals)} كيلو\n`;
-    }
+  text += `📅 التاريخ: ${invoice.dateStr}\n━━━━━━━━━━━━━━━━━━\n*📦 تفاصيل الأصناف:*\n`;
+  (invoice.items || []).forEach((item, idx) => {
+    const unit = item.unit || 'kg';
+    const uDef = UNITS[unit] || UNITS.kg;
+    const qty = item.qty !== undefined ? item.qty : item.kg;
+    const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+    text += `${idx+1}. 🐟 ${item.fish}\n    ${qty} ${uDef.label} × ${prc} ج.م = *${(item.subtotal||0).toFixed(2)} ج.م*\n`;
+    if (unit !== 'kg') text += `    📐 يساوي ${(item.kg||0).toFixed(unit==='wqa'?2:0)} كيلو\n`;
   });
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += `📦 إجمالي الفاتورة : *${gross.toFixed(2)} ج.م*\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n📦 إجمالي الفاتورة : *${formatNum(gross)} ج.م*\n`;
   if (hasComm) {
-    const commAmt = (invoice.commissionAmt || (gross * invoice.commissionPct / 100));
-    text += `🤝 عمولة التاجر (${invoice.commissionPct}%) : *- ${commAmt.toFixed(2)} ج.م*\n`;
-    text += `─────────────────────\n`;
-    text += `💰 *المتبقى على التاجر : ${invoice.total.toFixed(2)} ج.م*\n`;
+    text += `🤝 عمولة (${invoice.commissionPct}%) : *- ${formatNum(invoice.commissionAmt||0)} ج.م*\n`;
+    text += `─────────────────────\n💰 *المتبقى على التاجر : ${formatNum(invoice.total)} ج.م*\n`;
   } else {
-    text += `💰 *الإجمالي : ${invoice.total.toFixed(2)} ج.م*\n`;
+    text += `💰 *الإجمالي : ${formatNum(invoice.total)} ج.م*\n`;
   }
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += `شكراً لتعاملكم معنا 🙏`;
+  text += `━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
   return text;
 }
 
@@ -1252,21 +1160,16 @@ window.closeModal = function() {
 };
 
 // ============================================================
-// FIREBASE REALTIME LISTENERS
+// FIREBASE LISTENERS
 // ============================================================
 function setupListeners() {
   onValue(ref(db, 'invoices'), snap => {
     window.appState.invoices = snap.val() || {};
-    updateDashboard();
-    renderHistory();
-    renderPricesPage();
+    updateDashboard(); renderHistory(); renderPricesPage();
   });
-
   onValue(ref(db, 'clients'), snap => {
     window.appState.clients = snap.val() || {};
-    updateDashboard();
-    renderClients();
-    updateClientDatalist();
+    updateDashboard(); renderClients(); updateClientDatalist();
   });
 }
 
@@ -1276,64 +1179,55 @@ function setupListeners() {
 function updateDashboard() {
   const invoices = Object.values(window.appState.invoices);
   const clients = Object.values(window.appState.clients);
-
-  const totalSales = invoices.reduce((s, i) => s + (i.total || 0), 0);
-  const totalDebt = clients.reduce((s, c) => s + (c.totalDebt || 0), 0);
-
+  const totalSales = invoices.reduce((s,i) => s+(i.total||0), 0);
+  const totalDebt = clients.reduce((s,c) => s+(c.totalDebt||0), 0);
   document.getElementById('stat-total-sales').textContent = formatNum(totalSales);
   document.getElementById('stat-total-debt').textContent = formatNum(totalDebt);
   document.getElementById('stat-total-clients').textContent = clients.length;
   document.getElementById('stat-total-invoices').textContent = invoices.length;
-
   renderPriceLeaders();
   renderRecentInvoices();
 }
 
 function renderPriceLeaders() {
   const invoices = Object.values(window.appState.invoices);
-  const priceMap = {}; // { fishName: { maxPrice, clientName } }
-
+  const priceMap = {};
   invoices.forEach(inv => {
-    (inv.items || []).forEach(item => {
-      if (!priceMap[item.fish] || item.pricePerKg > priceMap[item.fish].maxPrice) {
-        priceMap[item.fish] = { maxPrice: item.pricePerKg, clientName: inv.clientName };
+    (inv.items||[]).forEach(item => {
+      const pkgName = item.fish;
+      if (!priceMap[pkgName] || item.pricePerKg > priceMap[pkgName].maxPrice) {
+        priceMap[pkgName] = { maxPrice: item.pricePerKg, clientName: inv.clientName };
       }
     });
   });
-
   const entries = Object.entries(priceMap).sort((a,b) => b[1].maxPrice - a[1].maxPrice);
   const container = document.getElementById('price-leaders-list');
-
   if (entries.length === 0) {
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div>';
     return;
   }
-
   const medals = ['🥇','🥈','🥉'];
-  container.innerHTML = entries.slice(0, 6).map((e, i) => `
+  container.innerHTML = entries.slice(0,6).map((e,i) => `
     <div class="price-leader-card">
-      <div class="leader-rank">${medals[i] || '🐟'}</div>
+      <div class="leader-rank">${medals[i]||'🐟'}</div>
       <div class="leader-info">
         <div class="leader-name">${e[0]}</div>
         <div class="leader-fish">أعلى سعر: ${e[1].clientName}</div>
       </div>
-      <div class="leader-price">${e[1].maxPrice} ج.م/كيلو</div>
+      <div class="leader-price">${e[1].maxPrice} ج.م/ك</div>
     </div>
   `).join('');
 }
 
 function renderRecentInvoices() {
   const invoices = Object.entries(window.appState.invoices)
-    .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0))
-    .slice(0, 5);
-
+    .sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0)).slice(0,5);
   const container = document.getElementById('recent-invoices-list');
   if (invoices.length === 0) {
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div>';
     return;
   }
-
-  container.innerHTML = invoices.map(([id, inv]) => `
+  container.innerHTML = invoices.map(([id,inv]) => `
     <div class="history-item" onclick="showInvoiceDetail('${id}')">
       <div class="history-header">
         <span class="history-client">👤 ${inv.clientName}</span>
@@ -1355,13 +1249,12 @@ window.filterClients = function(filter, btn) {
 };
 
 window.renderClients = function() {
-  const search = (document.getElementById('client-search')?.value || '').toLowerCase();
+  const search = (document.getElementById('client-search')?.value||'').toLowerCase();
   const filter = window.appState.currentFilter;
   const container = document.getElementById('clients-list');
   if (!container) return;
 
   let clients = Object.entries(window.appState.clients);
-  
   if (search) clients = clients.filter(([,c]) => c.name?.toLowerCase().includes(search) || c.phone?.includes(search));
   if (filter === 'debt') clients = clients.filter(([,c]) => (c.totalDebt||0) > 0);
   if (filter === 'paid') clients = clients.filter(([,c]) => (c.totalDebt||0) <= 0);
@@ -1371,17 +1264,17 @@ window.renderClients = function() {
     return;
   }
 
-  clients.sort((a,b) => (b[1].totalDebt||0) - (a[1].totalDebt||0));
+  clients.sort((a,b) => (b[1].totalDebt||0)-(a[1].totalDebt||0));
 
-  container.innerHTML = clients.map(([key, c]) => {
-    const debt = c.totalDebt || 0;
-    const totalPurchases = c.totalPurchases || 0;
-    const totalPaid = c.totalPaid || 0;
+  container.innerHTML = clients.map(([key,c]) => {
+    const debt = c.totalDebt||0;
+    const totalPurchases = c.totalPurchases||0;
+    const totalPaid = c.totalPaid||0;
     const hasDebt = debt > 0;
-    const paidPct = totalPurchases > 0 ? Math.min(100, Math.round((totalPaid / totalPurchases) * 100)) : 0;
+    const paidPct = totalPurchases > 0 ? Math.min(100, Math.round((totalPaid/totalPurchases)*100)) : 0;
     return `
-      <div class="client-card ${hasDebt ? 'has-debt' : 'paid'}" onclick="showClientAccount('${key}')">
-        <div class="client-header">
+      <div class="client-card ${hasDebt?'has-debt':'paid'}" onclick="showClientAccount('${key}')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:10px">
             <div style="width:44px;height:44px;border-radius:50%;background:${hasDebt?'linear-gradient(135deg,rgba(255,71,87,0.3),rgba(255,71,87,0.1))':'linear-gradient(135deg,rgba(0,200,150,0.3),rgba(0,200,150,0.1))'};border:2px solid ${hasDebt?'var(--danger)':'var(--emerald)'};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">
               ${hasDebt?'👤':'✅'}
@@ -1389,48 +1282,30 @@ window.renderClients = function() {
             <div>
               <div class="client-name">${c.name}</div>
               <div class="client-phone">📱 ${c.phone}</div>
-              ${c.shopName ? `<div style="font-size:10px;color:var(--text-secondary)">🏪 ${c.shopName}</div>` : ''}
+              ${c.shopName?`<div style="font-size:10px;color:var(--text-secondary)">🏪 ${c.shopName}</div>`:''}
             </div>
           </div>
-          <div class="client-balance" style="text-align:left;min-width:90px">
-            <div class="balance-label" style="font-size:10px">${hasDebt?'⚠️ المتبقي':'✅ الحساب'}</div>
-            <div class="balance-amount ${hasDebt ? 'debt' : 'paid'}" style="font-size:${debt >= 1000000?'14px':debt>=100000?'16px':'18px'}">${formatNum(Math.abs(debt))}</div>
+          <div style="text-align:left;min-width:90px">
+            <div style="font-size:10px;color:var(--text-secondary)">${hasDebt?'⚠️ المتبقي':'✅ الحساب'}</div>
+            <div class="balance-amount ${hasDebt?'debt':'paid'}">${formatNum(Math.abs(debt))}</div>
             <div style="font-size:9px;color:${hasDebt?'var(--danger)':'var(--emerald)'}">ج.م ${hasDebt?'مدين':'مسوي'}</div>
           </div>
         </div>
-
-        <!-- Progress bar -->
-        <div style="margin:10px 0 6px">
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:4px">
-            <span>المدفوع ${formatNum(totalPaid)} ج.م</span>
-            <span>${paidPct}%</span>
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:3px">
+            <span>المدفوع ${formatNum(totalPaid)} ج.م</span><span>${paidPct}%</span>
           </div>
           <div style="height:5px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden">
-            <div style="height:100%;width:${paidPct}%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px;transition:width 0.5s"></div>
+            <div style="height:100%;width:${paidPct}%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px"></div>
           </div>
         </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-          <div style="display:flex;gap:10px;font-size:10px;color:var(--text-secondary)">
-            <span>📦 ${c.invoiceCount||0} فاتورة</span>
-            <span>•</span>
-            <span>💰 ${formatNum(totalPurchases)} ج.م</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:10px;color:var(--text-secondary)">📦 ${c.invoiceCount||0} فاتورة • 💰 ${formatNum(totalPurchases)} ج.م</div>
+          <div style="display:flex;gap:6px">
             <button onclick="event.stopPropagation();editClientModal('${key}')"
-              style="padding:6px 10px;border-radius:14px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
-              ✏️ تعديل
-            </button>
+              style="padding:6px 10px;border-radius:14px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">✏️ تعديل</button>
             <button onclick="event.stopPropagation();confirmDeleteClient('${key}','${c.name}')"
-              style="padding:6px 10px;border-radius:14px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
-              🗑️
-            </button>
-            ${hasDebt
-              ? `<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--emerald),#00875a);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;color:white;box-shadow:0 3px 12px rgba(0,200,150,0.4)">
-                  💳 دفع
-                </div>`
-              : `<div style="font-size:11px;color:var(--emerald);font-weight:600">مسوّي ✓</div>`
-            }
+              style="padding:6px 10px;border-radius:14px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">🗑️</button>
           </div>
         </div>
       </div>
@@ -1438,167 +1313,36 @@ window.renderClients = function() {
   }).join('');
 };
 
-// Sync version for quick use (no payments detail)
-function buildClientStatement(client) {
-  const debt = client.totalDebt || 0;
-  let text = '';
-  text += `🐟 *كشف حساب - الحاج أحمد الحديدي*\n`;
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += `👤 العميل : ${client.name}\n`;
-  if (client.shopName) text += `🏪 المؤسسة: ${client.shopName}\n`;
-  if (client.phone)    text += `📱 الهاتف  : ${client.phone}\n`;
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += `📦 عدد الفواتير      : ${client.invoiceCount||0}\n`;
-  text += `💰 إجمالي المشتريات : *${formatNum(client.totalPurchases||0)} ج.م*\n`;
-  text += `✅ إجمالي المدفوع   : *${formatNum(client.totalPaid||0)} ج.م*\n`;
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += debt > 0
-    ? `⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n`
-    : `✅ *الحساب مسوّي بالكامل*\n`;
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += `شكراً لتعاملكم معنا 🙏`;
-  return text;
-}
-
-// Async version — fetches full payments list then opens WhatsApp
-async function buildClientStatementFull(client, clientKey) {
-  const debt = client.totalDebt || 0;
-  const now  = new Date().toLocaleDateString('ar-EG');
-
-  // Fetch invoices for this client
-  const clientInvoices = Object.entries(window.appState.invoices)
-    .filter(([,i]) => i.phone === client.phone)
-    .sort((a,b) => (a[1].createdAt||0) - (b[1].createdAt||0));
-
-  // Fetch payments for this client
-  let clientPayments = [];
-  try {
-    const snap = await get(ref(db, 'payments'));
-    const all  = snap.val() || {};
-    clientPayments = Object.entries(all)
-      .filter(([,p]) => p.clientKey === clientKey)
-      .sort((a,b) => new Date(a[1].customDate||a[1].date) - new Date(b[1].customDate||b[1].date));
-  } catch(e) {}
-
-  let text = '';
-  text += `🐟 *كشف حساب كامل - الحاج أحمد الحديدي*\n`;
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += `👤 العميل : *${client.name}*\n`;
-  if (client.shopName) text += `🏪 المؤسسة: ${client.shopName}\n`;
-  if (client.phone)    text += `📱 الهاتف  : ${client.phone}\n`;
-  text += `📅 تاريخ الكشف: ${now}\n`;
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-
-  // --- Invoices section ---
-  if (clientInvoices.length > 0) {
-    text += `\n*📦 الفواتير (${clientInvoices.length}):*\n`;
-    clientInvoices.forEach(([,inv], idx) => {
-      const gross   = inv.gross || inv.total;
-      const hasComm = inv.commissionPct > 0;
-      text += `\n${idx+1}. 🧾 ${inv.dateStr}\n`;
-      inv.items.forEach(item => {
-        const unit    = item.unit || 'kg';
-        const qty     = item.qty !== undefined ? item.qty : item.kg;
-        const prc     = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
-        const unitLbl = item.unitLabel || (unit==='kg'?'ك':unit==='wqa'?'وقة':unit==='box20'?'بوكسة20':'بوكشة25');
-        const decimals = unit === 'wqa' ? 2 : 0;
-        const kgNote  = unit !== 'kg' ? ` (=${(item.kg||0).toFixed(decimals)}ك)` : '';
-        text += `   • ${item.fish}: ${qty} ${unitLbl}${kgNote} × ${prc} = ${(item.subtotal||0).toFixed(0)} ج.م\n`;
-      });
-      text += `   📦 إجمالي: ${formatNum(gross)} ج.م\n`;
-      if (hasComm) {
-        const commAmt = inv.commissionAmt || (gross * inv.commissionPct / 100);
-        text += `   🤝 عمولة (${inv.commissionPct}%): - ${commAmt.toFixed(0)} ج.م\n`;
-        text += `   💰 *صافي: ${formatNum(inv.total)} ج.م*\n`;
-      } else {
-        text += `   💰 *الإجمالي: ${formatNum(inv.total)} ج.م*\n`;
-      }
-    });
-  }
-
-  // --- Payments section ---
-  if (clientPayments.length > 0) {
-    text += `\n━━━━━━━━━━━━━━━━━━\n`;
-    text += `*💳 الدفعات المُسدَّدة (${clientPayments.length}):*\n`;
-    let runningTotal = 0;
-    clientPayments.forEach(([,pay], idx) => {
-      runningTotal += pay.amount || 0;
-      const payDate = pay.customDate
-        ? new Date(pay.customDate + 'T12:00:00').toLocaleDateString('ar-EG')
-        : (pay.dateStr || '');
-      text += `\n${idx+1}. ✅ ${payDate}\n`;
-      text += `   المبلغ  : *${formatNum(pay.amount)} ج.م*\n`;
-      if (pay.from && pay.from !== client.name) text += `   استُلم من: ${pay.from}\n`;
-      if (pay.notes) text += `   ملاحظات : ${pay.notes}\n`;
-      text += `   متبقي بعدها: ${formatNum(pay.remainingAfter)} ج.م\n`;
-    });
-    text += `\n📊 إجمالي ما دُفع: *${formatNum(runningTotal)} ج.م*\n`;
-  } else {
-    text += `\n━━━━━━━━━━━━━━━━━━\n`;
-    text += `💳 لا توجد دفعات مسجلة\n`;
-  }
-
-  // --- Final balance ---
-  text += `\n━━━━━━━━━━━━━━━━━━\n`;
-  text += `💰 إجمالي المشتريات : *${formatNum(client.totalPurchases||0)} ج.م*\n`;
-  text += `✅ إجمالي المدفوع   : *${formatNum(client.totalPaid||0)} ج.م*\n`;
-  if (debt > 0) {
-    text += `⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n`;
-  } else {
-    text += `✅ *الحساب مسوّي بالكامل* ✅\n`;
-  }
-  text += `━━━━━━━━━━━━━━━━━━\n`;
-  text += `شكراً لتعاملكم معنا 🙏`;
-  return text;
-}
-
-// Called from WhatsApp button in client account screen
-window.sendClientStatementWA = async function(clientKey) {
-  const c = window.appState.clients[clientKey];
-  if (!c) return;
-  showToast('⏳ جاري تحضير الكشف...');
-  try {
-    const text = await buildClientStatementFull(c, clientKey);
-    const url  = `https://wa.me/2${c.phone}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  } catch(e) {
-    showToast('❌ خطأ: ' + e.message);
-  }
-};
-
 // ============================================================
-// CLIENT ACCOUNT - FULL SCREEN
+// CLIENT ACCOUNT MODAL (full screen)
 // ============================================================
 window.showClientAccount = async function(clientKey) {
   const c = window.appState.clients[clientKey];
   if (!c) return;
 
-  // Fetch payments for this client from Firebase
   let clientPayments = [];
   try {
-    const paymentsSnap = await get(ref(db, 'payments'));
-    const allPayments = paymentsSnap.val() || {};
-    clientPayments = Object.entries(allPayments)
+    const snap = await get(ref(db, 'payments'));
+    const all = snap.val() || {};
+    clientPayments = Object.entries(all)
       .filter(([,p]) => p.clientKey === clientKey)
-      .sort((a,b) => new Date(b[1].date) - new Date(a[1].date));
+      .sort((a,b) => new Date(b[1].date)-new Date(a[1].date));
   } catch(e) {}
 
-  const debt = c.totalDebt || 0;
-  const totalPurchases = c.totalPurchases || 0;
-  const totalPaid = c.totalPaid || 0;
+  const debt = c.totalDebt||0;
+  const totalPurchases = c.totalPurchases||0;
+  const totalPaid = c.totalPaid||0;
   const hasDebt = debt > 0;
-  const paidPct = totalPurchases > 0 ? Math.min(100, Math.round((totalPaid / totalPurchases) * 100)) : 0;
+  const paidPct = totalPurchases>0 ? Math.min(100,Math.round((totalPaid/totalPurchases)*100)) : 0;
 
-  // Client invoices
   const clientInvoices = Object.entries(window.appState.invoices)
     .filter(([,i]) => i.phone === c.phone)
-    .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
+    .sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0));
 
-  // Build unified timeline (invoices + payments) sorted by date desc
   const timeline = [
-    ...clientInvoices.map(([id,inv]) => ({ type:'invoice', id, data:inv, ts: inv.createdAt||0 })),
-    ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts: new Date(pay.date).getTime() }))
-  ].sort((a,b) => b.ts - a.ts);
+    ...clientInvoices.map(([id,inv]) => ({ type:'invoice', id, data:inv, ts:inv.createdAt||0 })),
+    ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts:new Date(pay.date).getTime() }))
+  ].sort((a,b) => b.ts-a.ts);
 
   const todayISO = new Date().toISOString().split('T')[0];
 
@@ -1606,125 +1350,89 @@ window.showClientAccount = async function(clientKey) {
   modal.className = 'modal-overlay';
   modal.id = 'client-account-modal';
   modal.innerHTML = `
-    <div class="modal-sheet" style="max-height:95vh;padding-bottom:max(16px,env(safe-area-inset-bottom))">
+    <div class="modal-sheet" style="max-height:95vh">
       <div class="modal-handle"></div>
-
-      <!-- Header: Client Info -->
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
         <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,rgba(0,180,216,0.25),rgba(21,101,192,0.15));border:2px solid var(--cyan-glow);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👤</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:17px;font-weight:900;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</div>
+          <div style="font-size:17px;font-weight:900;color:var(--text-primary)">${c.name}</div>
           <div style="font-size:12px;color:var(--cyan-glow)">📱 ${c.phone}</div>
           ${c.shopName?`<div style="font-size:10px;color:var(--text-secondary)">🏪 ${c.shopName}</div>`:''}
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
-          <button onclick="sendClientStatementWA('${clientKey}')"
-            style="text-decoration:none;background:linear-gradient(135deg,#25D366,#128C7E);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center;border:none;cursor:pointer" title="إرسال كشف الحساب كاملاً على واتساب">📲</button>
-          <button onclick="showClientAccount('${clientKey}')" 
-            style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:9px 11px;border-radius:10px;font-size:16px;cursor:pointer;color:var(--cyan-glow)" title="تحديث">🔄</button>
-        </div>
+        <button onclick="sendClientStatementWA('${clientKey}')"
+          style="background:linear-gradient(135deg,#25D366,#128C7E);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center;border:none;cursor:pointer">📲</button>
       </div>
 
-      <!-- Balance Cards -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px">
         <div style="background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.35);border-radius:13px;padding:10px 6px;text-align:center">
           <div style="font-size:9px;color:var(--danger);margin-bottom:3px;font-weight:700">⚠️ المتبقي</div>
-          <div style="font-size:${debt>=1000000?'11px':debt>=100000?'13px':'15px'};font-weight:900;color:var(--danger);line-height:1.1">${formatNum(debt)}</div>
-          <div style="font-size:9px;color:rgba(255,71,87,0.6);margin-top:2px">ج.م</div>
+          <div style="font-size:15px;font-weight:900;color:var(--danger)">${formatNum(debt)}</div>
+          <div style="font-size:9px;color:rgba(255,71,87,0.6)">ج.م</div>
         </div>
         <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.35);border-radius:13px;padding:10px 6px;text-align:center">
           <div style="font-size:9px;color:var(--emerald);margin-bottom:3px;font-weight:700">✅ المدفوع</div>
-          <div style="font-size:${totalPaid>=1000000?'11px':totalPaid>=100000?'13px':'15px'};font-weight:900;color:var(--emerald);line-height:1.1">${formatNum(totalPaid)}</div>
-          <div style="font-size:9px;color:rgba(0,200,150,0.6);margin-top:2px">ج.م</div>
+          <div style="font-size:15px;font-weight:900;color:var(--emerald)">${formatNum(totalPaid)}</div>
+          <div style="font-size:9px;color:rgba(0,200,150,0.6)">ج.م</div>
         </div>
         <div style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.35);border-radius:13px;padding:10px 6px;text-align:center">
           <div style="font-size:9px;color:var(--cyan-glow);margin-bottom:3px;font-weight:700">💰 الإجمالي</div>
-          <div style="font-size:${totalPurchases>=1000000?'11px':totalPurchases>=100000?'13px':'15px'};font-weight:900;color:var(--cyan-glow);line-height:1.1">${formatNum(totalPurchases)}</div>
-          <div style="font-size:9px;color:rgba(0,180,216,0.6);margin-top:2px">ج.م</div>
+          <div style="font-size:15px;font-weight:900;color:var(--cyan-glow)">${formatNum(totalPurchases)}</div>
+          <div style="font-size:9px;color:rgba(0,180,216,0.6)">ج.م</div>
         </div>
       </div>
 
-      <!-- Progress -->
       <div style="margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:5px">
-          <span>نسبة السداد</span>
-          <span style="color:var(--emerald);font-weight:700">${paidPct}%</span>
+          <span>نسبة السداد</span><span style="color:var(--emerald);font-weight:700">${paidPct}%</span>
         </div>
         <div style="height:7px;background:rgba(255,255,255,0.07);border-radius:10px;overflow:hidden">
-          <div id="pay-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px;transition:width 0.9s cubic-bezier(0.25,0.8,0.25,1)"></div>
+          <div id="pay-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px;transition:width 0.9s"></div>
         </div>
       </div>
 
-      <!-- ====== PAYMENT FORM ====== -->
       ${hasDebt ? `
       <div style="background:linear-gradient(135deg,rgba(0,200,150,0.08),rgba(0,180,216,0.04));border:1px solid rgba(0,200,150,0.3);border-radius:16px;padding:14px;margin-bottom:14px">
-        
         <div style="font-size:14px;font-weight:800;color:var(--emerald);margin-bottom:12px">💳 تسجيل دفعة جديدة</div>
-
-        <!-- Amount -->
         <div style="margin-bottom:10px">
           <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">💵 المبلغ المدفوع (ج.م)</label>
           <input type="number" id="payment-amount" inputmode="numeric"
-            style="width:100%;padding:14px;border-radius:12px;border:2px solid rgba(0,200,150,0.35);background:rgba(0,200,150,0.07);color:white;font-family:'Cairo',sans-serif;font-size:22px;font-weight:900;text-align:center;outline:none;transition:all 0.3s"
-            placeholder="0" min="0"
-            oninput="updatePayPreview(${debt})"
-            onfocus="this.style.borderColor='var(--emerald)';this.style.boxShadow='0 0 0 3px rgba(0,200,150,0.18)'"
-            onblur="this.style.borderColor='rgba(0,200,150,0.35)';this.style.boxShadow='none'">
+            style="width:100%;padding:14px;border-radius:12px;border:2px solid rgba(0,200,150,0.35);background:rgba(0,200,150,0.07);color:white;font-family:'Cairo',sans-serif;font-size:22px;font-weight:900;text-align:center;outline:none"
+            placeholder="0" min="0" oninput="updatePayPreview(${debt})">
         </div>
-
-        <!-- Quick amounts -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
-          ${[['25%',Math.round(debt*0.25)],['50%',Math.round(debt*0.5)],['75%',Math.round(debt*0.75)],['كل المبلغ',debt]].map(([lbl,val],i)=>`
+          ${[['25%',Math.round(debt*0.25)],['50%',Math.round(debt*0.5)],['75%',Math.round(debt*0.75)],['الكل',debt]].map(([lbl,val],i)=>`
             <button onclick="setPayAmount(${val},${debt})"
               style="padding:8px 3px;border-radius:9px;border:1px solid ${i===3?'rgba(0,200,150,0.5)':'var(--glass-border)'};background:${i===3?'rgba(0,200,150,0.12)':'rgba(255,255,255,0.04)'};color:${i===3?'var(--emerald)':'var(--text-secondary)'};font-family:'Cairo',sans-serif;font-size:10px;font-weight:700;cursor:pointer;line-height:1.4">
-              ${lbl}<br><span style="font-size:9px;opacity:0.8">${formatNum(val)}</span>
+              ${lbl}<br><span style="font-size:9px">${formatNum(val)}</span>
             </button>
           `).join('')}
         </div>
-
-        <!-- Payment details: recipient + date -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
-            <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">👤 استُلم من / لحساب</label>
-            <input type="text" id="payment-from" 
-              style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:all 0.2s"
-              placeholder="${c.name}"
-              onfocus="this.style.borderColor='var(--cyan-glow)'" onblur="this.style.borderColor='var(--glass-border)'">
+            <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">👤 استُلم من</label>
+            <input type="text" id="payment-from" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:13px;outline:none" placeholder="${c.name}">
           </div>
           <div>
             <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">📅 تاريخ الدفع</label>
-            <input type="date" id="payment-date"
-              style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:12px;outline:none;transition:all 0.2s;-webkit-appearance:none"
-              value="${todayISO}"
-              onfocus="this.style.borderColor='var(--cyan-glow)'" onblur="this.style.borderColor='var(--glass-border)'">
+            <input type="date" id="payment-date" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:12px;outline:none;-webkit-appearance:none" value="${todayISO}">
           </div>
         </div>
-
-        <!-- Notes -->
         <div style="margin-bottom:12px">
-          <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">📝 ملاحظات (اختياري)</label>
-          <input type="text" id="payment-notes"
-            style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:all 0.2s"
-            placeholder="مثال: دفعة جزئية — كاش"
-            onfocus="this.style.borderColor='var(--cyan-glow)'" onblur="this.style.borderColor='var(--glass-border)'">
+          <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">📝 ملاحظات</label>
+          <input type="text" id="payment-notes" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:13px;outline:none" placeholder="مثال: كاش — شيك">
         </div>
-
-        <!-- Preview box -->
         <div style="display:flex;justify-content:space-between;align-items:center;padding:11px;background:rgba(0,0,0,0.2);border-radius:10px;margin-bottom:11px">
           <div>
             <div style="font-size:10px;color:var(--text-secondary)">المتبقي بعد الدفع</div>
-            <div id="remaining-preview" style="font-size:20px;font-weight:900;color:var(--danger);transition:color 0.3s">${formatNum(debt)} ج.م</div>
+            <div id="remaining-preview" style="font-size:20px;font-weight:900;color:var(--danger)">${formatNum(debt)} ج.م</div>
           </div>
           <div style="text-align:left">
             <div style="font-size:10px;color:var(--text-secondary)">الدفعة</div>
             <div id="payment-preview" style="font-size:17px;font-weight:900;color:var(--emerald)">0 ج.م</div>
           </div>
         </div>
-
         <button id="confirm-pay-btn" onclick="processPayment('${clientKey}',${debt})"
-          style="width:100%;padding:15px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 5px 18px rgba(0,200,150,0.38);transition:transform 0.15s;display:flex;align-items:center;justify-content:center;gap:8px"
-          ontouchstart="this.style.transform='scale(0.97)'" ontouchend="this.style.transform='scale(1)'"
-          onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+          style="width:100%;padding:15px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 5px 18px rgba(0,200,150,0.38)">
           ✅ تأكيد وحفظ الدفعة
         </button>
       </div>
@@ -1732,85 +1440,63 @@ window.showClientAccount = async function(clientKey) {
       <div style="text-align:center;padding:16px;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.3);border-radius:14px;margin-bottom:14px">
         <div style="font-size:36px;margin-bottom:6px">✅</div>
         <div style="font-size:15px;font-weight:800;color:var(--emerald)">الحساب مسوّي بالكامل</div>
-        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">لا يوجد أي مبلغ متبقي على هذا العميل</div>
       </div>
       `}
 
-      <!-- ====== FULL TRANSACTION TIMELINE ====== -->
       <div style="margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px;padding:0 2px">
-          🕐 سجل جميع الحركات
+        <div style="font-size:13px;font-weight:800;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+          🕐 سجل الحركات
           <span style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:2px 8px;border-radius:20px;font-size:10px;color:var(--cyan-glow)">${timeline.length} حركة</span>
         </div>
-
-        ${timeline.length === 0 ? `
-          <div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات بعد</div>
-        ` : timeline.map(item => {
-          if (item.type === 'invoice') {
-            const inv = item.data;
-            return `
-              <div onclick="closeModal();showInvoiceDetail('${item.id}')"
-                style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;margin-bottom:7px;cursor:pointer;transition:background 0.2s"
-                ontouchstart="this.style.background='rgba(255,215,0,0.1)'" ontouchend="this.style.background='rgba(255,215,0,0.05)'">
-                <!-- Icon -->
+        ${timeline.length === 0 ? '<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات</div>' :
+          timeline.map(item => {
+            if (item.type === 'invoice') {
+              const inv = item.data;
+              return `<div onclick="closeModal();showInvoiceDetail('${item.id}')"
+                style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;margin-bottom:7px;cursor:pointer">
                 <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🧾</div>
-                <!-- Info -->
                 <div style="flex:1;min-width:0">
                   <div style="font-size:12px;font-weight:700;color:var(--gold)">فاتورة بيع</div>
-                  <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(inv.items||[]).map(i=>i.fish).join(' • ')}</div>
-                  <div style="font-size:10px;color:var(--text-secondary);margin-top:1px">📅 ${inv.dateStr}</div>
+                  <div style="font-size:10px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(inv.items||[]).map(i=>i.fish).join(' • ')}</div>
+                  <div style="font-size:10px;color:var(--text-secondary)">📅 ${inv.dateStr}</div>
                 </div>
-                <!-- Amount -->
                 <div style="text-align:left;flex-shrink:0">
                   <div style="font-size:14px;font-weight:900;color:var(--gold)">+${formatNum(inv.total)}</div>
                   <div style="font-size:9px;color:var(--text-secondary)">ج.م مدين</div>
-                  <div style="font-size:9px;color:var(--cyan-glow);margin-top:2px">تفاصيل ←</div>
                 </div>
-              </div>
-            `;
-          } else {
-            const pay = item.data;
-            const payDate = pay.customDate ? new Date(pay.customDate).toLocaleDateString('ar-EG') : pay.dateStr;
-            return `
-              <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:12px;margin-bottom:7px">
-                <!-- Icon -->
+              </div>`;
+            } else {
+              const pay = item.data;
+              const payDate = pay.customDate ? new Date(pay.customDate+'T12:00:00').toLocaleDateString('ar-EG') : (pay.dateStr||'');
+              return `<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:12px;margin-bottom:7px">
                 <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">💳</div>
-                <!-- Info -->
                 <div style="flex:1;min-width:0">
                   <div style="font-size:12px;font-weight:700;color:var(--emerald)">دفعة مالية</div>
-                  ${pay.from ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:1px">👤 ${pay.from}</div>` : ''}
-                  ${pay.notes ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:1px">📝 ${pay.notes}</div>` : ''}
-                  <div style="font-size:10px;color:var(--text-secondary);margin-top:1px">📅 ${payDate}</div>
+                  ${pay.from ? `<div style="font-size:10px;color:var(--text-secondary)">👤 ${pay.from}</div>` : ''}
+                  ${pay.notes ? `<div style="font-size:10px;color:var(--text-secondary)">📝 ${pay.notes}</div>` : ''}
+                  <div style="font-size:10px;color:var(--text-secondary)">📅 ${payDate}</div>
                 </div>
-                <!-- Amount -->
                 <div style="text-align:left;flex-shrink:0">
                   <div style="font-size:14px;font-weight:900;color:var(--emerald)">-${formatNum(pay.amount)}</div>
                   <div style="font-size:9px;color:var(--text-secondary)">ج.م دفع</div>
-                  <div style="font-size:10px;color:var(--danger);margin-top:2px">متبقي: ${formatNum(pay.remainingAfter)}</div>
-                  <div style="display:flex;gap:4px;margin-top:6px">
-                    <button onclick="editPaymentModal('${item.id}','${clientKey}')"
-                      style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:10px;cursor:pointer">✏️</button>
-                    <button onclick="confirmDeletePayment('${item.id}','${clientKey}',${pay.amount},${pay.remainingAfter})"
-                      style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:10px;cursor:pointer">🗑️</button>
+                  <div style="font-size:10px;color:var(--danger)">متبقي: ${formatNum(pay.remainingAfter)}</div>
+                  <div style="display:flex;gap:4px;margin-top:4px">
+                    <button onclick="editPaymentModal('${item.id}','${clientKey}')" style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:10px;cursor:pointer">✏️</button>
+                    <button onclick="confirmDeletePayment('${item.id}','${clientKey}',${pay.amount},${pay.remainingAfter})" style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:10px;cursor:pointer">🗑️</button>
                   </div>
                 </div>
-              </div>
-            `;
-          }
-        }).join('')}
+              </div>`;
+            }
+          }).join('')}
       </div>
 
-      <button onclick="closeModal()" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer">
-        إغلاق
-      </button>
+      <button onclick="closeModal()" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer">إغلاق</button>
     </div>
   `;
   modal.onclick = (e) => { if (e.target === modal) closeModal(); };
-  // Remove any existing modal first
   const existing = document.getElementById('client-account-modal');
   if (existing) existing.remove();
   document.getElementById('modals-container').appendChild(modal);
-
   setTimeout(() => {
     const bar = document.getElementById('pay-progress-bar');
     if (bar) bar.style.width = paidPct + '%';
@@ -1829,57 +1515,34 @@ window.updatePayPreview = function(maxDebt) {
   const remEl = document.getElementById('remaining-preview');
   const payEl = document.getElementById('payment-preview');
   if (remEl) { remEl.textContent = formatNum(rem) + ' ج.م'; remEl.style.color = rem === 0 ? 'var(--emerald)' : 'var(--danger)'; }
-  if (payEl) { payEl.textContent = formatNum(capped) + ' ج.م'; }
+  if (payEl) payEl.textContent = formatNum(capped) + ' ج.م';
 };
 
 window.processPayment = async function(clientKey, currentDebt) {
-  const amount   = parseFloat(document.getElementById('payment-amount')?.value) || 0;
-  const fromVal  = (document.getElementById('payment-from')?.value || '').trim();
-  const dateVal  = document.getElementById('payment-date')?.value || new Date().toISOString().split('T')[0];
-  const notes    = (document.getElementById('payment-notes')?.value || '').trim();
-
+  const amount = parseFloat(document.getElementById('payment-amount')?.value) || 0;
+  const fromVal = (document.getElementById('payment-from')?.value || '').trim();
+  const dateVal = document.getElementById('payment-date')?.value || new Date().toISOString().split('T')[0];
+  const notes = (document.getElementById('payment-notes')?.value || '').trim();
   if (amount <= 0) return showToast('❌ يرجى إدخال مبلغ أكبر من صفر');
-
   const actualPaid = Math.min(amount, currentDebt);
-  const newDebt    = Math.max(currentDebt - actualPaid, 0);
-  const c          = window.appState.clients[clientKey];
-
-  // Disable confirm button
+  const newDebt = Math.max(currentDebt - actualPaid, 0);
+  const c = window.appState.clients[clientKey];
   const btn = document.getElementById('confirm-pay-btn');
   if (btn) { btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...'; btn.disabled = true; }
-
   try {
-    // Update client totals
     const clientRef = ref(db, 'clients/' + clientKey);
     const snap = await get(clientRef);
     const existing = snap.val() || {};
-    await update(clientRef, {
-      totalDebt: newDebt,
-      totalPaid: (existing.totalPaid || 0) + actualPaid
-    });
-
-    // Custom date handling
-    const customDateObj = new Date(dateVal + 'T12:00:00');
-    const customDateStr = customDateObj.toLocaleDateString('ar-EG');
-
-    // Save payment with full details
+    await update(clientRef, { totalDebt: newDebt, totalPaid: (existing.totalPaid||0) + actualPaid });
+    const customDateStr = new Date(dateVal + 'T12:00:00').toLocaleDateString('ar-EG');
     await push(ref(db, 'payments'), {
-      clientKey,
-      clientName: c?.name || existing.name,
-      clientPhone: c?.phone || existing.phone,
-      amount: actualPaid,
-      remainingAfter: newDebt,
-      from: fromVal || c?.name || existing.name,
-      notes,
-      customDate: dateVal,
-      dateStr: customDateStr,
-      date: new Date().toISOString(),          // actual save time
-      savedAt: Date.now()
+      clientKey, clientName: c?.name||existing.name, clientPhone: c?.phone||existing.phone,
+      amount: actualPaid, remainingAfter: newDebt,
+      from: fromVal||c?.name||existing.name, notes, customDate: dateVal, dateStr: customDateStr,
+      date: new Date().toISOString(), savedAt: Date.now()
     });
-
     closeModal();
     showToast(`✅ تم تسجيل ${formatNum(actualPaid)} ج.م — المتبقي: ${formatNum(newDebt)} ج.م`);
-
   } catch (err) {
     showToast('❌ خطأ: ' + err.message);
     if (btn) { btn.innerHTML = '✅ تأكيد وحفظ الدفعة'; btn.disabled = false; }
@@ -1890,50 +1553,34 @@ window.processPayment = async function(clientKey, currentDebt) {
 // HISTORY
 // ============================================================
 window.renderHistory = function() {
-  const search = (document.getElementById('history-search')?.value || '').toLowerCase();
+  const search = (document.getElementById('history-search')?.value||'').toLowerCase();
   const container = document.getElementById('history-list');
   if (!container) return;
-
-  let invoices = Object.entries(window.appState.invoices)
-    .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
-
-  if (search) {
-    invoices = invoices.filter(([,i]) => i.clientName?.toLowerCase().includes(search) || i.phone?.includes(search));
-  }
-
+  let invoices = Object.entries(window.appState.invoices).sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0));
+  if (search) invoices = invoices.filter(([,i]) => i.clientName?.toLowerCase().includes(search)||i.phone?.includes(search));
   if (invoices.length === 0) {
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير</div></div>';
     return;
   }
-
-  container.innerHTML = invoices.map(([id, inv]) => {
-    const gross = inv.gross || inv.total;
+  container.innerHTML = invoices.map(([id,inv]) => {
+    const gross = inv.gross||inv.total;
     return `
     <div class="history-item">
       <div class="history-header" onclick="showInvoiceDetail('${id}')" style="cursor:pointer">
         <span class="history-client">👤 ${inv.clientName}</span>
         <div style="text-align:left">
           <div class="history-amount">${formatNum(inv.total)} ج.م</div>
-          ${inv.commissionPct > 0 ? `<div style="font-size:10px;color:var(--warning)">قبل العمولة: ${formatNum(gross)} ج.م</div>` : ''}
+          ${inv.commissionPct>0 ? `<div style="font-size:10px;color:var(--warning)">قبل العمولة: ${formatNum(gross)} ج.م</div>` : ''}
         </div>
       </div>
       <div class="history-meta" onclick="showInvoiceDetail('${id}')" style="cursor:pointer;margin-bottom:8px">
         📅 ${inv.dateStr} • 📦 ${(inv.items||[]).length} صنف
-        ${inv.commissionPct > 0 ? ` • 🤝 عمولة ${inv.commissionPct}%` : ''}
+        ${inv.commissionPct>0 ? ` • 🤝 عمولة ${inv.commissionPct}%` : ''}
       </div>
       <div style="display:flex;gap:6px">
-        <button onclick="showInvoiceDetail('${id}')"
-          style="flex:2;padding:7px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,180,216,0.1);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
-          👁️ عرض
-        </button>
-        <button onclick="editInvoiceModal('${id}')"
-          style="flex:2;padding:7px;border-radius:8px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
-          ✏️ تعديل
-        </button>
-        <button onclick="confirmDeleteInvoice('${id}','${inv.clientName}')"
-          style="flex:1;padding:7px;border-radius:8px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
-          🗑️
-        </button>
+        <button onclick="showInvoiceDetail('${id}')" style="flex:2;padding:7px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,180,216,0.1);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">👁️ عرض</button>
+        <button onclick="editInvoiceModal('${id}')" style="flex:2;padding:7px;border-radius:8px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">✏️ تعديل</button>
+        <button onclick="confirmDeleteInvoice('${id}','${inv.clientName}')" style="flex:1;padding:7px;border-radius:8px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">🗑️</button>
       </div>
     </div>
   `}).join('');
@@ -1951,26 +1598,17 @@ window.showInvoiceDetail = function(id) {
 window.renderPricesPage = function() {
   const invoices = Object.values(window.appState.invoices);
   if (invoices.length === 0) return;
-
-  // Build fish -> prices map
   const fishData = {};
   invoices.forEach(inv => {
     (inv.items||[]).forEach(item => {
       if (!fishData[item.fish]) fishData[item.fish] = [];
-      fishData[item.fish].push({ client: inv.clientName, price: item.pricePerKg, kg: item.kg, date: inv.dateStr });
+      fishData[item.fish].push({ client:inv.clientName, price:item.pricePerKg, kg:item.kg, date:inv.dateStr });
     });
   });
-
   const fishes = Object.keys(fishData);
   if (fishes.length === 0) return;
-
   const tabBar = document.getElementById('prices-fish-tabs');
-  const content = document.getElementById('prices-content');
-  
-  tabBar.innerHTML = fishes.map((f, i) =>
-    `<button class="tab-btn ${i===0?'active':''}" onclick="showFishPrices('${f}',this)">${f}</button>`
-  ).join('');
-
+  tabBar.innerHTML = fishes.map((f,i) => `<button class="tab-btn ${i===0?'active':''}" onclick="showFishPrices('${f}',this)">${f}</button>`).join('');
   window._fishPriceData = fishData;
   showFishPrices(fishes[0], tabBar.children[0]);
 };
@@ -1978,38 +1616,27 @@ window.renderPricesPage = function() {
 window.showFishPrices = function(fishName, btn) {
   document.querySelectorAll('#prices-fish-tabs .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-
-  const data = (window._fishPriceData || {})[fishName] || [];
-  const sorted = [...data].sort((a,b) => b.price - a.price);
-  const maxPrice = sorted[0]?.price || 0;
-
+  const data = (window._fishPriceData||{})[fishName]||[];
+  const sorted = [...data].sort((a,b) => b.price-a.price);
+  const maxPrice = sorted[0]?.price||0;
   document.getElementById('prices-content').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:12px;background:var(--glass);border-radius:10px">
       <span style="color:var(--text-secondary);font-size:12px">أعلى سعر لـ${fishName}</span>
-      <span style="font-size:20px;font-weight:900;color:var(--gold)">${maxPrice} ج.م/كيلو</span>
+      <span style="font-size:20px;font-weight:900;color:var(--gold)">${maxPrice} ج.م/ك</span>
     </div>
     <table class="price-table">
-      <thead>
-        <tr><th>#</th><th>العميل</th><th>الكيلو</th><th>السعر</th><th>التاريخ</th></tr>
-      </thead>
-      <tbody>
-        ${sorted.map((d, i) => `
-          <tr>
-            <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'•'}</td>
-            <td style="font-weight:600">${d.client}</td>
-            <td>${d.kg}</td>
-            <td style="color:${i===0?'var(--gold)':'var(--text-primary)'};font-weight:${i===0?900:400}">${d.price} ج.م</td>
-            <td style="font-size:10px;color:var(--text-secondary)">${d.date}</td>
-          </tr>
-        `).join('')}
-      </tbody>
+      <thead><tr><th>#</th><th>العميل</th><th>الكيلو</th><th>السعر</th><th>التاريخ</th></tr></thead>
+      <tbody>${sorted.map((d,i) => `
+        <tr>
+          <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'•'}</td>
+          <td style="font-weight:600">${d.client}</td>
+          <td>${d.kg}</td>
+          <td style="color:${i===0?'var(--gold)':'var(--text-primary)'};font-weight:${i===0?900:400}">${d.price} ج.م</td>
+          <td style="font-size:10px;color:var(--text-secondary)">${d.date}</td>
+        </tr>
+      `).join('')}</tbody>
     </table>
   `;
-};
-
-// showClientHistory → now handled inside showClientAccount
-window.showClientHistory = function(clientKey) {
-  showClientAccount(clientKey);
 };
 
 // ============================================================
@@ -2018,21 +1645,41 @@ window.showClientHistory = function(clientKey) {
 function updateClientDatalist() {
   const dl = document.getElementById('clients-datalist');
   if (!dl) return;
-  const clients = Object.values(window.appState.clients);
-  dl.innerHTML = clients.map(c => `<option value="${c.name}" data-phone="${c.phone}">`).join('');
+  dl.innerHTML = Object.values(window.appState.clients).map(c => `<option value="${c.name}" data-phone="${c.phone}">`).join('');
 }
-
 document.getElementById('inv-client').addEventListener('input', function() {
-  const clients = Object.values(window.appState.clients);
-  const match = clients.find(c => c.name === this.value);
+  const match = Object.values(window.appState.clients).find(c => c.name === this.value);
   if (match) {
     document.getElementById('inv-phone').value = match.phone;
-    document.getElementById('inv-shop').value = match.shopName || '';
+    document.getElementById('inv-shop').value = match.shopName||'';
   }
 });
 
 // ============================================================
-// TOAST
+// SEND CLIENT STATEMENT WA
+// ============================================================
+window.sendClientStatementWA = async function(clientKey) {
+  const c = window.appState.clients[clientKey];
+  if (!c) return;
+  showToast('⏳ جاري تحضير الكشف...');
+  try {
+    const debt = c.totalDebt||0;
+    let text = `🐟 *كشف حساب - الحاج أحمد الحديدي*\n━━━━━━━━━━━━━━━━━━\n`;
+    text += `👤 العميل : *${c.name}*\n`;
+    if (c.shopName) text += `🏪 المؤسسة: ${c.shopName}\n`;
+    if (c.phone) text += `📱 الهاتف  : ${c.phone}\n`;
+    text += `📦 عدد الفواتير      : ${c.invoiceCount||0}\n`;
+    text += `💰 إجمالي المشتريات : *${formatNum(c.totalPurchases||0)} ج.م*\n`;
+    text += `✅ إجمالي المدفوع   : *${formatNum(c.totalPaid||0)} ج.م*\n`;
+    text += `━━━━━━━━━━━━━━━━━━\n`;
+    text += debt > 0 ? `⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n` : `✅ *الحساب مسوّي بالكامل*\n`;
+    text += `━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
+    window.open(`https://wa.me/2${c.phone}?text=${encodeURIComponent(text)}`, '_blank');
+  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+};
+
+// ============================================================
+// TOAST & HELPERS
 // ============================================================
 window.showToast = function(msg) {
   const existing = document.querySelector('.toast');
@@ -2044,51 +1691,16 @@ window.showToast = function(msg) {
   setTimeout(() => toast.remove(), 3000);
 };
 
-// ============================================================
-// HELPERS
-// ============================================================
-function formatNum(n) {
-  return Math.round(n || 0).toLocaleString('ar-EG');
-}
+function formatNum(n) { return Math.round(n||0).toLocaleString('ar-EG'); }
 
 // ============================================================
-// PWA INSTALL
-// ============================================================
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  window.appState.deferredPrompt = e;
-  const container = document.getElementById('install-banner-container');
-  container.innerHTML = `
-    <div class="install-banner">
-      <div style="font-size:24px">📲</div>
-      <div class="install-banner-text">ثبّت التطبيق على شاشتك الرئيسية للوصول السريع!</div>
-      <button class="install-banner-btn" onclick="installPWA()">تثبيت</button>
-    </div>
-  `;
-});
-
-window.installPWA = async function() {
-  const prompt = window.appState.deferredPrompt;
-  if (!prompt) return;
-  prompt.prompt();
-  const result = await prompt.userChoice;
-  if (result.outcome === 'accepted') {
-    document.getElementById('install-banner-container').innerHTML = '';
-    showToast('✅ تم تثبيت التطبيق!');
-  }
-  window.appState.deferredPrompt = null;
-};
-
-
-// ============================================================
-// CONFIRM DELETE — REUSABLE
+// CONFIRM MODAL
 // ============================================================
 function showConfirmModal({ icon, title, msg, confirmLabel, confirmColor, onConfirm }) {
   const old = document.getElementById('confirm-modal');
   if (old) old.remove();
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.id = 'confirm-modal';
+  modal.className = 'modal-overlay'; modal.id = 'confirm-modal';
   modal.innerHTML = `
     <div class="modal-sheet" style="max-height:50vh;text-align:center">
       <div class="modal-handle"></div>
@@ -2097,24 +1709,18 @@ function showConfirmModal({ icon, title, msg, confirmLabel, confirmColor, onConf
       <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.6">${msg}</div>
       <div style="display:flex;gap:10px">
         <button onclick="document.getElementById('confirm-modal').remove()"
-          style="flex:1;padding:13px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer">
-          إلغاء
-        </button>
+          style="flex:1;padding:13px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
         <button id="confirm-action-btn"
-          style="flex:2;padding:13px;border-radius:12px;border:none;background:${confirmColor};color:white;font-family:'Cairo',sans-serif;font-size:14px;font-weight:900;cursor:pointer">
-          ${confirmLabel}
-        </button>
+          style="flex:2;padding:13px;border-radius:12px;border:none;background:${confirmColor};color:white;font-family:'Cairo',sans-serif;font-size:14px;font-weight:900;cursor:pointer">${confirmLabel}</button>
       </div>
     </div>
   `;
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
   document.getElementById('modals-container').appendChild(modal);
   document.getElementById('confirm-action-btn').onclick = async () => {
     const btn = document.getElementById('confirm-action-btn');
-    btn.innerHTML = '<span class="spinner"></span>';
-    btn.disabled = true;
-    await onConfirm();
-    modal.remove();
+    btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
+    await onConfirm(); modal.remove();
   };
 }
 
@@ -2125,11 +1731,10 @@ window.confirmDeleteInvoice = function(invoiceId, clientName) {
   const inv = window.appState.invoices[invoiceId];
   if (!inv) return;
   showConfirmModal({
-    icon: '🗑️',
-    title: 'حذف الفاتورة',
-    msg: `هل تريد حذف فاتورة <strong>${clientName}</strong> بقيمة <strong>${formatNum(inv.total)} ج.م</strong>؟<br><span style="color:var(--danger);font-size:11px">سيتم تحديث رصيد العميل تلقائياً</span>`,
-    confirmLabel: '🗑️ حذف نهائي',
-    confirmColor: 'linear-gradient(135deg,var(--danger),#c0392b)',
+    icon:'🗑️', title:'حذف الفاتورة',
+    msg:`هل تريد حذف فاتورة <strong>${clientName}</strong> بقيمة <strong>${formatNum(inv.total)} ج.م</strong>؟<br><span style="color:var(--danger);font-size:11px">سيتم تحديث رصيد العميل تلقائياً</span>`,
+    confirmLabel:'🗑️ حذف نهائي',
+    confirmColor:'linear-gradient(135deg,var(--danger),#c0392b)',
     onConfirm: () => deleteInvoice(invoiceId)
   });
 };
@@ -2138,16 +1743,15 @@ async function deleteInvoice(invoiceId) {
   const inv = window.appState.invoices[invoiceId];
   if (!inv) return;
   try {
-    // Reverse client debt
-    const clientKey = inv.phone;
-    const clientRef = ref(db, 'clients/' + clientKey);
+    const clientRef = ref(db, 'clients/' + inv.phone);
     const snap = await get(clientRef);
     if (snap.exists()) {
       const c = snap.val();
-      const newDebt = Math.max((c.totalDebt || 0) - inv.total, 0);
-      const newPurchases = Math.max((c.totalPurchases || 0) - inv.total, 0);
-      const newCount = Math.max((c.invoiceCount || 1) - 1, 0);
-      await update(clientRef, { totalDebt: newDebt, totalPurchases: newPurchases, invoiceCount: newCount });
+      await update(clientRef, {
+        totalDebt: Math.max((c.totalDebt||0)-inv.total, 0),
+        totalPurchases: Math.max((c.totalPurchases||0)-inv.total, 0),
+        invoiceCount: Math.max((c.invoiceCount||1)-1, 0)
+      });
     }
     await remove(ref(db, 'invoices/' + invoiceId));
     showToast('✅ تم حذف الفاتورة وتحديث رصيد العميل');
@@ -2160,16 +1764,15 @@ async function deleteInvoice(invoiceId) {
 window.editInvoiceModal = function(invoiceId) {
   const inv = window.appState.invoices[invoiceId];
   if (!inv) return;
-  const gross = inv.gross || inv.total;
+  const gross = inv.gross||inv.total;
+  window._editItems = inv.items||[];
 
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.id = 'edit-invoice-modal';
+  modal.className = 'modal-overlay'; modal.id = 'edit-invoice-modal';
   modal.innerHTML = `
     <div class="modal-sheet" style="max-height:90vh">
       <div class="modal-handle"></div>
       <div style="font-size:17px;font-weight:900;color:var(--gold);text-align:center;margin-bottom:16px">✏️ تعديل الفاتورة</div>
-
       <div class="form-group">
         <label class="form-label">👤 اسم العميل</label>
         <input type="text" id="ei-client" class="form-input" value="${inv.clientName}">
@@ -2183,47 +1786,40 @@ window.editInvoiceModal = function(invoiceId) {
         <input type="text" id="ei-shop" class="form-input" value="${inv.shopName||''}">
       </div>
       <div class="form-group">
-        <label class="form-label">🤝 عمولة التاجر (%)</label>
-        <input type="number" id="ei-commission" class="form-input" value="${inv.commissionPct||0}" min="0" max="100" step="0.5" oninput="calcEditInvoice(${gross})">
+        <label class="form-label">🤝 عمولة %</label>
+        <input type="number" id="ei-commission" class="form-input" value="${inv.commissionPct||0}" min="0" max="100" step="0.5" oninput="calcEditInvoice()">
       </div>
-
       <div style="background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:12px;margin-bottom:12px">
-        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-weight:700">📦 الأصناف والكميات</div>
-        ${(inv.items||[]).map((item, idx) => {
-          const isWqa   = item.unit === 'wqa';
-          const qty     = item.qty !== undefined ? item.qty : item.kg;
-          const prc     = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
-          const unitLbl = isWqa ? 'وقة' : 'كيلو';
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-weight:700">📦 الأصناف</div>
+        ${(inv.items||[]).map((item,idx) => {
+          const unit = item.unit||'kg';
+          const qty = item.qty!==undefined ? item.qty : item.kg;
+          const prc = item.pricePerUnit!==undefined ? item.pricePerUnit : item.pricePerKg;
           return `
           <div style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:10px;padding:10px;margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <div style="font-size:12px;font-weight:700;color:var(--gold)">🐟 ${item.fish}</div>
-              <div style="display:flex;gap:3px;flex-wrap:wrap">
-                ${[['kg','كيلو','var(--cyan-glow)','rgba(0,180,216,0.15)'],['wqa','وقة','var(--warning)','rgba(255,165,0,0.15)'],['box20','بوكسة20','var(--emerald)','rgba(0,200,150,0.15)'],['box25','بوكشة25','#c084fc','rgba(192,132,252,0.15)']].map(([u,lbl,clr,bg])=>`
-                  <button id="ei-unit-${u}-${idx}" onclick="toggleEditUnit(${idx},'${u}')"
-                    style="padding:3px 7px;border-radius:6px;border:${(item.unit||'kg')===u?`2px solid ${clr}`:'1px solid var(--glass-border)'};background:${(item.unit||'kg')===u?bg:'transparent'};color:${(item.unit||'kg')===u?clr:'var(--text-secondary)'};font-family:'Cairo',sans-serif;font-size:9px;font-weight:700;cursor:pointer">
-                    ${lbl}
-                  </button>`).join('')}
-                <input type="hidden" id="ei-unit-${idx}" value="${item.unit||'kg'}">
-              </div>
+            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">🐟 ${item.fish}</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+              ${Object.entries(UNITS).map(([u,def]) => `
+                <button id="ei-unit-${u}-${idx}" onclick="toggleEditUnit(${idx},'${u}')"
+                  style="padding:4px 10px;border-radius:7px;border:${unit===u?'2px solid var(--cyan-glow)':'1px solid var(--glass-border)'};background:${unit===u?'rgba(0,180,216,0.15)':'transparent'};color:${unit===u?'var(--cyan-glow)':'var(--text-secondary)'};font-family:'Cairo',sans-serif;font-size:10px;font-weight:700;cursor:pointer">
+                  ${def.label}
+                </button>
+              `).join('')}
+              <input type="hidden" id="ei-unit-${idx}" value="${unit}">
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
               <div>
-                <label id="ei-qty-lbl-${idx}" style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">${unitLbl}</label>
-                <input type="number" id="ei-kg-${idx}" class="form-input" value="${qty}" min="0" step="0.5"
-                  oninput="calcEditInvoice(${gross})" style="padding:8px;text-align:center">
+                <label id="ei-qty-lbl-${idx}" style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">${UNITS[unit]?.label||'كيلو'}</label>
+                <input type="number" id="ei-kg-${idx}" class="form-input" value="${qty}" min="0" step="0.5" oninput="calcEditInvoice()" style="padding:8px;text-align:center">
               </div>
               <div>
-                <label id="ei-prc-lbl-${idx}" style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">سعر ال${unitLbl}</label>
-                <input type="number" id="ei-price-${idx}" class="form-input" value="${prc}" min="0"
-                  oninput="calcEditInvoice(${gross})" style="padding:8px;text-align:center">
+                <label id="ei-prc-lbl-${idx}" style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">سعر ال${UNITS[unit]?.label||'كيلو'}</label>
+                <input type="number" id="ei-price-${idx}" class="form-input" value="${prc}" min="0" oninput="calcEditInvoice()" style="padding:8px;text-align:center">
               </div>
             </div>
-          </div>
-        `}).join('')}
+          </div>`;
+        }).join('')}
       </div>
-
-      <!-- Live preview -->
       <div id="ei-preview" style="background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.25);border-radius:12px;padding:12px;margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px">
           <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الفاتورة</span>
@@ -2235,28 +1831,20 @@ window.editInvoiceModal = function(invoiceId) {
         </div>
         <div style="height:1px;background:rgba(255,215,0,0.2);margin:6px 0"></div>
         <div style="display:flex;justify-content:space-between">
-          <span style="font-size:13px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span>
+          <span style="font-size:13px;font-weight:800;color:var(--gold)">💰 المتبقى</span>
           <span id="ei-net-label" style="font-size:18px;font-weight:900;color:var(--gold)">${formatNum(inv.total)} ج.م</span>
         </div>
       </div>
-
-      <button onclick="saveEditInvoice('${invoiceId}')"
-        style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--warning),#e67e00);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">
+      <button onclick="saveEditInvoice('${invoiceId}')" style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--warning),#e67e00);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">
         💾 حفظ التعديلات
       </button>
-      <button onclick="closeEditInvoiceModal()"
-        style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">
-        إلغاء
-      </button>
+      <button onclick="closeEditInvoiceModal()" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
     </div>
   `;
-  modal.onclick = (e) => { if (e.target === modal) closeEditInvoiceModal(); };
+  modal.onclick = (e) => { if(e.target===modal) closeEditInvoiceModal(); };
   const existing = document.getElementById('edit-invoice-modal');
   if (existing) existing.remove();
   document.getElementById('modals-container').appendChild(modal);
-
-  // Store items count for calcEditInvoice
-  window._editItems = inv.items || [];
 };
 
 window.closeEditInvoiceModal = function() {
@@ -2264,99 +1852,82 @@ window.closeEditInvoiceModal = function() {
   if (m) m.remove();
 };
 
-window.calcEditInvoice = function(originalGross) {
-  // Recalculate gross from item inputs
+window.calcEditInvoice = function() {
   let newGross = 0;
-  (window._editItems || []).forEach((item, idx) => {
-    const kg    = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
-    const price = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
+  (window._editItems||[]).forEach((item,idx) => {
+    const kg = parseFloat(document.getElementById('ei-kg-'+idx)?.value)||0;
+    const price = parseFloat(document.getElementById('ei-price-'+idx)?.value)||0;
     newGross += kg * price;
   });
-  const commPct = parseFloat(document.getElementById('ei-commission')?.value) || 0;
-  const commAmt = (newGross * commPct) / 100;
-  const net     = newGross - commAmt;
-
-  const grossEl   = document.getElementById('ei-gross-label');
-  const commRow   = document.getElementById('ei-comm-row');
+  const commPct = parseFloat(document.getElementById('ei-commission')?.value)||0;
+  const commAmt = (newGross * commPct)/100;
+  const net = newGross - commAmt;
+  const grossEl = document.getElementById('ei-gross-label');
+  const commRow = document.getElementById('ei-comm-row');
   const commPctEl = document.getElementById('ei-comm-pct');
   const commValEl = document.getElementById('ei-comm-val');
-  const netEl     = document.getElementById('ei-net-label');
-
-  if (grossEl)   grossEl.textContent   = formatNum(newGross) + ' ج.م';
+  const netEl = document.getElementById('ei-net-label');
+  if (grossEl) grossEl.textContent = formatNum(newGross) + ' ج.م';
   if (commPctEl) commPctEl.textContent = commPct;
   if (commValEl) commValEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
-  if (netEl)     netEl.textContent     = formatNum(net) + ' ج.م';
-  if (commRow)   commRow.style.display = commPct > 0 ? 'flex' : 'none';
+  if (netEl) netEl.textContent = formatNum(net) + ' ج.م';
+  if (commRow) commRow.style.display = commPct > 0 ? 'flex' : 'none';
 };
 
 window.saveEditInvoice = async function(invoiceId) {
   const inv = window.appState.invoices[invoiceId];
   if (!inv) return;
-
-  const newClientName  = document.getElementById('ei-client')?.value.trim();
-  const newPhone       = document.getElementById('ei-phone')?.value.trim();
-  const newShop        = document.getElementById('ei-shop')?.value.trim();
-  const newCommPct     = parseFloat(document.getElementById('ei-commission')?.value) || 0;
-
+  const newClientName = document.getElementById('ei-client')?.value.trim();
+  const newPhone = document.getElementById('ei-phone')?.value.trim();
+  const newShop = document.getElementById('ei-shop')?.value.trim();
+  const newCommPct = parseFloat(document.getElementById('ei-commission')?.value)||0;
   if (!newClientName) return showToast('❌ اسم العميل مطلوب');
   if (!validatePhone(newPhone)) return showToast('❌ رقم الهاتف غير صحيح');
-
-  // Recalculate items with unit support
-  const WQA_TO_KG = 1.25;
-  const newItems = (window._editItems || []).map((item, idx) => {
-    const unit     = document.getElementById('ei-unit-' + idx)?.value || item.unit || 'kg';
-    const qty      = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
-    const priceRaw = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
-    const kgEquiv  = unit === 'wqa' ? qty * WQA_TO_KG : qty;
-    const subtotal = qty * priceRaw;
-    return {
-      ...item,
-      unit,
-      qty,
-      kg: kgEquiv,
-      pricePerUnit: priceRaw,
-      pricePerKg: unit === 'wqa' ? +(priceRaw / WQA_TO_KG).toFixed(4) : priceRaw,
-      subtotal
-    };
+  const newItems = (window._editItems||[]).map((item,idx) => {
+    const unit = document.getElementById('ei-unit-'+idx)?.value||item.unit||'kg';
+    const qty = parseFloat(document.getElementById('ei-kg-'+idx)?.value)||0;
+    const priceRaw = parseFloat(document.getElementById('ei-price-'+idx)?.value)||0;
+    const uDef = UNITS[unit]||UNITS.kg;
+    const kgEquiv = qty * uDef.kgFactor;
+    return { ...item, unit, unitLabel:uDef.label, qty, kg:kgEquiv, pricePerUnit:priceRaw, pricePerKg:+(priceRaw/uDef.kgFactor).toFixed(4), subtotal:qty*priceRaw };
   });
-
-  const newGross   = newItems.reduce((s, i) => s + i.subtotal, 0);
-  const newCommAmt = (newGross * newCommPct) / 100;
-  const newNet     = newGross - newCommAmt;
-  const oldNet     = inv.total;
-  const diff       = newNet - oldNet; // positive = more debt, negative = less debt
-
+  const newGross = newItems.reduce((s,i) => s+i.subtotal, 0);
+  const newCommAmt = (newGross*newCommPct)/100;
+  const newNet = newGross - newCommAmt;
+  const diff = newNet - inv.total;
   try {
-    // Update invoice
-    await update(ref(db, 'invoices/' + invoiceId), {
-      clientName:    newClientName,
-      phone:         newPhone,
-      shopName:      newShop,
-      items:         newItems,
-      gross:         newGross,
-      commissionPct: newCommPct,
-      commissionAmt: newCommAmt,
-      total:         newNet,
-      remaining:     newNet
-    });
-
-    // Adjust client balance by the difference
-    const clientKey = inv.phone; // use old phone for lookup
-    const clientRef = ref(db, 'clients/' + clientKey);
+    await update(ref(db, 'invoices/'+invoiceId), { clientName:newClientName, phone:newPhone, shopName:newShop, items:newItems, gross:newGross, commissionPct:newCommPct, commissionAmt:newCommAmt, total:newNet, remaining:newNet });
+    const clientRef = ref(db, 'clients/'+inv.phone);
     const snap = await get(clientRef);
     if (snap.exists()) {
       const c = snap.val();
-      await update(clientRef, {
-        name:           newClientName,
-        phone:          newPhone,
-        totalDebt:      Math.max((c.totalDebt || 0) + diff, 0),
-        totalPurchases: Math.max((c.totalPurchases || 0) + diff, 0)
-      });
+      await update(clientRef, { name:newClientName, phone:newPhone, totalDebt:Math.max((c.totalDebt||0)+diff,0), totalPurchases:Math.max((c.totalPurchases||0)+diff,0) });
     }
-
     closeEditInvoiceModal();
     showToast('✅ تم حفظ التعديلات بنجاح');
   } catch(e) { showToast('❌ خطأ: ' + e.message); }
+};
+
+window.toggleEditUnit = function(idx, unit) {
+  const def = UNITS[unit]||UNITS.kg;
+  Object.keys(UNITS).forEach(u => {
+    const b = document.getElementById('ei-unit-'+u+'-'+idx);
+    if (b) { b.style.border='1px solid var(--glass-border)'; b.style.background='transparent'; b.style.color='var(--text-secondary)'; }
+  });
+  const activeB = document.getElementById('ei-unit-'+unit+'-'+idx);
+  if (activeB) {
+    const colors = { kg:'var(--cyan-glow)', wqa:'var(--warning)', box20:'var(--emerald)', box25:'#c084fc' };
+    const bgs = { kg:'rgba(0,180,216,0.15)', wqa:'rgba(255,165,0,0.15)', box20:'rgba(0,200,150,0.15)', box25:'rgba(192,132,252,0.15)' };
+    activeB.style.border = `2px solid ${colors[unit]}`;
+    activeB.style.background = bgs[unit];
+    activeB.style.color = colors[unit];
+  }
+  const unitEl = document.getElementById('ei-unit-'+idx);
+  const qtyLbl = document.getElementById('ei-qty-lbl-'+idx);
+  const prcLbl = document.getElementById('ei-prc-lbl-'+idx);
+  if (unitEl) unitEl.value = unit;
+  if (qtyLbl) qtyLbl.textContent = def.label;
+  if (prcLbl) prcLbl.textContent = 'سعر ال'+def.label;
 };
 
 // ============================================================
@@ -2364,125 +1935,70 @@ window.saveEditInvoice = async function(invoiceId) {
 // ============================================================
 window.confirmDeletePayment = function(paymentId, clientKey, amount, remainingAfter) {
   showConfirmModal({
-    icon: '💳',
-    title: 'حذف الدفعة',
-    msg: `هل تريد حذف دفعة <strong>${formatNum(amount)} ج.م</strong>؟<br><span style="color:var(--warning);font-size:11px">سيتم إضافة المبلغ مرة أخرى لرصيد العميل</span>`,
-    confirmLabel: '🗑️ حذف الدفعة',
-    confirmColor: 'linear-gradient(135deg,var(--danger),#c0392b)',
+    icon:'💳', title:'حذف الدفعة',
+    msg:`هل تريد حذف دفعة <strong>${formatNum(amount)} ج.م</strong>؟<br><span style="color:var(--warning);font-size:11px">سيتم إضافة المبلغ مرة أخرى لرصيد العميل</span>`,
+    confirmLabel:'🗑️ حذف الدفعة',
+    confirmColor:'linear-gradient(135deg,var(--danger),#c0392b)',
     onConfirm: () => deletePayment(paymentId, clientKey, amount)
   });
 };
-
 async function deletePayment(paymentId, clientKey, amount) {
   try {
-    const clientRef = ref(db, 'clients/' + clientKey);
+    const clientRef = ref(db, 'clients/'+clientKey);
     const snap = await get(clientRef);
     if (snap.exists()) {
       const c = snap.val();
-      await update(clientRef, {
-        totalDebt: (c.totalDebt || 0) + amount,
-        totalPaid: Math.max((c.totalPaid || 0) - amount, 0)
-      });
+      await update(clientRef, { totalDebt:(c.totalDebt||0)+amount, totalPaid:Math.max((c.totalPaid||0)-amount,0) });
     }
-    await remove(ref(db, 'payments/' + paymentId));
-    // Refresh account view
+    await remove(ref(db, 'payments/'+paymentId));
     const accModal = document.getElementById('client-account-modal');
     if (accModal) { accModal.remove(); showClientAccount(clientKey); }
     showToast('✅ تم حذف الدفعة وتحديث الرصيد');
   } catch(e) { showToast('❌ خطأ: ' + e.message); }
 }
 
-// ============================================================
-// EDIT PAYMENT MODAL
-// ============================================================
 window.editPaymentModal = async function(paymentId, clientKey) {
-  // Fetch payment
   let pay;
-  try {
-    const snap = await get(ref(db, 'payments/' + paymentId));
-    pay = snap.val();
-  } catch(e) { showToast('❌ لم يتم تحميل بيانات الدفعة'); return; }
+  try { const snap = await get(ref(db, 'payments/'+paymentId)); pay = snap.val(); } catch(e) { return showToast('❌ خطأ'); }
   if (!pay) return showToast('❌ الدفعة غير موجودة');
-
   const todayISO = new Date().toISOString().split('T')[0];
-  const payDateVal = pay.customDate || todayISO;
-
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.id = 'edit-payment-modal';
+  modal.className = 'modal-overlay'; modal.id = 'edit-payment-modal';
   modal.innerHTML = `
     <div class="modal-sheet" style="max-height:80vh">
       <div class="modal-handle"></div>
       <div style="font-size:17px;font-weight:900;color:var(--emerald);text-align:center;margin-bottom:16px">✏️ تعديل الدفعة</div>
-
-      <div class="form-group">
-        <label class="form-label">💵 المبلغ المدفوع (ج.م)</label>
-        <input type="number" id="ep-amount" class="form-input" value="${pay.amount}" min="0"
-          style="font-size:20px;font-weight:900;text-align:center" inputmode="numeric">
-      </div>
-      <div class="form-group">
-        <label class="form-label">👤 استُلم من</label>
-        <input type="text" id="ep-from" class="form-input" value="${pay.from||''}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">📅 تاريخ الدفع</label>
-        <input type="date" id="ep-date" class="form-input" value="${payDateVal}"
-          style="-webkit-appearance:none">
-      </div>
-      <div class="form-group">
-        <label class="form-label">📝 ملاحظات</label>
-        <input type="text" id="ep-notes" class="form-input" value="${pay.notes||''}" placeholder="مثال: كاش — شيك">
-      </div>
-
-      <button onclick="saveEditPayment('${paymentId}','${clientKey}',${pay.amount})"
-        style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">
-        💾 حفظ التعديلات
-      </button>
-      <button onclick="document.getElementById('edit-payment-modal').remove()"
-        style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">
-        إلغاء
-      </button>
+      <div class="form-group"><label class="form-label">💵 المبلغ</label><input type="number" id="ep-amount" class="form-input" value="${pay.amount}" min="0" style="font-size:20px;font-weight:900;text-align:center" inputmode="numeric"></div>
+      <div class="form-group"><label class="form-label">👤 استُلم من</label><input type="text" id="ep-from" class="form-input" value="${pay.from||''}"></div>
+      <div class="form-group"><label class="form-label">📅 التاريخ</label><input type="date" id="ep-date" class="form-input" value="${pay.customDate||todayISO}" style="-webkit-appearance:none"></div>
+      <div class="form-group"><label class="form-label">📝 ملاحظات</label><input type="text" id="ep-notes" class="form-input" value="${pay.notes||''}" placeholder="كاش — شيك"></div>
+      <button onclick="saveEditPayment('${paymentId}','${clientKey}',${pay.amount})" style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">💾 حفظ</button>
+      <button onclick="document.getElementById('edit-payment-modal').remove()" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
     </div>
   `;
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
   const old = document.getElementById('edit-payment-modal');
   if (old) old.remove();
   document.getElementById('modals-container').appendChild(modal);
 };
 
 window.saveEditPayment = async function(paymentId, clientKey, oldAmount) {
-  const newAmount = parseFloat(document.getElementById('ep-amount')?.value) || 0;
-  const newFrom   = (document.getElementById('ep-from')?.value || '').trim();
-  const newDate   = document.getElementById('ep-date')?.value || '';
-  const newNotes  = (document.getElementById('ep-notes')?.value || '').trim();
-
+  const newAmount = parseFloat(document.getElementById('ep-amount')?.value)||0;
+  const newFrom = (document.getElementById('ep-from')?.value||'').trim();
+  const newDate = document.getElementById('ep-date')?.value||'';
+  const newNotes = (document.getElementById('ep-notes')?.value||'').trim();
   if (newAmount <= 0) return showToast('❌ المبلغ يجب أن يكون أكبر من صفر');
-
-  const diff = newAmount - oldAmount; // positive = paid more, negative = paid less
-  const dateStr = newDate ? new Date(newDate + 'T12:00:00').toLocaleDateString('ar-EG') : '';
-
+  const diff = newAmount - oldAmount;
+  const dateStr = newDate ? new Date(newDate+'T12:00:00').toLocaleDateString('ar-EG') : '';
   try {
-    await update(ref(db, 'payments/' + paymentId), {
-      amount: newAmount,
-      from: newFrom,
-      customDate: newDate,
-      dateStr,
-      notes: newNotes
-    });
-
-    // Adjust client totals
-    const clientRef = ref(db, 'clients/' + clientKey);
+    await update(ref(db, 'payments/'+paymentId), { amount:newAmount, from:newFrom, customDate:newDate, dateStr, notes:newNotes });
+    const clientRef = ref(db, 'clients/'+clientKey);
     const snap = await get(clientRef);
     if (snap.exists()) {
       const c = snap.val();
-      await update(clientRef, {
-        totalDebt: Math.max((c.totalDebt || 0) - diff, 0),
-        totalPaid: Math.max((c.totalPaid || 0) + diff, 0)
-      });
+      await update(clientRef, { totalDebt:Math.max((c.totalDebt||0)-diff,0), totalPaid:Math.max((c.totalPaid||0)+diff,0) });
     }
-
     document.getElementById('edit-payment-modal')?.remove();
-    // Refresh account view
     const accModal = document.getElementById('client-account-modal');
     if (accModal) { accModal.remove(); showClientAccount(clientKey); }
     showToast('✅ تم تعديل الدفعة بنجاح');
@@ -2490,82 +2006,47 @@ window.saveEditPayment = async function(paymentId, clientKey, oldAmount) {
 };
 
 // ============================================================
-// EDIT CLIENT MODAL
+// EDIT CLIENT
 // ============================================================
 window.editClientModal = function(clientKey) {
   const c = window.appState.clients[clientKey];
   if (!c) return;
-
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.id = 'edit-client-modal';
+  modal.className = 'modal-overlay'; modal.id = 'edit-client-modal';
   modal.innerHTML = `
     <div class="modal-sheet" style="max-height:80vh">
       <div class="modal-handle"></div>
       <div style="font-size:17px;font-weight:900;color:var(--warning);text-align:center;margin-bottom:16px">✏️ تعديل بيانات العميل</div>
-
-      <div class="form-group">
-        <label class="form-label">👤 اسم العميل</label>
-        <input type="text" id="ec-name" class="form-input" value="${c.name}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">📱 رقم الهاتف</label>
-        <input type="tel" id="ec-phone" class="form-input" value="${c.phone}" maxlength="11" dir="ltr">
-        <div id="ec-phone-error" style="color:var(--danger);font-size:11px;margin-top:4px;display:none">❌ رقم الهاتف غير صحيح</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">🏪 اسم المؤسسة</label>
-        <input type="text" id="ec-shop" class="form-input" value="${c.shopName||''}">
-      </div>
-
+      <div class="form-group"><label class="form-label">👤 اسم العميل</label><input type="text" id="ec-name" class="form-input" value="${c.name}"></div>
+      <div class="form-group"><label class="form-label">📱 رقم الهاتف</label><input type="tel" id="ec-phone" class="form-input" value="${c.phone}" maxlength="11" dir="ltr"></div>
+      <div class="form-group"><label class="form-label">🏪 المؤسسة</label><input type="text" id="ec-shop" class="form-input" value="${c.shopName||''}"></div>
       <div style="background:rgba(255,71,87,0.07);border:1px solid rgba(255,71,87,0.2);border-radius:12px;padding:12px;margin-bottom:14px">
         <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-weight:700">⚙️ تعديل الأرصدة (بحذر)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div>
-            <label style="font-size:11px;color:var(--danger);display:block;margin-bottom:4px">⚠️ الرصيد المتبقي</label>
-            <input type="number" id="ec-debt" class="form-input" value="${c.totalDebt||0}" min="0" style="text-align:center">
-          </div>
-          <div>
-            <label style="font-size:11px;color:var(--emerald);display:block;margin-bottom:4px">✅ إجمالي المدفوع</label>
-            <input type="number" id="ec-paid" class="form-input" value="${c.totalPaid||0}" min="0" style="text-align:center">
-          </div>
+          <div><label style="font-size:11px;color:var(--danger);display:block;margin-bottom:4px">⚠️ المتبقي</label><input type="number" id="ec-debt" class="form-input" value="${c.totalDebt||0}" min="0" style="text-align:center"></div>
+          <div><label style="font-size:11px;color:var(--emerald);display:block;margin-bottom:4px">✅ المدفوع</label><input type="number" id="ec-paid" class="form-input" value="${c.totalPaid||0}" min="0" style="text-align:center"></div>
         </div>
       </div>
-
-      <button onclick="saveEditClient('${clientKey}')"
-        style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--warning),#e67e00);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">
-        💾 حفظ التعديلات
-      </button>
-      <button onclick="document.getElementById('edit-client-modal').remove()"
-        style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">
-        إلغاء
-      </button>
+      <button onclick="saveEditClient('${clientKey}')" style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--warning),#e67e00);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">💾 حفظ</button>
+      <button onclick="document.getElementById('edit-client-modal').remove()" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
     </div>
   `;
-  document.getElementById('ec-phone').addEventListener('input', function() {
-    document.getElementById('ec-phone-error').style.display =
-      this.value.length > 0 && !validatePhone(this.value) ? 'block' : 'none';
-  });
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
   const old = document.getElementById('edit-client-modal');
   if (old) old.remove();
   document.getElementById('modals-container').appendChild(modal);
 };
 
 window.saveEditClient = async function(clientKey) {
-  const name  = document.getElementById('ec-name')?.value.trim();
+  const name = document.getElementById('ec-name')?.value.trim();
   const phone = document.getElementById('ec-phone')?.value.trim();
-  const shop  = document.getElementById('ec-shop')?.value.trim();
-  const debt  = parseFloat(document.getElementById('ec-debt')?.value) || 0;
-  const paid  = parseFloat(document.getElementById('ec-paid')?.value) || 0;
-
+  const shop = document.getElementById('ec-shop')?.value.trim();
+  const debt = parseFloat(document.getElementById('ec-debt')?.value)||0;
+  const paid = parseFloat(document.getElementById('ec-paid')?.value)||0;
   if (!name) return showToast('❌ اسم العميل مطلوب');
   if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
-
   try {
-    await update(ref(db, 'clients/' + clientKey), {
-      name, phone, shopName: shop, totalDebt: debt, totalPaid: paid
-    });
+    await update(ref(db, 'clients/'+clientKey), { name, phone, shopName:shop, totalDebt:debt, totalPaid:paid });
     document.getElementById('edit-client-modal')?.remove();
     showToast('✅ تم تحديث بيانات العميل');
   } catch(e) { showToast('❌ خطأ: ' + e.message); }
@@ -2576,50 +2057,39 @@ window.saveEditClient = async function(clientKey) {
 // ============================================================
 window.confirmDeleteClient = function(clientKey, clientName) {
   const c = window.appState.clients[clientKey];
-  const debt = c?.totalDebt || 0;
+  const debt = c?.totalDebt||0;
   showConfirmModal({
-    icon: '👤',
-    title: 'حذف العميل',
-    msg: `هل تريد حذف العميل <strong>${clientName}</strong>؟<br>${debt > 0 ? `<span style="color:var(--danger)">⚠️ لا يزال عليه ${formatNum(debt)} ج.م</span><br>` : ''}<span style="font-size:11px;color:var(--text-secondary)">لن يتم حذف الفواتير المرتبطة به</span>`,
-    confirmLabel: '🗑️ حذف العميل',
-    confirmColor: 'linear-gradient(135deg,var(--danger),#c0392b)',
-    onConfirm: () => deleteClient(clientKey)
+    icon:'👤', title:'حذف العميل',
+    msg:`هل تريد حذف العميل <strong>${clientName}</strong>؟<br>${debt>0?`<span style="color:var(--danger)">⚠️ لا يزال عليه ${formatNum(debt)} ج.م</span><br>`:''}`,
+    confirmLabel:'🗑️ حذف العميل',
+    confirmColor:'linear-gradient(135deg,var(--danger),#c0392b)',
+    onConfirm: () => remove(ref(db, 'clients/'+clientKey)).then(() => showToast('✅ تم حذف العميل'))
   });
 };
 
-async function deleteClient(clientKey) {
-  try {
-    await remove(ref(db, 'clients/' + clientKey));
-    showToast('✅ تم حذف العميل');
-  } catch(e) { showToast('❌ خطأ: ' + e.message); }
-}
-
-
-// Toggle unit in edit invoice modal — 4 units
-window.toggleEditUnit = function(idx, unit) {
-  const _UNITS_DEF = {
-    kg:    { label:'كيلو',       color:'var(--cyan-glow)', border:'2px solid var(--cyan-glow)',  bg:'rgba(0,180,216,0.15)' },
-    wqa:   { label:'وقة',        color:'var(--warning)',   border:'2px solid var(--warning)',    bg:'rgba(255,165,0,0.15)' },
-    box20: { label:'بوكسة 20 وقة (25ك)', color:'var(--emerald)',   border:'2px solid var(--emerald)',    bg:'rgba(0,200,150,0.15)' },
-    box25: { label:'بوكشة (25ك)', color:'#c084fc',          border:'2px solid #c084fc',           bg:'rgba(192,132,252,0.15)' },
-  };
-  // Reset all buttons
-  ['kg','wqa','box20','box25'].forEach(u => {
-    const b = document.getElementById('ei-unit-' + u + '-' + idx);
-    if (b) { b.style.border = '1px solid var(--glass-border)'; b.style.background = 'transparent'; b.style.color = 'var(--text-secondary)'; }
-  });
-  // Activate selected
-  const def = _UNITS_DEF[unit] || _UNITS_DEF.kg;
-  const activeB = document.getElementById('ei-unit-' + unit + '-' + idx);
-  if (activeB) { activeB.style.border = def.border; activeB.style.background = def.bg; activeB.style.color = def.color; }
-  // Update labels
-  const unitEl = document.getElementById('ei-unit-' + idx);
-  const qtyLbl = document.getElementById('ei-qty-lbl-' + idx);
-  const prcLbl = document.getElementById('ei-prc-lbl-' + idx);
-  if (unitEl) unitEl.value = unit;
-  if (qtyLbl) qtyLbl.textContent = def.label;
-  if (prcLbl) prcLbl.textContent = 'سعر ال' + def.label;
+// ============================================================
+// PWA
+// ============================================================
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  window.appState.deferredPrompt = e;
+  document.getElementById('install-banner-container').innerHTML = `
+    <div class="install-banner">
+      <div style="font-size:24px">📲</div>
+      <div class="install-banner-text">ثبّت التطبيق على شاشتك الرئيسية!</div>
+      <button class="install-banner-btn" onclick="installPWA()">تثبيت</button>
+    </div>
+  `;
+});
+window.installPWA = async function() {
+  const prompt = window.appState.deferredPrompt;
+  if (!prompt) return;
+  prompt.prompt();
+  const result = await prompt.userChoice;
+  if (result.outcome === 'accepted') { document.getElementById('install-banner-container').innerHTML=''; showToast('✅ تم تثبيت التطبيق!'); }
+  window.appState.deferredPrompt = null;
 };
+
 // ============================================================
 // INIT
 // ============================================================
@@ -2628,7 +2098,6 @@ updateDate();
 setupListeners();
 initInvoiceForm();
 
-// Register Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(e => console.log('SW:', e));
 }
