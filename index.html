@@ -455,6 +455,32 @@
           <input type="tel" id="inv-phone" class="form-input" placeholder="01xxxxxxxxx" maxlength="11" dir="ltr">
           <div id="phone-error" style="color:var(--danger);font-size:11px;margin-top:4px;display:none">❌ رقم الهاتف غير صحيح</div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label">🤝 عمولة التاجر (اختياري)</label>
+          <div style="position:relative;display:flex;align-items:center">
+            <input type="number" id="inv-commission" class="form-input"
+              placeholder="0" min="0" max="100" step="0.5"
+              oninput="updateInvoiceSummary()"
+              style="padding-left:50px;font-size:18px;font-weight:700;text-align:center">
+            <span style="position:absolute;left:14px;font-size:22px;font-weight:900;color:var(--gold);pointer-events:none">%</span>
+          </div>
+          <div id="commission-preview-box" style="margin-top:8px;padding:12px 14px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.25);border-radius:12px;display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+              <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الفاتورة</span>
+              <span id="comm-gross" style="font-size:14px;font-weight:700;color:var(--text-primary)">0 ج.م</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+              <span style="font-size:12px;color:var(--warning)">🤝 عمولة التاجر (<span id="comm-pct-label">0</span>%)</span>
+              <span id="comm-amount" style="font-size:14px;font-weight:700;color:var(--warning)">- 0 ج.م</span>
+            </div>
+            <div style="height:1px;background:rgba(255,215,0,0.25);margin:8px 0"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:14px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span>
+              <span id="comm-net" style="font-size:20px;font-weight:900;color:var(--gold)">0 ج.م</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="glass-card">
@@ -740,6 +766,8 @@ function initInvoiceForm() {
   document.getElementById('inv-client').value = '';
   document.getElementById('inv-phone').value = '';
   document.getElementById('inv-shop').value = '';
+  const commEl = document.getElementById('inv-commission'); if(commEl) commEl.value = '';
+  const commBox = document.getElementById('commission-preview-box'); if(commBox) commBox.style.display='none';
   document.getElementById('phone-error').style.display = 'none';
   updateClientDatalist();
 }
@@ -817,7 +845,23 @@ function updateInvoiceSummary() {
     const val = parseFloat(document.getElementById(id+'-subtotal')?.value) || 0;
     grand += val;
   });
-  document.getElementById('inv-grand-total').textContent = grand.toFixed(2) + ' ج.م';
+  // Update main total display
+  const totalEl = document.getElementById('inv-grand-total');
+  if (totalEl) totalEl.textContent = grand.toFixed(2) + ' ج.م';
+  // Commission calculation
+  const commPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
+  const commBox = document.getElementById('commission-preview-box');
+  if (commPct > 0 && grand > 0) {
+    const commAmt = (grand * commPct) / 100;
+    const netAmt  = grand - commAmt;
+    document.getElementById('comm-gross').textContent    = grand.toFixed(2) + ' ج.م';
+    document.getElementById('comm-pct-label').textContent = commPct;
+    document.getElementById('comm-amount').textContent   = '- ' + commAmt.toFixed(2) + ' ج.م';
+    document.getElementById('comm-net').textContent      = netAmt.toFixed(2) + ' ج.م';
+    if (commBox) commBox.style.display = 'block';
+  } else {
+    if (commBox) commBox.style.display = 'none';
+  }
 }
 
 // ============================================================
@@ -868,6 +912,11 @@ window.saveInvoice = async function() {
 
   if (items.length === 0) return showToast('❌ يرجى إدخال كميات');
 
+  // Commission
+  const commissionPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
+  const commissionAmt = (total * commissionPct) / 100;
+  const netTotal      = total - commissionAmt;   // ما يُحسب على التاجر فعلاً
+
   const btn = document.getElementById('save-invoice-btn');
   btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...';
   btn.disabled = true;
@@ -876,8 +925,12 @@ window.saveInvoice = async function() {
     const now = new Date();
     const invoice = {
       clientName, phone, shopName,
-      items, total,
-      paid: 0, remaining: total,
+      items,
+      gross: total,           // إجمالي قبل العمولة
+      commissionPct,
+      commissionAmt,
+      total: netTotal,        // المتبقى على التاجر (بعد خصم العمولة)
+      paid: 0, remaining: netTotal,
       date: now.toISOString(),
       dateStr: now.toLocaleDateString('ar-EG'),
       createdAt: now.getTime()
@@ -887,7 +940,7 @@ window.saveInvoice = async function() {
     const invRef = push(ref(db, 'invoices'));
     await set(invRef, invoice);
 
-    // Update client balance
+    // Update client balance — نستخدم netTotal (بعد العمولة)
     const clientKey = phone;
     const clientRef = ref(db, 'clients/' + clientKey);
     const clientSnap = await get(clientRef);
@@ -897,15 +950,15 @@ window.saveInvoice = async function() {
       await update(clientRef, {
         name: clientName,
         phone,
-        totalDebt: (existing.totalDebt || 0) + total,
-        totalPurchases: (existing.totalPurchases || 0) + total,
+        totalDebt: (existing.totalDebt || 0) + netTotal,
+        totalPurchases: (existing.totalPurchases || 0) + netTotal,
         invoiceCount: (existing.invoiceCount || 0) + 1,
         lastInvoice: now.toISOString()
       });
     } else {
       await set(clientRef, {
         name: clientName, phone, shopName,
-        totalDebt: total, totalPurchases: total, totalPaid: 0,
+        totalDebt: netTotal, totalPurchases: netTotal, totalPaid: 0,
         invoiceCount: 1, lastInvoice: now.toISOString()
       });
     }
@@ -963,9 +1016,23 @@ function showInvoicePreview(invoice, invoiceId) {
           <tbody>${itemsHtml}</tbody>
         </table>
         
-        <div class="invoice-total-row">
-          <span class="invoice-total-label">📦 الإجمالي الكلي</span>
-          <span class="invoice-total-value">${invoice.total.toFixed(2)} ج.م</span>
+        <!-- Totals breakdown -->
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--glass-border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الفاتورة</span>
+            <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${(invoice.gross || invoice.total).toFixed(2)} ج.م</span>
+          </div>
+          ${invoice.commissionPct > 0 ? `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--warning)">🤝 عمولة التاجر (${invoice.commissionPct}%)</span>
+            <span style="font-size:14px;font-weight:700;color:var(--warning)">- ${(invoice.commissionAmt||0).toFixed(2)} ج.م</span>
+          </div>
+          <div style="height:1px;background:rgba(255,215,0,0.3);margin:8px 0"></div>
+          ` : ''}
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:14px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span>
+            <span style="font-size:20px;font-weight:900;color:var(--gold)">${invoice.total.toFixed(2)} ج.م</span>
+          </div>
         </div>
       </div>
 
@@ -987,6 +1054,7 @@ function showInvoicePreview(invoice, invoiceId) {
 }
 
 function buildInvoiceText(invoice) {
+  const gross = invoice.gross || invoice.total;
   let text = `🐟 فاتورة - الحاج أحمد الحديدي\n`;
   text += `━━━━━━━━━━━━━━━\n`;
   text += `👤 العميل: ${invoice.clientName}\n`;
@@ -996,7 +1064,14 @@ function buildInvoiceText(invoice) {
     text += `🐟 ${i.fish}: ${i.kg} كيلو × ${i.pricePerKg} = ${i.subtotal.toFixed(2)} ج.م\n`;
   });
   text += `━━━━━━━━━━━━━━━\n`;
-  text += `💰 الإجمالي: ${invoice.total.toFixed(2)} ج.م\n`;
+  text += `📦 إجمالي الفاتورة: ${gross.toFixed(2)} ج.م\n`;
+  if (invoice.commissionPct > 0) {
+    text += `🤝 عمولة التاجر (${invoice.commissionPct}%): - ${(invoice.commissionAmt||0).toFixed(2)} ج.م\n`;
+    text += `━━━━━━━━━━━━━━━\n`;
+    text += `💰 المتبقى على التاجر: ${invoice.total.toFixed(2)} ج.م\n`;
+  } else {
+    text += `💰 الإجمالي: ${invoice.total.toFixed(2)} ج.م\n`;
+  }
   text += `━━━━━━━━━━━━━━━\n`;
   text += `شكراً لتعاملكم معنا 🙏`;
   return text;
@@ -1199,11 +1274,21 @@ function buildClientStatement(client) {
 }
 
 // ============================================================
-// CLIENT ACCOUNT - FULL SCREEN (click on card)
+// CLIENT ACCOUNT - FULL SCREEN
 // ============================================================
-window.showClientAccount = function(clientKey) {
+window.showClientAccount = async function(clientKey) {
   const c = window.appState.clients[clientKey];
   if (!c) return;
+
+  // Fetch payments for this client from Firebase
+  let clientPayments = [];
+  try {
+    const paymentsSnap = await get(ref(db, 'payments'));
+    const allPayments = paymentsSnap.val() || {};
+    clientPayments = Object.entries(allPayments)
+      .filter(([,p]) => p.clientKey === clientKey)
+      .sort((a,b) => new Date(b[1].date) - new Date(a[1].date));
+  } catch(e) {}
 
   const debt = c.totalDebt || 0;
   const totalPurchases = c.totalPurchases || 0;
@@ -1211,145 +1296,210 @@ window.showClientAccount = function(clientKey) {
   const hasDebt = debt > 0;
   const paidPct = totalPurchases > 0 ? Math.min(100, Math.round((totalPaid / totalPurchases) * 100)) : 0;
 
-  // Get client invoices
+  // Client invoices
   const clientInvoices = Object.entries(window.appState.invoices)
     .filter(([,i]) => i.phone === c.phone)
     .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
 
-  const invoicesHtml = clientInvoices.length === 0
-    ? `<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد فواتير</div>`
-    : clientInvoices.slice(0,5).map(([id,inv]) => `
-        <div onclick="closeModal();showInvoiceDetail('${id}')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;cursor:pointer;border:1px solid var(--glass-border)">
-          <div>
-            <div style="font-size:13px;font-weight:600">📅 ${inv.dateStr}</div>
-            <div style="font-size:10px;color:var(--text-secondary);margin-top:2px">${(inv.items||[]).map(i=>i.fish).join(' • ')}</div>
-          </div>
-          <div style="text-align:left">
-            <div style="font-size:15px;font-weight:900;color:var(--gold)">${formatNum(inv.total)} ج.م</div>
-            <div style="font-size:10px;color:var(--cyan-glow)">اضغط للتفاصيل ←</div>
-          </div>
-        </div>
-      `).join('');
+  // Build unified timeline (invoices + payments) sorted by date desc
+  const timeline = [
+    ...clientInvoices.map(([id,inv]) => ({ type:'invoice', id, data:inv, ts: inv.createdAt||0 })),
+    ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts: new Date(pay.date).getTime() }))
+  ].sort((a,b) => b.ts - a.ts);
 
   const waText = encodeURIComponent(buildClientStatement(c));
+  const todayISO = new Date().toISOString().split('T')[0];
 
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'client-account-modal';
   modal.innerHTML = `
-    <div class="modal-sheet" style="max-height:92vh">
+    <div class="modal-sheet" style="max-height:95vh;padding-bottom:max(16px,env(safe-area-inset-bottom))">
       <div class="modal-handle"></div>
 
-      <!-- Client Identity -->
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(0,180,216,0.3),rgba(21,101,192,0.2));border:2px solid var(--cyan-glow);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">
-          👤
-        </div>
-        <div style="flex:1">
-          <div style="font-size:18px;font-weight:900;color:var(--text-primary)">${c.name}</div>
+      <!-- Header: Client Info -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,rgba(0,180,216,0.25),rgba(21,101,192,0.15));border:2px solid var(--cyan-glow);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👤</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:17px;font-weight:900;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</div>
           <div style="font-size:12px;color:var(--cyan-glow)">📱 ${c.phone}</div>
-          ${c.shopName?`<div style="font-size:11px;color:var(--text-secondary)">🏪 ${c.shopName}</div>`:''}
+          ${c.shopName?`<div style="font-size:10px;color:var(--text-secondary)">🏪 ${c.shopName}</div>`:''}
         </div>
-        <a href="https://wa.me/2${c.phone}?text=${waText}" target="_blank" style="text-decoration:none;background:linear-gradient(135deg,#25D366,#128C7E);padding:8px 12px;border-radius:10px;font-size:20px">📲</a>
-      </div>
-
-      <!-- Balance Summary Cards -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-        <div style="background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);border-radius:12px;padding:10px;text-align:center">
-          <div style="font-size:9px;color:var(--danger);margin-bottom:4px">⚠️ المتبقي</div>
-          <div style="font-size:${debt>=1000000?'12px':debt>=100000?'14px':'16px'};font-weight:900;color:var(--danger)">${formatNum(debt)}</div>
-          <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
-        </div>
-        <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:10px;text-align:center">
-          <div style="font-size:9px;color:var(--emerald);margin-bottom:4px">✅ المدفوع</div>
-          <div style="font-size:${totalPaid>=1000000?'12px':totalPaid>=100000?'14px':'16px'};font-weight:900;color:var(--emerald)">${formatNum(totalPaid)}</div>
-          <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
-        </div>
-        <div style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.3);border-radius:12px;padding:10px;text-align:center">
-          <div style="font-size:9px;color:var(--cyan-glow);margin-bottom:4px">💰 الإجمالي</div>
-          <div style="font-size:${totalPurchases>=1000000?'12px':totalPurchases>=100000?'14px':'16px'};font-weight:900;color:var(--cyan-glow)">${formatNum(totalPurchases)}</div>
-          <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <a href="https://wa.me/2${c.phone}?text=${waText}" target="_blank"
+            style="text-decoration:none;background:linear-gradient(135deg,#25D366,#128C7E);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center">📲</a>
+          <button onclick="showClientAccount('${clientKey}')" 
+            style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:9px 11px;border-radius:10px;font-size:16px;cursor:pointer;color:var(--cyan-glow)" title="تحديث">🔄</button>
         </div>
       </div>
 
-      <!-- Progress Bar -->
-      <div style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);margin-bottom:6px">
+      <!-- Balance Cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px">
+        <div style="background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.35);border-radius:13px;padding:10px 6px;text-align:center">
+          <div style="font-size:9px;color:var(--danger);margin-bottom:3px;font-weight:700">⚠️ المتبقي</div>
+          <div style="font-size:${debt>=1000000?'11px':debt>=100000?'13px':'15px'};font-weight:900;color:var(--danger);line-height:1.1">${formatNum(debt)}</div>
+          <div style="font-size:9px;color:rgba(255,71,87,0.6);margin-top:2px">ج.م</div>
+        </div>
+        <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.35);border-radius:13px;padding:10px 6px;text-align:center">
+          <div style="font-size:9px;color:var(--emerald);margin-bottom:3px;font-weight:700">✅ المدفوع</div>
+          <div style="font-size:${totalPaid>=1000000?'11px':totalPaid>=100000?'13px':'15px'};font-weight:900;color:var(--emerald);line-height:1.1">${formatNum(totalPaid)}</div>
+          <div style="font-size:9px;color:rgba(0,200,150,0.6);margin-top:2px">ج.م</div>
+        </div>
+        <div style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.35);border-radius:13px;padding:10px 6px;text-align:center">
+          <div style="font-size:9px;color:var(--cyan-glow);margin-bottom:3px;font-weight:700">💰 الإجمالي</div>
+          <div style="font-size:${totalPurchases>=1000000?'11px':totalPurchases>=100000?'13px':'15px'};font-weight:900;color:var(--cyan-glow);line-height:1.1">${formatNum(totalPurchases)}</div>
+          <div style="font-size:9px;color:rgba(0,180,216,0.6);margin-top:2px">ج.م</div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:5px">
           <span>نسبة السداد</span>
           <span style="color:var(--emerald);font-weight:700">${paidPct}%</span>
         </div>
-        <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden">
-          <div id="pay-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px;transition:width 0.8s cubic-bezier(0.25,0.8,0.25,1)"></div>
+        <div style="height:7px;background:rgba(255,255,255,0.07);border-radius:10px;overflow:hidden">
+          <div id="pay-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px;transition:width 0.9s cubic-bezier(0.25,0.8,0.25,1)"></div>
         </div>
       </div>
 
+      <!-- ====== PAYMENT FORM ====== -->
       ${hasDebt ? `
-      <!-- PAYMENT SECTION -->
-      <div style="background:linear-gradient(135deg,rgba(0,200,150,0.1),rgba(0,180,216,0.05));border:1px solid rgba(0,200,150,0.3);border-radius:16px;padding:16px;margin-bottom:14px">
-        <div style="font-size:14px;font-weight:700;color:var(--emerald);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-          💳 تسجيل دفعة جديدة
-        </div>
+      <div style="background:linear-gradient(135deg,rgba(0,200,150,0.08),rgba(0,180,216,0.04));border:1px solid rgba(0,200,150,0.3);border-radius:16px;padding:14px;margin-bottom:14px">
+        
+        <div style="font-size:14px;font-weight:800;color:var(--emerald);margin-bottom:12px">💳 تسجيل دفعة جديدة</div>
 
-        <!-- Amount Input -->
-        <div style="margin-bottom:12px">
-          <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:6px">اكتب المبلغ المدفوع (ج.م)</label>
+        <!-- Amount -->
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">💵 المبلغ المدفوع (ج.م)</label>
           <input type="number" id="payment-amount" inputmode="numeric"
-            style="width:100%;padding:16px;border-radius:12px;border:2px solid rgba(0,200,150,0.4);background:rgba(0,200,150,0.08);color:white;font-family:'Cairo',sans-serif;font-size:24px;font-weight:900;text-align:center;outline:none;transition:all 0.3s"
-            placeholder="0" min="0" max="${debt}"
+            style="width:100%;padding:14px;border-radius:12px;border:2px solid rgba(0,200,150,0.35);background:rgba(0,200,150,0.07);color:white;font-family:'Cairo',sans-serif;font-size:22px;font-weight:900;text-align:center;outline:none;transition:all 0.3s"
+            placeholder="0" min="0"
             oninput="updatePayPreview(${debt})"
-            onfocus="this.style.borderColor='var(--emerald)';this.style.boxShadow='0 0 0 4px rgba(0,200,150,0.2)'"
-            onblur="this.style.borderColor='rgba(0,200,150,0.4)';this.style.boxShadow='none'">
+            onfocus="this.style.borderColor='var(--emerald)';this.style.boxShadow='0 0 0 3px rgba(0,200,150,0.18)'"
+            onblur="this.style.borderColor='rgba(0,200,150,0.35)';this.style.boxShadow='none'">
         </div>
 
-        <!-- Quick Amount Buttons -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px">
-          <button onclick="setPayAmount(${Math.round(debt*0.25)},${debt})" style="padding:8px 4px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s" onmousedown="this.style.background='rgba(0,200,150,0.2)'" onmouseup="this.style.background='rgba(255,255,255,0.05)'">
-            25%<br><span style="font-size:10px;color:var(--text-secondary)">${formatNum(Math.round(debt*0.25))}</span>
-          </button>
-          <button onclick="setPayAmount(${Math.round(debt*0.5)},${debt})" style="padding:8px 4px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s" onmousedown="this.style.background='rgba(0,200,150,0.2)'" onmouseup="this.style.background='rgba(255,255,255,0.05)'">
-            50%<br><span style="font-size:10px;color:var(--text-secondary)">${formatNum(Math.round(debt*0.5))}</span>
-          </button>
-          <button onclick="setPayAmount(${Math.round(debt*0.75)},${debt})" style="padding:8px 4px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s" onmousedown="this.style.background='rgba(0,200,150,0.2)'" onmouseup="this.style.background='rgba(255,255,255,0.05)'">
-            75%<br><span style="font-size:10px;color:var(--text-secondary)">${formatNum(Math.round(debt*0.75))}</span>
-          </button>
-          <button onclick="setPayAmount(${debt},${debt})" style="padding:8px 4px;border-radius:10px;border:1px solid rgba(0,200,150,0.5);background:rgba(0,200,150,0.15);color:var(--emerald);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s">
-            كل<br>المبلغ
-          </button>
+        <!-- Quick amounts -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
+          ${[['25%',Math.round(debt*0.25)],['50%',Math.round(debt*0.5)],['75%',Math.round(debt*0.75)],['كل المبلغ',debt]].map(([lbl,val],i)=>`
+            <button onclick="setPayAmount(${val},${debt})"
+              style="padding:8px 3px;border-radius:9px;border:1px solid ${i===3?'rgba(0,200,150,0.5)':'var(--glass-border)'};background:${i===3?'rgba(0,200,150,0.12)':'rgba(255,255,255,0.04)'};color:${i===3?'var(--emerald)':'var(--text-secondary)'};font-family:'Cairo',sans-serif;font-size:10px;font-weight:700;cursor:pointer;line-height:1.4">
+              ${lbl}<br><span style="font-size:9px;opacity:0.8">${formatNum(val)}</span>
+            </button>
+          `).join('')}
         </div>
 
-        <!-- Preview: remaining after payment -->
-        <div id="pay-preview-box" style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(0,0,0,0.2);border-radius:10px;margin-bottom:12px">
+        <!-- Payment details: recipient + date -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
-            <div style="font-size:11px;color:var(--text-secondary)">المتبقي بعد الدفع</div>
-            <div id="remaining-preview" style="font-size:22px;font-weight:900;color:var(--danger);transition:all 0.3s">${formatNum(debt)} ج.م</div>
+            <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">👤 استُلم من / لحساب</label>
+            <input type="text" id="payment-from" 
+              style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:all 0.2s"
+              placeholder="${c.name}"
+              onfocus="this.style.borderColor='var(--cyan-glow)'" onblur="this.style.borderColor='var(--glass-border)'">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">📅 تاريخ الدفع</label>
+            <input type="date" id="payment-date"
+              style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:12px;outline:none;transition:all 0.2s;-webkit-appearance:none"
+              value="${todayISO}"
+              onfocus="this.style.borderColor='var(--cyan-glow)'" onblur="this.style.borderColor='var(--glass-border)'">
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">📝 ملاحظات (اختياري)</label>
+          <input type="text" id="payment-notes"
+            style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:all 0.2s"
+            placeholder="مثال: دفعة جزئية — كاش"
+            onfocus="this.style.borderColor='var(--cyan-glow)'" onblur="this.style.borderColor='var(--glass-border)'">
+        </div>
+
+        <!-- Preview box -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px;background:rgba(0,0,0,0.2);border-radius:10px;margin-bottom:11px">
+          <div>
+            <div style="font-size:10px;color:var(--text-secondary)">المتبقي بعد الدفع</div>
+            <div id="remaining-preview" style="font-size:20px;font-weight:900;color:var(--danger);transition:color 0.3s">${formatNum(debt)} ج.م</div>
           </div>
           <div style="text-align:left">
-            <div style="font-size:11px;color:var(--text-secondary)">الدفعة</div>
-            <div id="payment-preview" style="font-size:18px;font-weight:900;color:var(--emerald);transition:all 0.3s">0 ج.م</div>
+            <div style="font-size:10px;color:var(--text-secondary)">الدفعة</div>
+            <div id="payment-preview" style="font-size:17px;font-weight:900;color:var(--emerald)">0 ج.م</div>
           </div>
         </div>
 
-        <button onclick="processPayment('${clientKey}',${debt})"
-          style="width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(0,200,150,0.4);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px"
+        <button id="confirm-pay-btn" onclick="processPayment('${clientKey}',${debt})"
+          style="width:100%;padding:15px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 5px 18px rgba(0,200,150,0.38);transition:transform 0.15s;display:flex;align-items:center;justify-content:center;gap:8px"
+          ontouchstart="this.style.transform='scale(0.97)'" ontouchend="this.style.transform='scale(1)'"
           onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
-          ✅ تأكيد الدفع
+          ✅ تأكيد وحفظ الدفعة
         </button>
       </div>
       ` : `
-      <div style="text-align:center;padding:16px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:14px;margin-bottom:14px">
-        <div style="font-size:32px;margin-bottom:6px">✅</div>
-        <div style="font-size:15px;font-weight:700;color:var(--emerald)">الحساب مسوّي بالكامل</div>
-        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">لا يوجد أي مبلغ متبقي</div>
+      <div style="text-align:center;padding:16px;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.3);border-radius:14px;margin-bottom:14px">
+        <div style="font-size:36px;margin-bottom:6px">✅</div>
+        <div style="font-size:15px;font-weight:800;color:var(--emerald)">الحساب مسوّي بالكامل</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">لا يوجد أي مبلغ متبقي على هذا العميل</div>
       </div>
       `}
 
-      <!-- Recent Invoices -->
+      <!-- ====== FULL TRANSACTION TIMELINE ====== -->
       <div style="margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px">
-          📋 آخر الفواتير <span style="font-size:11px;color:var(--glass-border)">(${clientInvoices.length} إجمالاً)</span>
+        <div style="font-size:13px;font-weight:800;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px;padding:0 2px">
+          🕐 سجل جميع الحركات
+          <span style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:2px 8px;border-radius:20px;font-size:10px;color:var(--cyan-glow)">${timeline.length} حركة</span>
         </div>
-        ${invoicesHtml}
-        ${clientInvoices.length > 5 ? `<div style="text-align:center;font-size:12px;color:var(--cyan-glow);padding:6px">+ ${clientInvoices.length-5} فاتورة أخرى</div>` : ''}
+
+        ${timeline.length === 0 ? `
+          <div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات بعد</div>
+        ` : timeline.map(item => {
+          if (item.type === 'invoice') {
+            const inv = item.data;
+            return `
+              <div onclick="closeModal();showInvoiceDetail('${item.id}')"
+                style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;margin-bottom:7px;cursor:pointer;transition:background 0.2s"
+                ontouchstart="this.style.background='rgba(255,215,0,0.1)'" ontouchend="this.style.background='rgba(255,215,0,0.05)'">
+                <!-- Icon -->
+                <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🧾</div>
+                <!-- Info -->
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:12px;font-weight:700;color:var(--gold)">فاتورة بيع</div>
+                  <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(inv.items||[]).map(i=>i.fish).join(' • ')}</div>
+                  <div style="font-size:10px;color:var(--text-secondary);margin-top:1px">📅 ${inv.dateStr}</div>
+                </div>
+                <!-- Amount -->
+                <div style="text-align:left;flex-shrink:0">
+                  <div style="font-size:14px;font-weight:900;color:var(--gold)">+${formatNum(inv.total)}</div>
+                  <div style="font-size:9px;color:var(--text-secondary)">ج.م مدين</div>
+                  <div style="font-size:9px;color:var(--cyan-glow);margin-top:2px">تفاصيل ←</div>
+                </div>
+              </div>
+            `;
+          } else {
+            const pay = item.data;
+            const payDate = pay.customDate ? new Date(pay.customDate).toLocaleDateString('ar-EG') : pay.dateStr;
+            return `
+              <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:12px;margin-bottom:7px">
+                <!-- Icon -->
+                <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">💳</div>
+                <!-- Info -->
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:12px;font-weight:700;color:var(--emerald)">دفعة مالية</div>
+                  ${pay.from ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:1px">👤 ${pay.from}</div>` : ''}
+                  ${pay.notes ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:1px">📝 ${pay.notes}</div>` : ''}
+                  <div style="font-size:10px;color:var(--text-secondary);margin-top:1px">📅 ${payDate}</div>
+                </div>
+                <!-- Amount -->
+                <div style="text-align:left;flex-shrink:0">
+                  <div style="font-size:14px;font-weight:900;color:var(--emerald)">-${formatNum(pay.amount)}</div>
+                  <div style="font-size:9px;color:var(--text-secondary)">ج.م دفع</div>
+                  <div style="font-size:10px;color:var(--danger);margin-top:2px">متبقي: ${formatNum(pay.remainingAfter)}</div>
+                </div>
+              </div>
+            `;
+          }
+        }).join('')}
       </div>
 
       <button onclick="closeModal()" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer">
@@ -1358,13 +1508,15 @@ window.showClientAccount = function(clientKey) {
     </div>
   `;
   modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+  // Remove any existing modal first
+  const existing = document.getElementById('client-account-modal');
+  if (existing) existing.remove();
   document.getElementById('modals-container').appendChild(modal);
 
-  // Animate progress bar after mount
   setTimeout(() => {
     const bar = document.getElementById('pay-progress-bar');
     if (bar) bar.style.width = paidPct + '%';
-  }, 100);
+  }, 120);
 };
 
 window.setPayAmount = function(amount, maxDebt) {
@@ -1373,50 +1525,66 @@ window.setPayAmount = function(amount, maxDebt) {
 };
 
 window.updatePayPreview = function(maxDebt) {
-  const val = Math.min(parseFloat(document.getElementById('payment-amount')?.value)||0, maxDebt);
-  const rem = Math.max(maxDebt - val, 0);
+  const val = parseFloat(document.getElementById('payment-amount')?.value) || 0;
+  const capped = Math.min(val, maxDebt);
+  const rem = Math.max(maxDebt - capped, 0);
   const remEl = document.getElementById('remaining-preview');
   const payEl = document.getElementById('payment-preview');
-  if (remEl) { remEl.textContent = formatNum(rem) + ' ج.م'; remEl.style.color = rem===0?'var(--emerald)':'var(--danger)'; }
-  if (payEl) { payEl.textContent = formatNum(val) + ' ج.م'; }
+  if (remEl) { remEl.textContent = formatNum(rem) + ' ج.م'; remEl.style.color = rem === 0 ? 'var(--emerald)' : 'var(--danger)'; }
+  if (payEl) { payEl.textContent = formatNum(capped) + ' ج.م'; }
 };
 
 window.processPayment = async function(clientKey, currentDebt) {
-  const input = document.getElementById('payment-amount');
-  const amount = parseFloat(input?.value) || 0;
+  const amount   = parseFloat(document.getElementById('payment-amount')?.value) || 0;
+  const fromVal  = (document.getElementById('payment-from')?.value || '').trim();
+  const dateVal  = document.getElementById('payment-date')?.value || new Date().toISOString().split('T')[0];
+  const notes    = (document.getElementById('payment-notes')?.value || '').trim();
+
   if (amount <= 0) return showToast('❌ يرجى إدخال مبلغ أكبر من صفر');
 
   const actualPaid = Math.min(amount, currentDebt);
-  const newDebt = Math.max(currentDebt - actualPaid, 0);
+  const newDebt    = Math.max(currentDebt - actualPaid, 0);
+  const c          = window.appState.clients[clientKey];
 
-  // Disable button
-  const btn = document.querySelector('#client-account-modal button[onclick*="processPayment"]');
+  // Disable confirm button
+  const btn = document.getElementById('confirm-pay-btn');
   if (btn) { btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...'; btn.disabled = true; }
 
   try {
+    // Update client totals
     const clientRef = ref(db, 'clients/' + clientKey);
     const snap = await get(clientRef);
     const existing = snap.val() || {};
-
     await update(clientRef, {
       totalDebt: newDebt,
       totalPaid: (existing.totalPaid || 0) + actualPaid
     });
 
+    // Custom date handling
+    const customDateObj = new Date(dateVal + 'T12:00:00');
+    const customDateStr = customDateObj.toLocaleDateString('ar-EG');
+
+    // Save payment with full details
     await push(ref(db, 'payments'), {
       clientKey,
-      clientName: existing.name,
+      clientName: c?.name || existing.name,
+      clientPhone: c?.phone || existing.phone,
       amount: actualPaid,
       remainingAfter: newDebt,
-      date: new Date().toISOString(),
-      dateStr: new Date().toLocaleDateString('ar-EG')
+      from: fromVal || c?.name || existing.name,
+      notes,
+      customDate: dateVal,
+      dateStr: customDateStr,
+      date: new Date().toISOString(),          // actual save time
+      savedAt: Date.now()
     });
 
     closeModal();
     showToast(`✅ تم تسجيل ${formatNum(actualPaid)} ج.م — المتبقي: ${formatNum(newDebt)} ج.م`);
+
   } catch (err) {
     showToast('❌ خطأ: ' + err.message);
-    if (btn) { btn.innerHTML = '✅ تأكيد الدفع'; btn.disabled = false; }
+    if (btn) { btn.innerHTML = '✅ تأكيد وحفظ الدفعة'; btn.disabled = false; }
   }
 };
 
