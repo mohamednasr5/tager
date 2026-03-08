@@ -1,7 +1,7 @@
 const CACHE_NAME = 'haddidi-fish-v1';
 const ASSETS = [
   '/',
-  '/index.html',
+  'https://mohamednasr5.github.io/tager/',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap'
 ];
