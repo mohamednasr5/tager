@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="الحديدي للأسماك">
+<link rel="manifest" href="manifest.json">
+<title>الحاج أحمد الحديدي - تجارة الأسماك</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ocean-deep: #0a1628;
+    --ocean-mid: #0d2137;
+    --ocean-surface: #0e3460;
+    --wave-blue: #1565c0;
+    --cyan-glow: #00b4d8;
+    --gold: #ffd700;
+    --gold-dim: #b8860b;
+    --silver: #c0c0c0;
+    --emerald: #00c896;
+    --danger: #ff4757;
+    --warning: #ffa502;
+    --text-primary: #e8f4f8;
+    --text-secondary: #90caf9;
+    --glass: rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.12);
+    --card-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; font-family: 'Cairo', sans-serif; background: var(--ocean-deep); color: var(--text-primary); }
+
+  /* 3D Canvas Background */
+  #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+  /* Main App Container */
+  #app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
+
+  /* Header */
+  .app-header {
+    background: linear-gradient(135deg, rgba(10,22,40,0.95) 0%, rgba(13,33,55,0.95) 100%);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    position: relative; z-index: 10;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon { font-size: 28px; animation: fishSwim 3s ease-in-out infinite; display: inline-block; }
+  @keyframes fishSwim { 0%,100%{transform:translateX(0) rotate(0deg)} 25%{transform:translateX(3px) rotate(2deg)} 75%{transform:translateX(-3px) rotate(-2deg)} }
+  .header-title { font-size: 15px; font-weight: 900; color: var(--gold); line-height: 1.2; }
+  .header-subtitle { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+  .header-date { font-size: 11px; color: var(--cyan-glow); text-align: left; }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(10,22,40,1) 100%);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    display: flex; padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 6px 4px; transition: all 0.3s; border: none; background: none;
+    color: var(--text-secondary); font-family: 'Cairo', sans-serif;
+  }
+  .nav-item.active { color: var(--cyan-glow); }
+  .nav-item .nav-icon { font-size: 22px; transition: transform 0.3s; }
+  .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.15); filter: drop-shadow(0 0 8px var(--cyan-glow)); }
+  .nav-item .nav-label { font-size: 10px; font-weight: 600; }
+  .nav-indicator { position: absolute; bottom: 0; height: 3px; background: linear-gradient(90deg,var(--cyan-glow),var(--wave-blue)); border-radius: 3px 3px 0 0; transition: all 0.3s; }
+
+  /* Content Area */
+  .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 12px 90px; scroll-behavior: smooth; }
+  .content::-webkit-scrollbar { width: 3px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--wave-blue); border-radius: 3px; }
+
+  /* Pages */
+  .page { display: none; animation: fadeSlideIn 0.4s ease; }
+  .page.active { display: block; }
+  @keyframes fadeSlideIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Glass Cards */
+  .glass-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--card-shadow);
+    position: relative; overflow: hidden;
+  }
+  .glass-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  }
+
+  /* Section Title */
+  .section-title {
+    font-size: 13px; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--glass-border); }
+
+  /* Dashboard Stats */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .stat-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 14px 12px;
+    text-align: center;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .stat-card:active { transform: scale(0.97); }
+  .stat-card .stat-icon { font-size: 24px; margin-bottom: 6px; }
+  .stat-card .stat-value { font-size: 20px; font-weight: 900; color: var(--gold); }
+  .stat-card .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .stat-card.highlight { border-color: rgba(0,180,216,0.4); background: rgba(0,180,216,0.08); }
+  .stat-card.danger { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.08); }
+  .stat-card.success { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.08); }
+
+  /* Price Leaders */
+  .price-leader-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .leader-rank { font-size: 20px; min-width: 32px; text-align: center; }
+  .leader-info { flex: 1; }
+  .leader-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .leader-fish { font-size: 11px; color: var(--cyan-glow); }
+  .leader-price { font-size: 16px; font-weight: 900; color: var(--gold); }
+
+  /* Form Styles */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; padding: 12px 14px; border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06);
+    color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 14px;
+    outline: none; transition: all 0.3s;
+    -webkit-appearance: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--cyan-glow);
+    background: rgba(0,180,216,0.08);
+    box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
+  }
+  .form-select option { background: var(--ocean-deep); color: var(--text-primary); }
+  .form-input::placeholder { color: rgba(255,255,255,0.3); }
+
+  /* Fish Items in Invoice */
+  .fish-item-row {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .fish-item-row .fish-name { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 8px; display: flex; justify-content:space-between; align-items:center; }
+  .fish-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .fish-input-group label { font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 3px; }
+  .fish-input-group input {
+    width: 100%; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06);
+    color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 13px;
+    outline: none; text-align: center; transition: all 0.3s;
+  }
+  .fish-input-group input:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
+  .fish-total { text-align: left; margin-top: 8px; font-size: 12px; color: var(--emerald); font-weight: 700; }
+
+  /* Buttons */
+  .btn {
+    padding: 12px 20px; border-radius: 12px; border: none;
+    font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.25s; display: inline-flex; align-items: center; gap: 8px;
+    justify-content: center; width: 100%; margin-bottom: 8px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue));
+    color: white; box-shadow: 0 4px 15px rgba(0,180,216,0.4);
+  }
+  .btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,180,216,0.3); }
+  .btn-gold {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #1a1200; box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+  }
+  .btn-success {
+    background: linear-gradient(135deg, var(--emerald), #00875a);
+    color: white; box-shadow: 0 4px 15px rgba(0,200,150,0.3);
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, var(--danger), #c0392b);
+    color: white; box-shadow: 0 4px 15px rgba(255,71,87,0.3);
+  }
+  .btn-whatsapp {
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white; box-shadow: 0 4px 15px rgba(37,211,102,0.3);
+  }
+  .btn-outline {
+    background: transparent; border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+  }
+  .btn-sm { padding: 8px 14px; font-size: 12px; border-radius: 8px; }
+
+  /* Invoice Preview */
+  .invoice-preview {
+    background: linear-gradient(135deg, rgba(21,101,192,0.15), rgba(10,22,40,0.95));
+    border: 1px solid rgba(21,101,192,0.4);
+    border-radius: 16px; padding: 20px;
+  }
+  .invoice-header { text-align: center; margin-bottom: 16px; border-bottom: 1px solid var(--glass-border); padding-bottom: 12px; }
+  .invoice-shop { font-size: 18px; font-weight: 900; color: var(--gold); }
+  .invoice-owner { font-size: 13px; color: var(--cyan-glow); }
+  .invoice-date { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+  .invoice-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  .invoice-table th { font-size: 11px; color: var(--text-secondary); padding: 6px 4px; text-align: center; border-bottom: 1px solid var(--glass-border); }
+  .invoice-table td { font-size: 12px; padding: 7px 4px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .invoice-total-row { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--glass-border); }
+  .invoice-total-label { font-size: 13px; color: var(--text-secondary); }
+  .invoice-total-value { font-size: 16px; font-weight: 900; color: var(--gold); }
+
+  /* Client Cards */
+  .client-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .client-card:active { transform: scale(0.98); }
+  .client-card.has-debt { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
+  .client-card.paid { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.06); }
+  .client-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .client-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .client-phone { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .client-balance { text-align: left; }
+  .balance-label { font-size: 10px; color: var(--text-secondary); }
+  .balance-amount { font-size: 16px; font-weight: 900; }
+  .balance-amount.debt { color: var(--danger); }
+  .balance-amount.paid { color: var(--emerald); }
+  .client-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+  /* Payment Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .modal-sheet {
+    background: linear-gradient(180deg, var(--ocean-mid), var(--ocean-deep));
+    border: 1px solid var(--glass-border);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 20px max(20px, env(safe-area-inset-bottom));
+    width: 100%; max-height: 80vh; overflow-y: auto;
+    animation: slideUp 0.35s cubic-bezier(0.25,0.8,0.25,1);
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .modal-handle { width: 40px; height: 4px; background: var(--glass-border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 18px; font-weight: 900; color: var(--gold); text-align: center; margin-bottom: 16px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-surface));
+    border: 1px solid var(--glass-border);
+    border-radius: 12px; padding: 12px 20px;
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+    z-index: 500; box-shadow: var(--card-shadow);
+    animation: toastIn 0.3s ease; white-space: nowrap;
+    max-width: 90vw;
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+
+  /* Fish selector chips */
+  .fish-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .fish-chip {
+    padding: 7px 12px; border-radius: 20px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.05); color: var(--text-secondary);
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    font-family: 'Cairo', sans-serif;
+  }
+  .fish-chip.selected { border-color: var(--cyan-glow); background: rgba(0,180,216,0.15); color: var(--cyan-glow); }
+
+  /* History List */
+  .history-item {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .history-item:active { transform: scale(0.98); }
+  .history-header { display: flex; justify-content: space-between; align-items: center; }
+  .history-client { font-size: 14px; font-weight: 700; }
+  .history-amount { font-size: 15px; font-weight: 900; color: var(--gold); }
+  .history-meta { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+  /* Search */
+  .search-box { position: relative; margin-bottom: 14px; }
+  .search-box input { padding-right: 40px !important; }
+  .search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+
+  /* Empty State */
+  .empty-state { text-align: center; padding: 40px 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-text { font-size: 14px; color: var(--text-secondary); }
+
+  /* Loading */
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Ripple */
+  .ripple { position: relative; overflow: hidden; }
+  .ripple::after { content: ''; position: absolute; border-radius: 50%; background: rgba(255,255,255,0.15); transform: scale(0); animation: ripple 0.5s linear; pointer-events: none; }
+  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+  /* Badge */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+  .badge-gold { background: rgba(255,215,0,0.2); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
+  .badge-cyan { background: rgba(0,180,216,0.2); color: var(--cyan-glow); border: 1px solid rgba(0,180,216,0.3); }
+  .badge-red { background: rgba(255,71,87,0.2); color: var(--danger); border: 1px solid rgba(255,71,87,0.3); }
+
+  /* PWA Install Banner */
+  .install-banner {
+    background: linear-gradient(135deg, rgba(0,180,216,0.2), rgba(21,101,192,0.2));
+    border: 1px solid var(--cyan-glow);
+    border-radius: 14px; padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .install-banner-text { flex: 1; font-size: 12px; color: var(--text-primary); }
+  .install-banner-btn { padding: 7px 14px; border-radius: 8px; background: var(--cyan-glow); color: var(--ocean-deep); font-weight: 700; font-size: 12px; border: none; cursor: pointer; font-family: 'Cairo', sans-serif; white-space: nowrap; }
+
+  /* Scrollable tabs */
+  .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 14px; scrollbar-width: none; }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Cairo', sans-serif; transition: all 0.2s; }
+  .tab-btn.active { background: var(--cyan-glow); border-color: var(--cyan-glow); color: var(--ocean-deep); }
+
+  /* Glowing line */
+  .glow-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent); margin: 16px 0; opacity: 0.5; }
+
+  /* Price table */
+  .price-table { width: 100%; border-collapse: collapse; }
+  .price-table th { font-size: 11px; color: var(--text-secondary); padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--glass-border); }
+  .price-table td { font-size: 12px; padding: 8px 6px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .price-table tr:last-child td { border-bottom: none; }
+
+  /* Animations for 3D fish */
+  .fish-3d-container { position: fixed; pointer-events: none; z-index: 0; }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="app">
+  <header class="app-header">
+    <div class="header-logo">
+      <span class="logo-icon">🐟</span>
+      <div>
+        <div class="header-title">الحاج أحمد الحديدي</div>
+        <div class="header-subtitle">تجارة الأسماك</div>
+      </div>
+    </div>
+    <div class="header-date" id="header-date"></div>
+  </header>
+
+  <div class="content" id="main-content">
+    <!-- Dashboard Page -->
+    <div class="page active" id="page-home">
+      <div id="install-banner-container"></div>
+      
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="stat-total-sales">0</div>
+          <div class="stat-label">إجمالي المبيعات (ج.م)</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-value" id="stat-total-debt">0</div>
+          <div class="stat-label">إجمالي الديون (ج.م)</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="stat-total-clients">0</div>
+          <div class="stat-label">عدد العملاء</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🧾</div>
+          <div class="stat-value" id="stat-total-invoices">0</div>
+          <div class="stat-label">الفواتير</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">🏆 أعلى الأسعار لكل صنف</div>
+        <div id="price-leaders-list">
+          <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">📅 آخر الفواتير</div>
+        <div id="recent-invoices-list">
+          <div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Invoice Page -->
+    <div class="page" id="page-invoice">
+      <div class="glass-card">
+        <div class="section-title">🧾 فاتورة جديدة</div>
+        
+        <div class="form-group">
+          <label class="form-label">🏪 اسم المؤسسة (اختياري)</label>
+          <input type="text" id="inv-shop" class="form-input" placeholder="اسم المؤسسة أو المحل">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">👤 اسم العميل *</label>
+          <input type="text" id="inv-client" class="form-input" placeholder="اسم التاجر" list="clients-datalist">
+          <datalist id="clients-datalist"></datalist>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📱 رقم الهاتف (11 رقم يبدأ بـ 01) *</label>
+          <input type="tel" id="inv-phone" class="form-input" placeholder="01xxxxxxxxx" maxlength="11" dir="ltr">
+          <div id="phone-error" style="color:var(--danger);font-size:11px;margin-top:4px;display:none">❌ رقم الهاتف غير صحيح</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">🐟 اختر الأصناف</div>
+        <div class="fish-chips" id="fish-chips-container"></div>
+        <div id="fish-items-container"></div>
+      </div>
+
+      <div class="glass-card" id="invoice-summary" style="display:none">
+        <div class="section-title">💰 ملخص الفاتورة</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="color:var(--text-secondary);font-size:13px">الإجمالي الكلي</span>
+          <span id="inv-grand-total" style="font-size:22px;font-weight:900;color:var(--gold)">0 ج.م</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="save-invoice-btn" onclick="saveInvoice()">
+        💾 حفظ الفاتورة
+      </button>
+    </div>
+
+    <!-- Clients Page -->
+    <div class="page" id="page-clients">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="client-search" class="form-input" placeholder="ابحث عن عميل..." oninput="renderClients()" style="padding-right:40px">
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="filterClients('all',this)">الكل</button>
+        <button class="tab-btn" onclick="filterClients('debt',this)">عليهم دين</button>
+        <button class="tab-btn" onclick="filterClients('paid',this)">مسويين</button>
+      </div>
+
+      <div id="clients-list">
+        <div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div>
+      </div>
+    </div>
+
+    <!-- History Page -->
+    <div class="page" id="page-history">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="history-search" class="form-input" placeholder="ابحث في الفواتير..." oninput="renderHistory()" style="padding-right:40px">
+      </div>
+      <div id="history-list">
+        <div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير بعد</div></div>
+      </div>
+    </div>
+
+    <!-- Prices Page -->
+    <div class="page" id="page-prices">
+      <div class="glass-card">
+        <div class="section-title">📈 جدول الأسعار بالصنف</div>
+        <div class="tab-bar" id="prices-fish-tabs"></div>
+        <div id="prices-content">
+          <div class="empty-state"><div class="empty-icon">💹</div><div class="empty-text">لا توجد بيانات بعد</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchPage('home',this)">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">الرئيسية</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('invoice',this)">
+      <span class="nav-icon">➕</span>
+      <span class="nav-label">فاتورة</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('clients',this)">
+      <span class="nav-icon">👥</span>
+      <span class="nav-label">العملاء</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('history',this)">
+      <span class="nav-icon">📚</span>
+      <span class="nav-label">السجل</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('prices',this)">
+      <span class="nav-icon">💹</span>
+      <span class="nav-label">الأسعار</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Modals Container -->
+<div id="modals-container"></div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, push, set, get, update, remove, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAGDzSO4r9KQhAiMKs5k3PlIPbIwvXVcmw",
+  authDomain: "tager-eb62a.firebaseapp.com",
+  databaseURL: "https://tager-eb62a-default-rtdb.firebaseio.com",
+  projectId: "tager-eb62a",
+  storageBucket: "tager-eb62a.firebasestorage.app",
+  messagingSenderId: "956994118059",
+  appId: "1:956994118059:web:b9949fd0d68eecf6c132ee",
+  measurementId: "G-FTQHHSRPZS"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ============================================================
+// FISH TYPES
+// ============================================================
+const FISH_TYPES = [
+  'بوري','طوبار','دباشي','سوبر','نمرة ١','نمرة ٢','نمرة ٣','نمرة ٤','دور','قراميط','بياض','أخرى'
+];
+
+// ============================================================
+// STATE
+// ============================================================
+window.appState = {
+  invoices: {},
+  clients: {},
+  currentFilter: 'all',
+  selectedFishes: [],
+  deferredPrompt: null,
+};
+
+// ============================================================
+// 3D CANVAS BACKGROUND
+// ============================================================
+function init3DBackground() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], fishes = [];
+  
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Particles (bubbles)
+  for (let i = 0; i < 40; i++) {
+    particles.push({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 3 + 1,
+      speed: Math.random() * 0.5 + 0.2,
+      opacity: Math.random() * 0.4 + 0.1,
+      wobble: Math.random() * Math.PI * 2
+    });
+  }
+
+  // Fish
+  const fishEmojis = ['🐟','🐠','🐡'];
+  for (let i = 0; i < 5; i++) {
+    fishes.push({
+      x: Math.random() * W, y: Math.random() * H * 0.7 + H * 0.1,
+      size: Math.random() * 16 + 12,
+      speed: Math.random() * 0.8 + 0.3,
+      dir: Math.random() > 0.5 ? 1 : -1,
+      emoji: fishEmojis[Math.floor(Math.random() * fishEmojis.length)],
+      opacity: 0.12 + Math.random() * 0.1,
+      wave: Math.random() * Math.PI * 2,
+      waveAmp: Math.random() * 30 + 15,
+      waveSpeed: Math.random() * 0.02 + 0.01
+    });
+  }
+
+  function drawWave(y, offset, color, opacity) {
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    for (let x = 0; x <= W; x += 5) {
+      ctx.lineTo(x, y + Math.sin((x * 0.01) + offset) * 20 + Math.sin((x * 0.007) + offset * 1.3) * 12);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+    ctx.fillStyle = color; ctx.fill();
+    ctx.restore();
+  }
+
+  let t = 0;
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Deep ocean gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#040d1a');
+    grad.addColorStop(0.5, '#061525');
+    grad.addColorStop(1, '#050f1e');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Caustic light effect (top)
+    for (let i = 0; i < 5; i++) {
+      const x = (W * (i + 1)) / 6;
+      const rg = ctx.createRadialGradient(x, -20, 0, x, H * 0.4, H * 0.5);
+      rg.addColorStop(0, 'rgba(0,120,200,0.06)');
+      rg.addColorStop(1, 'transparent');
+      ctx.fillStyle = rg;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // Waves
+    drawWave(H * 0.3, t * 0.5, 'rgba(21,101,192,0.08)', 1);
+    drawWave(H * 0.5, t * 0.3 + 1, 'rgba(0,180,216,0.05)', 1);
+    drawWave(H * 0.7, t * 0.4 + 2, 'rgba(13,33,55,0.15)', 1);
+
+    // Bubbles
+    particles.forEach(p => {
+      p.wobble += 0.03;
+      p.x += Math.sin(p.wobble) * 0.3;
+      p.y -= p.speed;
+      if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+      ctx.save();
+      ctx.globalAlpha = p.opacity;
+      const bg = ctx.createRadialGradient(p.x - p.r * 0.3, p.y - p.r * 0.3, 0, p.x, p.y, p.r);
+      bg.addColorStop(0, 'rgba(100,200,255,0.8)');
+      bg.addColorStop(1, 'rgba(0,100,200,0.1)');
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(100,200,255,0.3)'; ctx.lineWidth = 0.5;
+      ctx.fillStyle = bg; ctx.fill(); ctx.stroke();
+      ctx.restore();
+    });
+
+    // 3D Fish (drawn as emoji with perspective)
+    fishes.forEach(f => {
+      f.wave += f.waveSpeed;
+      f.x += f.speed * f.dir;
+      f.y = f.y + Math.sin(f.wave) * 0.5;
+      if (f.x > W + 50) { f.x = -50; f.dir = 1; }
+      if (f.x < -50) { f.x = W + 50; f.dir = -1; }
+      ctx.save();
+      ctx.globalAlpha = f.opacity;
+      ctx.font = `${f.size}px serif`;
+      ctx.textAlign = 'center';
+      ctx.scale(f.dir, 1);
+      ctx.fillText(f.emoji, f.x * f.dir, f.y);
+      ctx.restore();
+    });
+
+    t += 0.01;
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// ============================================================
+// DATE
+// ============================================================
+function updateDate() {
+  const now = new Date();
+  const opts = { year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('header-date').textContent = now.toLocaleDateString('ar-EG', opts);
+}
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+window.switchPage = function(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  btn.classList.add('active');
+  if (page === 'invoice') initInvoiceForm();
+  if (page === 'clients') renderClients();
+  if (page === 'history') renderHistory();
+  if (page === 'prices') renderPricesPage();
+};
+
+// ============================================================
+// FISH CHIPS INIT
+// ============================================================
+function initInvoiceForm() {
+  window.appState.selectedFishes = [];
+  const container = document.getElementById('fish-chips-container');
+  container.innerHTML = FISH_TYPES.map(f =>
+    `<div class="fish-chip" onclick="toggleFish('${f}',this)">${f}</div>`
+  ).join('');
+  document.getElementById('fish-items-container').innerHTML = '';
+  document.getElementById('invoice-summary').style.display = 'none';
+  document.getElementById('inv-client').value = '';
+  document.getElementById('inv-phone').value = '';
+  document.getElementById('inv-shop').value = '';
+  document.getElementById('phone-error').style.display = 'none';
+  updateClientDatalist();
+}
+
+window.toggleFish = function(fishName, el) {
+  const idx = window.appState.selectedFishes.indexOf(fishName);
+  if (idx === -1) {
+    window.appState.selectedFishes.push(fishName);
+    el.classList.add('selected');
+    addFishItem(fishName);
+  } else {
+    window.appState.selectedFishes.splice(idx, 1);
+    el.classList.remove('selected');
+    removeFishItem(fishName);
+  }
+  updateInvoiceSummary();
+};
+
+function addFishItem(fishName) {
+  const container = document.getElementById('fish-items-container');
+  const id = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
+  const isOther = fishName === 'أخرى';
+  const div = document.createElement('div');
+  div.className = 'fish-item-row';
+  div.id = id;
+  div.innerHTML = `
+    <div class="fish-name">
+      🐟 ${fishName}
+      ${isOther ? `<input type="text" id="${id}-custom" class="form-input" placeholder="اكتب اسم الصنف" style="font-size:12px;padding:6px 10px;width:140px" oninput="updateInvoiceSummary()">` : ''}
+      <span style="font-size:12px;color:var(--text-secondary)" id="${id}-total">0 ج.م</span>
+    </div>
+    <div class="fish-inputs">
+      <div class="fish-input-group">
+        <label>الكيلو</label>
+        <input type="number" id="${id}-kg" placeholder="0" min="0" step="0.5" oninput="calcFishTotal('${id}')">
+      </div>
+      <div class="fish-input-group">
+        <label>سعر الكيلو</label>
+        <input type="number" id="${id}-price" placeholder="0" min="0" oninput="calcFishTotal('${id}')">
+      </div>
+      <div class="fish-input-group">
+        <label>الإجمالي</label>
+        <input type="number" id="${id}-subtotal" placeholder="0" readonly style="background:rgba(0,200,150,0.08);color:var(--emerald)">
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+  document.getElementById('invoice-summary').style.display = 'block';
+}
+
+function removeFishItem(fishName) {
+  const id = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
+  const el = document.getElementById(id);
+  if (el) el.remove();
+  if (window.appState.selectedFishes.length === 0) {
+    document.getElementById('invoice-summary').style.display = 'none';
+  }
+}
+
+window.calcFishTotal = function(id) {
+  const kg = parseFloat(document.getElementById(id+'-kg')?.value) || 0;
+  const price = parseFloat(document.getElementById(id+'-price')?.value) || 0;
+  const subtotal = kg * price;
+  const subEl = document.getElementById(id+'-subtotal');
+  const totalEl = document.getElementById(id+'-total');
+  if (subEl) subEl.value = subtotal.toFixed(2);
+  if (totalEl) totalEl.textContent = subtotal.toFixed(0) + ' ج.م';
+  updateInvoiceSummary();
+};
+
+function updateInvoiceSummary() {
+  let grand = 0;
+  window.appState.selectedFishes.forEach(fishName => {
+    const id = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
+    const val = parseFloat(document.getElementById(id+'-subtotal')?.value) || 0;
+    grand += val;
+  });
+  document.getElementById('inv-grand-total').textContent = grand.toFixed(2) + ' ج.م';
+}
+
+// ============================================================
+// PHONE VALIDATION
+// ============================================================
+function validatePhone(phone) {
+  return phone && phone.length === 11 && phone.startsWith('01') && /^\d+$/.test(phone);
+}
+
+document.getElementById('inv-phone').addEventListener('input', function() {
+  const err = document.getElementById('phone-error');
+  if (this.value.length > 0 && !validatePhone(this.value)) {
+    err.style.display = 'block';
+  } else {
+    err.style.display = 'none';
+  }
+});
+
+// ============================================================
+// SAVE INVOICE
+// ============================================================
+window.saveInvoice = async function() {
+  const clientName = document.getElementById('inv-client').value.trim();
+  const phone = document.getElementById('inv-phone').value.trim();
+  const shopName = document.getElementById('inv-shop').value.trim();
+
+  if (!clientName) return showToast('❌ يرجى إدخال اسم العميل');
+  if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
+  if (window.appState.selectedFishes.length === 0) return showToast('❌ يرجى اختيار صنف واحد على الأقل');
+
+  const items = [];
+  let total = 0;
+
+  for (const fishName of window.appState.selectedFishes) {
+    const id = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
+    const kg = parseFloat(document.getElementById(id+'-kg')?.value) || 0;
+    const pricePerKg = parseFloat(document.getElementById(id+'-price')?.value) || 0;
+    const subtotal = kg * pricePerKg;
+    let displayName = fishName;
+    if (fishName === 'أخرى') {
+      displayName = document.getElementById(id+'-custom')?.value || 'أخرى';
+    }
+    if (kg > 0) {
+      items.push({ fish: displayName, kg, pricePerKg, subtotal });
+      total += subtotal;
+    }
+  }
+
+  if (items.length === 0) return showToast('❌ يرجى إدخال كميات');
+
+  const btn = document.getElementById('save-invoice-btn');
+  btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...';
+  btn.disabled = true;
+
+  try {
+    const now = new Date();
+    const invoice = {
+      clientName, phone, shopName,
+      items, total,
+      paid: 0, remaining: total,
+      date: now.toISOString(),
+      dateStr: now.toLocaleDateString('ar-EG'),
+      createdAt: now.getTime()
+    };
+
+    // Save invoice
+    const invRef = push(ref(db, 'invoices'));
+    await set(invRef, invoice);
+
+    // Update client balance
+    const clientKey = phone;
+    const clientRef = ref(db, 'clients/' + clientKey);
+    const clientSnap = await get(clientRef);
+    
+    if (clientSnap.exists()) {
+      const existing = clientSnap.val();
+      await update(clientRef, {
+        name: clientName,
+        phone,
+        totalDebt: (existing.totalDebt || 0) + total,
+        totalPurchases: (existing.totalPurchases || 0) + total,
+        invoiceCount: (existing.invoiceCount || 0) + 1,
+        lastInvoice: now.toISOString()
+      });
+    } else {
+      await set(clientRef, {
+        name: clientName, phone, shopName,
+        totalDebt: total, totalPurchases: total, totalPaid: 0,
+        invoiceCount: 1, lastInvoice: now.toISOString()
+      });
+    }
+
+    showToast('✅ تم حفظ الفاتورة بنجاح!');
+    showInvoicePreview(invoice, invRef.key);
+  } catch (err) {
+    console.error(err);
+    showToast('❌ حدث خطأ: ' + err.message);
+  } finally {
+    btn.innerHTML = '💾 حفظ الفاتورة';
+    btn.disabled = false;
+  }
+};
+
+// ============================================================
+// INVOICE PREVIEW MODAL
+// ============================================================
+function showInvoicePreview(invoice, invoiceId) {
+  const itemsHtml = invoice.items.map(item => `
+    <tr>
+      <td>${item.fish}</td>
+      <td>${item.kg}</td>
+      <td>${item.pricePerKg}</td>
+      <td style="color:var(--gold);font-weight:700">${item.subtotal.toFixed(2)}</td>
+    </tr>
+  `).join('');
+
+  const waMsg = encodeURIComponent(buildInvoiceText(invoice));
+  const waNum = '2' + invoice.phone;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'invoice-modal';
+  modal.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🧾 تفاصيل الفاتورة</div>
+      
+      <div class="invoice-preview">
+        <div class="invoice-header">
+          <div class="invoice-shop">${invoice.shopName || 'الحاج أحمد الحديدي'}</div>
+          <div class="invoice-owner">الحاج أحمد الحديدي - تجارة الأسماك</div>
+          <div class="invoice-date">📅 ${invoice.dateStr}</div>
+          <div style="margin-top:8px;font-size:13px"><span style="color:var(--text-secondary)">العميل: </span><strong>${invoice.clientName}</strong></div>
+          <div style="font-size:12px;color:var(--cyan-glow)">📱 ${invoice.phone}</div>
+        </div>
+        
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th>الصنف</th><th>الكيلو</th><th>السعر</th><th>الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>${itemsHtml}</tbody>
+        </table>
+        
+        <div class="invoice-total-row">
+          <span class="invoice-total-label">📦 الإجمالي الكلي</span>
+          <span class="invoice-total-value">${invoice.total.toFixed(2)} ج.م</span>
+        </div>
+      </div>
+
+      <div class="glow-divider"></div>
+      
+      <a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="btn btn-whatsapp">
+        📲 إرسال الفاتورة واتساب
+      </a>
+      <button class="btn btn-primary" onclick="closeModal();switchPage('clients',document.querySelectorAll('.nav-item')[2])">
+        👥 عرض العملاء
+      </button>
+      <button class="btn btn-outline" onclick="closeModal();initInvoiceForm()">
+        ➕ فاتورة جديدة
+      </button>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+  document.getElementById('modals-container').appendChild(modal);
+}
+
+function buildInvoiceText(invoice) {
+  let text = `🐟 فاتورة - الحاج أحمد الحديدي\n`;
+  text += `━━━━━━━━━━━━━━━\n`;
+  text += `👤 العميل: ${invoice.clientName}\n`;
+  text += `📅 التاريخ: ${invoice.dateStr}\n`;
+  text += `━━━━━━━━━━━━━━━\n`;
+  invoice.items.forEach(i => {
+    text += `🐟 ${i.fish}: ${i.kg} كيلو × ${i.pricePerKg} = ${i.subtotal.toFixed(2)} ج.م\n`;
+  });
+  text += `━━━━━━━━━━━━━━━\n`;
+  text += `💰 الإجمالي: ${invoice.total.toFixed(2)} ج.م\n`;
+  text += `━━━━━━━━━━━━━━━\n`;
+  text += `شكراً لتعاملكم معنا 🙏`;
+  return text;
+}
+
+window.closeModal = function() {
+  const m = document.querySelector('.modal-overlay');
+  if (m) m.remove();
+};
+
+// ============================================================
+// FIREBASE REALTIME LISTENERS
+// ============================================================
+function setupListeners() {
+  onValue(ref(db, 'invoices'), snap => {
+    window.appState.invoices = snap.val() || {};
+    updateDashboard();
+    renderHistory();
+    renderPricesPage();
+  });
+
+  onValue(ref(db, 'clients'), snap => {
+    window.appState.clients = snap.val() || {};
+    updateDashboard();
+    renderClients();
+    updateClientDatalist();
+  });
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function updateDashboard() {
+  const invoices = Object.values(window.appState.invoices);
+  const clients = Object.values(window.appState.clients);
+
+  const totalSales = invoices.reduce((s, i) => s + (i.total || 0), 0);
+  const totalDebt = clients.reduce((s, c) => s + (c.totalDebt || 0), 0);
+
+  document.getElementById('stat-total-sales').textContent = formatNum(totalSales);
+  document.getElementById('stat-total-debt').textContent = formatNum(totalDebt);
+  document.getElementById('stat-total-clients').textContent = clients.length;
+  document.getElementById('stat-total-invoices').textContent = invoices.length;
+
+  renderPriceLeaders();
+  renderRecentInvoices();
+}
+
+function renderPriceLeaders() {
+  const invoices = Object.values(window.appState.invoices);
+  const priceMap = {}; // { fishName: { maxPrice, clientName } }
+
+  invoices.forEach(inv => {
+    (inv.items || []).forEach(item => {
+      if (!priceMap[item.fish] || item.pricePerKg > priceMap[item.fish].maxPrice) {
+        priceMap[item.fish] = { maxPrice: item.pricePerKg, clientName: inv.clientName };
+      }
+    });
+  });
+
+  const entries = Object.entries(priceMap).sort((a,b) => b[1].maxPrice - a[1].maxPrice);
+  const container = document.getElementById('price-leaders-list');
+
+  if (entries.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div>';
+    return;
+  }
+
+  const medals = ['🥇','🥈','🥉'];
+  container.innerHTML = entries.slice(0, 6).map((e, i) => `
+    <div class="price-leader-card">
+      <div class="leader-rank">${medals[i] || '🐟'}</div>
+      <div class="leader-info">
+        <div class="leader-name">${e[0]}</div>
+        <div class="leader-fish">أعلى سعر: ${e[1].clientName}</div>
+      </div>
+      <div class="leader-price">${e[1].maxPrice} ج.م/كيلو</div>
+    </div>
+  `).join('');
+}
+
+function renderRecentInvoices() {
+  const invoices = Object.entries(window.appState.invoices)
+    .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0))
+    .slice(0, 5);
+
+  const container = document.getElementById('recent-invoices-list');
+  if (invoices.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div>';
+    return;
+  }
+
+  container.innerHTML = invoices.map(([id, inv]) => `
+    <div class="history-item" onclick="showInvoiceDetail('${id}')">
+      <div class="history-header">
+        <span class="history-client">👤 ${inv.clientName}</span>
+        <span class="history-amount">${formatNum(inv.total)} ج.م</span>
+      </div>
+      <div class="history-meta">📅 ${inv.dateStr} • ${(inv.items||[]).length} صنف</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// CLIENTS
+// ============================================================
+window.filterClients = function(filter, btn) {
+  window.appState.currentFilter = filter;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderClients();
+};
+
+window.renderClients = function() {
+  const search = (document.getElementById('client-search')?.value || '').toLowerCase();
+  const filter = window.appState.currentFilter;
+  const container = document.getElementById('clients-list');
+  if (!container) return;
+
+  let clients = Object.entries(window.appState.clients);
+  
+  if (search) clients = clients.filter(([,c]) => c.name?.toLowerCase().includes(search) || c.phone?.includes(search));
+  if (filter === 'debt') clients = clients.filter(([,c]) => (c.totalDebt||0) > 0);
+  if (filter === 'paid') clients = clients.filter(([,c]) => (c.totalDebt||0) <= 0);
+
+  if (clients.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء</div></div>';
+    return;
+  }
+
+  clients.sort((a,b) => (b[1].totalDebt||0) - (a[1].totalDebt||0));
+
+  container.innerHTML = clients.map(([key, c]) => {
+    const debt = c.totalDebt || 0;
+    const hasDebt = debt > 0;
+    return `
+      <div class="client-card ${hasDebt ? 'has-debt' : 'paid'}">
+        <div class="client-header">
+          <div>
+            <div class="client-name">👤 ${c.name}</div>
+            <div class="client-phone">📱 ${c.phone}</div>
+            ${c.shopName ? `<div style="font-size:11px;color:var(--text-secondary)">🏪 ${c.shopName}</div>` : ''}
+          </div>
+          <div class="client-balance">
+            <div class="balance-label">الرصيد</div>
+            <div class="balance-amount ${hasDebt ? 'debt' : 'paid'}">${formatNum(Math.abs(debt))}</div>
+            <div style="font-size:10px;text-align:left;color:${hasDebt?'var(--danger)':'var(--emerald)'}">ج.م ${hasDebt?'مدين':'مسوي'}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;font-size:11px;color:var(--text-secondary);margin-bottom:8px">
+          <span>📦 ${c.invoiceCount||0} فاتورة</span>
+          <span>•</span>
+          <span>💰 إجمالي ${formatNum(c.totalPurchases||0)} ج.م</span>
+        </div>
+        <div class="client-actions">
+          ${hasDebt ? `<button class="btn btn-success btn-sm" style="flex:1" onclick="showPaymentModal('${key}','${c.name}',${debt})">💳 دفع</button>` : ''}
+          <button class="btn btn-outline btn-sm" style="flex:1" onclick="showClientHistory('${key}','${c.name}')">📋 الفواتير</button>
+          <a href="https://wa.me/2${c.phone}?text=${encodeURIComponent(buildClientStatement(c))}" target="_blank" class="btn btn-whatsapp btn-sm" style="flex:1;text-decoration:none">📲</a>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+function buildClientStatement(client) {
+  const debt = client.totalDebt || 0;
+  let text = `🐟 كشف حساب - الحاج أحمد الحديدي\n`;
+  text += `━━━━━━━━━━━━━━━\n`;
+  text += `👤 العميل: ${client.name}\n`;
+  text += `📦 عدد الفواتير: ${client.invoiceCount||0}\n`;
+  text += `💰 إجمالي المشتريات: ${formatNum(client.totalPurchases||0)} ج.م\n`;
+  text += `✅ المدفوع: ${formatNum(client.totalPaid||0)} ج.م\n`;
+  text += `━━━━━━━━━━━━━━━\n`;
+  text += debt > 0 ? `⚠️ المتبقي: ${formatNum(debt)} ج.م\n` : `✅ الحساب مسوي\n`;
+  text += `شكراً لتعاملكم معنا 🙏`;
+  return text;
+}
+
+// ============================================================
+// PAYMENT MODAL
+// ============================================================
+window.showPaymentModal = function(clientKey, clientName, currentDebt) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">💳 تسجيل دفعة</div>
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:14px;color:var(--text-secondary)">${clientName}</div>
+        <div style="font-size:24px;font-weight:900;color:var(--danger)">${formatNum(currentDebt)} ج.م</div>
+        <div style="font-size:12px;color:var(--text-secondary)">الرصيد الحالي</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">المبلغ المدفوع (ج.م)</label>
+        <input type="number" id="payment-amount" class="form-input" placeholder="0" min="0" max="${currentDebt}" style="font-size:18px;text-align:center">
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:16px;padding:12px;background:var(--glass);border-radius:10px">
+        <span style="color:var(--text-secondary);font-size:13px">المتبقي بعد الدفع</span>
+        <span id="remaining-preview" style="font-weight:900;font-size:16px;color:var(--emerald)">${formatNum(currentDebt)} ج.م</span>
+      </div>
+      <button class="btn btn-success" onclick="processPayment('${clientKey}',${currentDebt})">✅ تأكيد الدفع</button>
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+  document.getElementById('modals-container').appendChild(modal);
+
+  document.getElementById('payment-amount').addEventListener('input', function() {
+    const paid = Math.min(parseFloat(this.value)||0, currentDebt);
+    const rem = Math.max(currentDebt - paid, 0);
+    document.getElementById('remaining-preview').textContent = formatNum(rem) + ' ج.م';
+  });
+};
+
+window.processPayment = async function(clientKey, currentDebt) {
+  const amount = parseFloat(document.getElementById('payment-amount').value) || 0;
+  if (amount <= 0) return showToast('❌ يرجى إدخال مبلغ صحيح');
+  
+  const actualPaid = Math.min(amount, currentDebt);
+  const newDebt = Math.max(currentDebt - actualPaid, 0);
+  
+  try {
+    const clientRef = ref(db, 'clients/' + clientKey);
+    const snap = await get(clientRef);
+    const existing = snap.val() || {};
+    
+    await update(clientRef, {
+      totalDebt: newDebt,
+      totalPaid: (existing.totalPaid || 0) + actualPaid
+    });
+
+    // Log payment
+    await push(ref(db, 'payments'), {
+      clientKey, amount: actualPaid, date: new Date().toISOString(),
+      dateStr: new Date().toLocaleDateString('ar-EG')
+    });
+
+    closeModal();
+    showToast(`✅ تم تسجيل دفعة ${formatNum(actualPaid)} ج.م`);
+  } catch (err) {
+    showToast('❌ خطأ: ' + err.message);
+  }
+};
+
+// ============================================================
+// HISTORY
+// ============================================================
+window.renderHistory = function() {
+  const search = (document.getElementById('history-search')?.value || '').toLowerCase();
+  const container = document.getElementById('history-list');
+  if (!container) return;
+
+  let invoices = Object.entries(window.appState.invoices)
+    .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
+
+  if (search) {
+    invoices = invoices.filter(([,i]) => i.clientName?.toLowerCase().includes(search) || i.phone?.includes(search));
+  }
+
+  if (invoices.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير</div></div>';
+    return;
+  }
+
+  container.innerHTML = invoices.map(([id, inv]) => `
+    <div class="history-item" onclick="showInvoiceDetail('${id}')">
+      <div class="history-header">
+        <span class="history-client">👤 ${inv.clientName}</span>
+        <span class="history-amount">${formatNum(inv.total)} ج.م</span>
+      </div>
+      <div class="history-meta">📅 ${inv.dateStr} • 📦 ${(inv.items||[]).length} صنف • 📱 ${inv.phone}</div>
+    </div>
+  `).join('');
+};
+
+window.showInvoiceDetail = function(id) {
+  const inv = window.appState.invoices[id];
+  if (!inv) return;
+  showInvoicePreview(inv, id);
+};
+
+// ============================================================
+// PRICES PAGE
+// ============================================================
+window.renderPricesPage = function() {
+  const invoices = Object.values(window.appState.invoices);
+  if (invoices.length === 0) return;
+
+  // Build fish -> prices map
+  const fishData = {};
+  invoices.forEach(inv => {
+    (inv.items||[]).forEach(item => {
+      if (!fishData[item.fish]) fishData[item.fish] = [];
+      fishData[item.fish].push({ client: inv.clientName, price: item.pricePerKg, kg: item.kg, date: inv.dateStr });
+    });
+  });
+
+  const fishes = Object.keys(fishData);
+  if (fishes.length === 0) return;
+
+  const tabBar = document.getElementById('prices-fish-tabs');
+  const content = document.getElementById('prices-content');
+  
+  tabBar.innerHTML = fishes.map((f, i) =>
+    `<button class="tab-btn ${i===0?'active':''}" onclick="showFishPrices('${f}',this)">${f}</button>`
+  ).join('');
+
+  window._fishPriceData = fishData;
+  showFishPrices(fishes[0], tabBar.children[0]);
+};
+
+window.showFishPrices = function(fishName, btn) {
+  document.querySelectorAll('#prices-fish-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const data = (window._fishPriceData || {})[fishName] || [];
+  const sorted = [...data].sort((a,b) => b.price - a.price);
+  const maxPrice = sorted[0]?.price || 0;
+
+  document.getElementById('prices-content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:12px;background:var(--glass);border-radius:10px">
+      <span style="color:var(--text-secondary);font-size:12px">أعلى سعر لـ${fishName}</span>
+      <span style="font-size:20px;font-weight:900;color:var(--gold)">${maxPrice} ج.م/كيلو</span>
+    </div>
+    <table class="price-table">
+      <thead>
+        <tr><th>#</th><th>العميل</th><th>الكيلو</th><th>السعر</th><th>التاريخ</th></tr>
+      </thead>
+      <tbody>
+        ${sorted.map((d, i) => `
+          <tr>
+            <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'•'}</td>
+            <td style="font-weight:600">${d.client}</td>
+            <td>${d.kg}</td>
+            <td style="color:${i===0?'var(--gold)':'var(--text-primary)'};font-weight:${i===0?900:400}">${d.price} ج.م</td>
+            <td style="font-size:10px;color:var(--text-secondary)">${d.date}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+};
+
+// ============================================================
+// CLIENT HISTORY MODAL
+// ============================================================
+window.showClientHistory = function(clientKey, clientName) {
+  const invoices = Object.entries(window.appState.invoices)
+    .filter(([,i]) => {
+      const client = window.appState.clients[clientKey];
+      return i.phone === client?.phone;
+    })
+    .sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">📋 فواتير ${clientName}</div>
+      <div style="max-height:60vh;overflow-y:auto">
+        ${invoices.length === 0 ? '<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير</div></div>' :
+        invoices.map(([id, inv]) => `
+          <div class="history-item" onclick="closeModal();showInvoiceDetail('${id}')">
+            <div class="history-header">
+              <span style="font-size:13px">📅 ${inv.dateStr}</span>
+              <span class="history-amount">${formatNum(inv.total)} ج.م</span>
+            </div>
+            <div class="history-meta">${(inv.items||[]).map(i=>i.fish).join(' • ')}</div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+  document.getElementById('modals-container').appendChild(modal);
+};
+
+// ============================================================
+// CLIENT DATALIST
+// ============================================================
+function updateClientDatalist() {
+  const dl = document.getElementById('clients-datalist');
+  if (!dl) return;
+  const clients = Object.values(window.appState.clients);
+  dl.innerHTML = clients.map(c => `<option value="${c.name}" data-phone="${c.phone}">`).join('');
+}
+
+document.getElementById('inv-client').addEventListener('input', function() {
+  const clients = Object.values(window.appState.clients);
+  const match = clients.find(c => c.name === this.value);
+  if (match) {
+    document.getElementById('inv-phone').value = match.phone;
+    document.getElementById('inv-shop').value = match.shopName || '';
+  }
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+window.showToast = function(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+function formatNum(n) {
+  return Math.round(n || 0).toLocaleString('ar-EG');
+}
+
+// ============================================================
+// PWA INSTALL
+// ============================================================
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  window.appState.deferredPrompt = e;
+  const container = document.getElementById('install-banner-container');
+  container.innerHTML = `
+    <div class="install-banner">
+      <div style="font-size:24px">📲</div>
+      <div class="install-banner-text">ثبّت التطبيق على شاشتك الرئيسية للوصول السريع!</div>
+      <button class="install-banner-btn" onclick="installPWA()">تثبيت</button>
+    </div>
+  `;
+});
+
+window.installPWA = async function() {
+  const prompt = window.appState.deferredPrompt;
+  if (!prompt) return;
+  prompt.prompt();
+  const result = await prompt.userChoice;
+  if (result.outcome === 'accepted') {
+    document.getElementById('install-banner-container').innerHTML = '';
+    showToast('✅ تم تثبيت التطبيق!');
+  }
+  window.appState.deferredPrompt = null;
+};
+
+// ============================================================
+// INIT
+// ============================================================
+init3DBackground();
+updateDate();
+setupListeners();
+initInvoiceForm();
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(e => console.log('SW:', e));
+}
+</script>
+</body>
+</html>
