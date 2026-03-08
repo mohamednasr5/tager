@@ -796,23 +796,50 @@ function addFishItem(fishName) {
   div.innerHTML = `
     <div class="fish-name">
       🐟 ${fishName}
-      ${isOther ? `<input type="text" id="${id}-custom" class="form-input" placeholder="اكتب اسم الصنف" style="font-size:12px;padding:6px 10px;width:140px" oninput="updateInvoiceSummary()">` : ''}
+      ${isOther ? `<input type="text" id="${id}-custom" class="form-input" placeholder="اكتب اسم الصنف" style="font-size:12px;padding:6px 10px;width:130px" oninput="updateInvoiceSummary()">` : ''}
       <span style="font-size:12px;color:var(--text-secondary)" id="${id}-total">0 ج.م</span>
     </div>
+
+    <!-- وحدة القياس -->
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <button id="${id}-unit-kg" onclick="setFishUnit('${id}','kg')"
+        style="flex:1;padding:6px;border-radius:8px;border:2px solid var(--cyan-glow);background:rgba(0,180,216,0.15);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s">
+        ⚖️ كيلو
+      </button>
+      <button id="${id}-unit-wqa" onclick="setFishUnit('${id}','wqa')"
+        style="flex:1;padding:6px;border-radius:8px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s">
+        🔵 وقة <span style="font-size:9px;opacity:0.7">(= 1.25 ك)</span>
+      </button>
+    </div>
+
+    <!-- تفاصيل التحويل - تظهر فقط عند الوقة -->
+    <div id="${id}-wqa-info" style="display:none;background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.25);border-radius:8px;padding:7px 10px;margin-bottom:8px;font-size:11px;color:var(--warning)">
+      📐 <span id="${id}-wqa-convert">0 وقة = 0 كيلو</span>
+    </div>
+
     <div class="fish-inputs">
       <div class="fish-input-group">
-        <label>الكيلو</label>
-        <input type="number" id="${id}-kg" placeholder="0" min="0" step="0.5" oninput="calcFishTotal('${id}')">
+        <label id="${id}-qty-label">الكيلو</label>
+        <input type="number" id="${id}-qty" placeholder="0" min="0" step="0.5"
+          oninput="calcFishTotal('${id}')"
+          style="font-size:14px;font-weight:700;text-align:center">
       </div>
       <div class="fish-input-group">
-        <label>سعر الكيلو</label>
-        <input type="number" id="${id}-price" placeholder="0" min="0" oninput="calcFishTotal('${id}')">
+        <label id="${id}-price-label">سعر الكيلو</label>
+        <input type="number" id="${id}-price" placeholder="0" min="0"
+          oninput="calcFishTotal('${id}')"
+          style="text-align:center">
       </div>
       <div class="fish-input-group">
         <label>الإجمالي</label>
-        <input type="number" id="${id}-subtotal" placeholder="0" readonly style="background:rgba(0,200,150,0.08);color:var(--emerald)">
+        <input type="number" id="${id}-subtotal" placeholder="0" readonly
+          style="background:rgba(0,200,150,0.08);color:var(--emerald);text-align:center">
       </div>
     </div>
+
+    <!-- Hidden field stores kg equivalent -->
+    <input type="hidden" id="${id}-kg" value="0">
+    <input type="hidden" id="${id}-unit" value="kg">
   `;
   container.appendChild(div);
   document.getElementById('invoice-summary').style.display = 'block';
@@ -827,14 +854,74 @@ function removeFishItem(fishName) {
   }
 }
 
+// setFishUnit: toggle between كيلو and وقة
+window.setFishUnit = function(id, unit) {
+  const kgBtn  = document.getElementById(id + '-unit-kg');
+  const wqaBtn = document.getElementById(id + '-unit-wqa');
+  const qtyLbl = document.getElementById(id + '-qty-label');
+  const prcLbl = document.getElementById(id + '-price-label');
+  const infoEl = document.getElementById(id + '-wqa-info');
+  const unitEl = document.getElementById(id + '-unit');
+
+  if (unit === 'wqa') {
+    kgBtn.style.borderColor  = 'var(--glass-border)';
+    kgBtn.style.background   = 'transparent';
+    kgBtn.style.color        = 'var(--text-secondary)';
+    wqaBtn.style.borderColor = 'var(--warning)';
+    wqaBtn.style.background  = 'rgba(255,165,0,0.15)';
+    wqaBtn.style.color       = 'var(--warning)';
+    if (qtyLbl) qtyLbl.textContent = 'عدد الوقات';
+    if (prcLbl) prcLbl.textContent = 'سعر الوقة';
+    if (infoEl) infoEl.style.display = 'block';
+  } else {
+    wqaBtn.style.borderColor = 'var(--glass-border)';
+    wqaBtn.style.background  = 'transparent';
+    wqaBtn.style.color       = 'var(--text-secondary)';
+    kgBtn.style.borderColor  = 'var(--cyan-glow)';
+    kgBtn.style.background   = 'rgba(0,180,216,0.15)';
+    kgBtn.style.color        = 'var(--cyan-glow)';
+    if (qtyLbl) qtyLbl.textContent = 'الكيلو';
+    if (prcLbl) prcLbl.textContent = 'سعر الكيلو';
+    if (infoEl) infoEl.style.display = 'none';
+  }
+  if (unitEl) unitEl.value = unit;
+  // Clear qty input when switching
+  const qtyInput = document.getElementById(id + '-qty');
+  if (qtyInput) qtyInput.value = '';
+  calcFishTotal(id);
+};
+
 window.calcFishTotal = function(id) {
-  const kg = parseFloat(document.getElementById(id+'-kg')?.value) || 0;
-  const price = parseFloat(document.getElementById(id+'-price')?.value) || 0;
-  const subtotal = kg * price;
-  const subEl = document.getElementById(id+'-subtotal');
-  const totalEl = document.getElementById(id+'-total');
-  if (subEl) subEl.value = subtotal.toFixed(2);
-  if (totalEl) totalEl.textContent = subtotal.toFixed(0) + ' ج.م';
+  const unit     = document.getElementById(id + '-unit')?.value || 'kg';
+  const qty      = parseFloat(document.getElementById(id + '-qty')?.value) || 0;
+  const priceRaw = parseFloat(document.getElementById(id + '-price')?.value) || 0;
+
+  // 1 وقة = 1.25 كيلو
+  const WQA_TO_KG = 1.25;
+  let kgEquiv, subtotal;
+
+  if (unit === 'wqa') {
+    kgEquiv  = qty * WQA_TO_KG;          // convert وقات to كيلو
+    // price entered is سعر الوقة → multiply by qty
+    subtotal = qty * priceRaw;
+    // Show conversion info
+    const infoEl = document.getElementById(id + '-wqa-info');
+    const cvEl   = document.getElementById(id + '-wqa-convert');
+    if (cvEl) cvEl.textContent = qty + ' وقة = ' + kgEquiv.toFixed(2) + ' كيلو';
+    if (infoEl && qty > 0) infoEl.style.display = 'block';
+  } else {
+    kgEquiv  = qty;
+    subtotal = qty * priceRaw;
+  }
+
+  // Store kg equivalent in hidden field
+  const kgHidden = document.getElementById(id + '-kg');
+  if (kgHidden) kgHidden.value = kgEquiv.toFixed(4);
+
+  const subEl   = document.getElementById(id + '-subtotal');
+  const totalEl = document.getElementById(id + '-total');
+  if (subEl)   subEl.value            = subtotal.toFixed(2);
+  if (totalEl) totalEl.textContent    = subtotal.toFixed(0) + ' ج.م';
   updateInvoiceSummary();
 };
 
@@ -896,16 +983,26 @@ window.saveInvoice = async function() {
   let total = 0;
 
   for (const fishName of window.appState.selectedFishes) {
-    const id = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
-    const kg = parseFloat(document.getElementById(id+'-kg')?.value) || 0;
-    const pricePerKg = parseFloat(document.getElementById(id+'-price')?.value) || 0;
-    const subtotal = kg * pricePerKg;
+    const id        = 'fish-' + fishName.replace(/\s+/g,'_').replace(/[^\w]/g,'');
+    const unit      = document.getElementById(id + '-unit')?.value || 'kg';
+    const qty       = parseFloat(document.getElementById(id + '-qty')?.value) || 0;
+    const kgEquiv   = parseFloat(document.getElementById(id + '-kg')?.value)  || qty;
+    const priceRaw  = parseFloat(document.getElementById(id + '-price')?.value) || 0;
+    const subtotal  = qty * priceRaw;
     let displayName = fishName;
     if (fishName === 'أخرى') {
-      displayName = document.getElementById(id+'-custom')?.value || 'أخرى';
+      displayName = document.getElementById(id + '-custom')?.value || 'أخرى';
     }
-    if (kg > 0) {
-      items.push({ fish: displayName, kg, pricePerKg, subtotal });
+    if (qty > 0) {
+      items.push({
+        fish: displayName,
+        unit,                         // 'kg' or 'wqa'
+        qty,                          // الكمية بالوحدة المختارة
+        kg: kgEquiv,                  // المكافئ بالكيلو دائماً
+        pricePerUnit: priceRaw,       // السعر بالوحدة المختارة
+        pricePerKg: unit === 'wqa' ? +(priceRaw / 1.25).toFixed(4) : priceRaw,
+        subtotal
+      });
       total += subtotal;
     }
   }
@@ -978,14 +1075,23 @@ window.saveInvoice = async function() {
 // INVOICE PREVIEW MODAL
 // ============================================================
 function showInvoicePreview(invoice, invoiceId) {
-  const itemsHtml = invoice.items.map(item => `
-    <tr>
+  const itemsHtml = invoice.items.map(item => {
+    const unitLabel  = item.unit === 'wqa' ? 'وقة' : 'كيلو';
+    const qtyDisplay = item.qty !== undefined ? item.qty : item.kg;
+    const priceDisplay = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+    const kgInfo = item.unit === 'wqa'
+      ? `<div style="font-size:9px;color:var(--warning);margin-top:2px">${item.qty} وقة = ${(item.kg||0).toFixed(2)} ك</div>`
+      : '';
+    return `<tr>
       <td>${item.fish}</td>
-      <td>${item.kg}</td>
-      <td>${item.pricePerKg}</td>
-      <td style="color:var(--gold);font-weight:700">${item.subtotal.toFixed(2)}</td>
-    </tr>
-  `).join('');
+      <td>
+        <div>${qtyDisplay} <span style="font-size:9px;color:var(--text-secondary)">${unitLabel}</span></div>
+        ${kgInfo}
+      </td>
+      <td>${priceDisplay} <span style="font-size:9px;color:var(--text-secondary)">/${unitLabel}</span></td>
+      <td style="color:var(--gold);font-weight:700">${(item.subtotal||0).toFixed(2)}</td>
+    </tr>`;
+  }).join('');
 
   const waMsg = encodeURIComponent(buildInvoiceText(invoice));
   const waNum = '2' + invoice.phone;
@@ -1010,7 +1116,7 @@ function showInvoicePreview(invoice, invoiceId) {
         <table class="invoice-table">
           <thead>
             <tr>
-              <th>الصنف</th><th>الكيلو</th><th>السعر</th><th>الإجمالي</th>
+              <th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th>
             </tr>
           </thead>
           <tbody>${itemsHtml}</tbody>
@@ -1077,9 +1183,16 @@ function buildInvoiceText(invoice) {
   text += `━━━━━━━━━━━━━━━━━━\n`;
   text += `*📦 تفاصيل الأصناف:*\n`;
   invoice.items.forEach((i,idx) => {
-    const sub = (i.subtotal||0).toFixed(2);
+    const sub        = (i.subtotal||0).toFixed(2);
+    const isWqa      = i.unit === 'wqa';
+    const qtyDisplay = i.qty !== undefined ? i.qty : i.kg;
+    const prcDisplay = i.pricePerUnit !== undefined ? i.pricePerUnit : i.pricePerKg;
+    const unitLabel  = isWqa ? 'وقة' : 'كيلو';
     text += `${idx+1}. 🐟 ${i.fish}\n`;
-    text += `    ${i.kg} كيلو × ${i.pricePerKg} ج.م/ك = *${sub} ج.م*\n`;
+    text += `    ${qtyDisplay} ${unitLabel} × ${prcDisplay} ج.م/${unitLabel} = *${sub} ج.م*\n`;
+    if (isWqa) {
+      text += `    📐 (${qtyDisplay} وقة = ${(i.kg||0).toFixed(2)} كيلو)\n`;
+    }
   });
   text += `━━━━━━━━━━━━━━━━━━\n`;
   text += `📦 إجمالي الفاتورة : *${gross.toFixed(2)} ج.م*\n`;
@@ -1347,7 +1460,12 @@ async function buildClientStatementFull(client, clientKey) {
       const hasComm = inv.commissionPct > 0;
       text += `\n${idx+1}. 🧾 ${inv.dateStr}\n`;
       inv.items.forEach(item => {
-        text += `   • ${item.fish}: ${item.kg}ك × ${item.pricePerKg} = ${(item.subtotal||0).toFixed(0)} ج.م\n`;
+        const isWqa     = item.unit === 'wqa';
+        const qty       = item.qty !== undefined ? item.qty : item.kg;
+        const prc       = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+        const unitLbl   = isWqa ? 'وقة' : 'ك';
+        const kgNote    = isWqa ? ` (=${(item.kg||0).toFixed(2)}ك)` : '';
+        text += `   • ${item.fish}: ${qty}${unitLbl}${kgNote} × ${prc} = ${(item.subtotal||0).toFixed(0)} ج.م\n`;
       });
       text += `   📦 إجمالي: ${formatNum(gross)} ج.م\n`;
       if (hasComm) {
@@ -2033,23 +2151,41 @@ window.editInvoiceModal = function(invoiceId) {
 
       <div style="background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:12px;margin-bottom:12px">
         <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-weight:700">📦 الأصناف والكميات</div>
-        ${(inv.items||[]).map((item, idx) => `
+        ${(inv.items||[]).map((item, idx) => {
+          const isWqa   = item.unit === 'wqa';
+          const qty     = item.qty !== undefined ? item.qty : item.kg;
+          const prc     = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+          const unitLbl = isWqa ? 'وقة' : 'كيلو';
+          return `
           <div style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:10px;padding:10px;margin-bottom:8px">
-            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">🐟 ${item.fish}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="font-size:12px;font-weight:700;color:var(--gold)">🐟 ${item.fish}</div>
+              <div style="display:flex;gap:4px">
+                <button id="ei-unit-kg-${idx}" onclick="toggleEditUnit(${idx},'kg')"
+                  style="padding:4px 8px;border-radius:6px;border:${isWqa?'1px solid var(--glass-border)':'2px solid var(--cyan-glow)'};background:${isWqa?'transparent':'rgba(0,180,216,0.15)'};color:${isWqa?'var(--text-secondary)':'var(--cyan-glow)'};font-family:'Cairo',sans-serif;font-size:10px;font-weight:700;cursor:pointer">
+                  كيلو
+                </button>
+                <button id="ei-unit-wqa-${idx}" onclick="toggleEditUnit(${idx},'wqa')"
+                  style="padding:4px 8px;border-radius:6px;border:${isWqa?'2px solid var(--warning)':'1px solid var(--glass-border)'};background:${isWqa?'rgba(255,165,0,0.15)':'transparent'};color:${isWqa?'var(--warning)':'var(--text-secondary)'};font-family:'Cairo',sans-serif;font-size:10px;font-weight:700;cursor:pointer">
+                  وقة
+                </button>
+                <input type="hidden" id="ei-unit-${idx}" value="${item.unit||'kg'}">
+              </div>
+            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
               <div>
-                <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">الكيلو</label>
-                <input type="number" id="ei-kg-${idx}" class="form-input" value="${item.kg}" min="0" step="0.5"
+                <label id="ei-qty-lbl-${idx}" style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">${unitLbl}</label>
+                <input type="number" id="ei-kg-${idx}" class="form-input" value="${qty}" min="0" step="0.5"
                   oninput="calcEditInvoice(${gross})" style="padding:8px;text-align:center">
               </div>
               <div>
-                <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">سعر الكيلو</label>
-                <input type="number" id="ei-price-${idx}" class="form-input" value="${item.pricePerKg}" min="0"
+                <label id="ei-prc-lbl-${idx}" style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">سعر ال${unitLbl}</label>
+                <input type="number" id="ei-price-${idx}" class="form-input" value="${prc}" min="0"
                   oninput="calcEditInvoice(${gross})" style="padding:8px;text-align:center">
               </div>
             </div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
 
       <!-- Live preview -->
@@ -2130,11 +2266,23 @@ window.saveEditInvoice = async function(invoiceId) {
   if (!newClientName) return showToast('❌ اسم العميل مطلوب');
   if (!validatePhone(newPhone)) return showToast('❌ رقم الهاتف غير صحيح');
 
-  // Recalculate items
+  // Recalculate items with unit support
+  const WQA_TO_KG = 1.25;
   const newItems = (window._editItems || []).map((item, idx) => {
-    const kg       = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
-    const price    = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
-    return { ...item, kg, pricePerKg: price, subtotal: kg * price };
+    const unit     = document.getElementById('ei-unit-' + idx)?.value || item.unit || 'kg';
+    const qty      = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
+    const priceRaw = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
+    const kgEquiv  = unit === 'wqa' ? qty * WQA_TO_KG : qty;
+    const subtotal = qty * priceRaw;
+    return {
+      ...item,
+      unit,
+      qty,
+      kg: kgEquiv,
+      pricePerUnit: priceRaw,
+      pricePerKg: unit === 'wqa' ? +(priceRaw / WQA_TO_KG).toFixed(4) : priceRaw,
+      subtotal
+    };
   });
 
   const newGross   = newItems.reduce((s, i) => s + i.subtotal, 0);
@@ -2411,6 +2559,28 @@ async function deleteClient(clientKey) {
   } catch(e) { showToast('❌ خطأ: ' + e.message); }
 }
 
+
+// Toggle unit in edit invoice modal
+window.toggleEditUnit = function(idx, unit) {
+  const kgBtn  = document.getElementById('ei-unit-kg-' + idx);
+  const wqaBtn = document.getElementById('ei-unit-wqa-' + idx);
+  const unitEl = document.getElementById('ei-unit-' + idx);
+  const qtyLbl = document.getElementById('ei-qty-lbl-' + idx);
+  const prcLbl = document.getElementById('ei-prc-lbl-' + idx);
+
+  if (unit === 'wqa') {
+    kgBtn.style.border  = '1px solid var(--glass-border)'; kgBtn.style.background  = 'transparent'; kgBtn.style.color  = 'var(--text-secondary)';
+    wqaBtn.style.border = '2px solid var(--warning)';      wqaBtn.style.background = 'rgba(255,165,0,0.15)'; wqaBtn.style.color = 'var(--warning)';
+    if (qtyLbl) qtyLbl.textContent = 'وقة';
+    if (prcLbl) prcLbl.textContent = 'سعر الوقة';
+  } else {
+    wqaBtn.style.border = '1px solid var(--glass-border)'; wqaBtn.style.background = 'transparent'; wqaBtn.style.color = 'var(--text-secondary)';
+    kgBtn.style.border  = '2px solid var(--cyan-glow)';    kgBtn.style.background  = 'rgba(0,180,216,0.15)'; kgBtn.style.color  = 'var(--cyan-glow)';
+    if (qtyLbl) qtyLbl.textContent = 'كيلو';
+    if (prcLbl) prcLbl.textContent = 'سعر الكيلو';
+  }
+  if (unitEl) unitEl.value = unit;
+};
 // ============================================================
 // INIT
 // ============================================================
