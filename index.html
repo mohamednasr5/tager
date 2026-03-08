@@ -1041,12 +1041,24 @@ function showInvoicePreview(invoice, invoiceId) {
       <a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="btn btn-whatsapp">
         📲 إرسال الفاتورة واتساب
       </a>
-      <button class="btn btn-primary" onclick="closeModal();switchPage('clients',document.querySelectorAll('.nav-item')[2])">
-        👥 عرض العملاء
-      </button>
-      <button class="btn btn-outline" onclick="closeModal();initInvoiceForm()">
-        ➕ فاتورة جديدة
-      </button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <button class="btn" onclick="closeModal();editInvoiceModal('${invoiceId}')"
+          style="background:linear-gradient(135deg,rgba(255,165,0,0.2),rgba(255,165,0,0.1));border:1px solid rgba(255,165,0,0.4);color:var(--warning)">
+          ✏️ تعديل الفاتورة
+        </button>
+        <button class="btn" onclick="closeModal();confirmDeleteInvoice('${invoiceId}','${invoice.clientName}')"
+          style="background:linear-gradient(135deg,rgba(255,71,87,0.2),rgba(255,71,87,0.1));border:1px solid rgba(255,71,87,0.4);color:var(--danger)">
+          🗑️ حذف الفاتورة
+        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-primary" onclick="closeModal();switchPage('clients',document.querySelectorAll('.nav-item')[2])">
+          👥 العملاء
+        </button>
+        <button class="btn btn-outline" onclick="closeModal();initInvoiceForm()">
+          ➕ فاتورة جديدة
+        </button>
+      </div>
     </div>
   `;
   modal.onclick = (e) => { if (e.target === modal) closeModal(); };
@@ -1055,24 +1067,31 @@ function showInvoicePreview(invoice, invoiceId) {
 
 function buildInvoiceText(invoice) {
   const gross = invoice.gross || invoice.total;
-  let text = `🐟 فاتورة - الحاج أحمد الحديدي\n`;
-  text += `━━━━━━━━━━━━━━━\n`;
-  text += `👤 العميل: ${invoice.clientName}\n`;
+  const hasComm = invoice.commissionPct > 0;
+  let text = '';
+  text += `🐟 *فاتورة - الحاج أحمد الحديدي*\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+  text += `👤 العميل : ${invoice.clientName}\n`;
+  if (invoice.shopName) text += `🏪 المؤسسة: ${invoice.shopName}\n`;
   text += `📅 التاريخ: ${invoice.dateStr}\n`;
-  text += `━━━━━━━━━━━━━━━\n`;
-  invoice.items.forEach(i => {
-    text += `🐟 ${i.fish}: ${i.kg} كيلو × ${i.pricePerKg} = ${i.subtotal.toFixed(2)} ج.م\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+  text += `*📦 تفاصيل الأصناف:*\n`;
+  invoice.items.forEach((i,idx) => {
+    const sub = (i.subtotal||0).toFixed(2);
+    text += `${idx+1}. 🐟 ${i.fish}\n`;
+    text += `    ${i.kg} كيلو × ${i.pricePerKg} ج.م/ك = *${sub} ج.م*\n`;
   });
-  text += `━━━━━━━━━━━━━━━\n`;
-  text += `📦 إجمالي الفاتورة: ${gross.toFixed(2)} ج.م\n`;
-  if (invoice.commissionPct > 0) {
-    text += `🤝 عمولة التاجر (${invoice.commissionPct}%): - ${(invoice.commissionAmt||0).toFixed(2)} ج.م\n`;
-    text += `━━━━━━━━━━━━━━━\n`;
-    text += `💰 المتبقى على التاجر: ${invoice.total.toFixed(2)} ج.م\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+  text += `📦 إجمالي الفاتورة : *${gross.toFixed(2)} ج.م*\n`;
+  if (hasComm) {
+    const commAmt = (invoice.commissionAmt || (gross * invoice.commissionPct / 100));
+    text += `🤝 عمولة التاجر (${invoice.commissionPct}%) : *- ${commAmt.toFixed(2)} ج.م*\n`;
+    text += `─────────────────────\n`;
+    text += `💰 *المتبقى على التاجر : ${invoice.total.toFixed(2)} ج.م*\n`;
   } else {
-    text += `💰 الإجمالي: ${invoice.total.toFixed(2)} ج.م\n`;
+    text += `💰 *الإجمالي : ${invoice.total.toFixed(2)} ج.م*\n`;
   }
-  text += `━━━━━━━━━━━━━━━\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
   text += `شكراً لتعاملكم معنا 🙏`;
   return text;
 }
@@ -1247,31 +1266,149 @@ window.renderClients = function() {
             <span>•</span>
             <span>💰 ${formatNum(totalPurchases)} ج.م</span>
           </div>
-          ${hasDebt
-            ? `<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--emerald),#00875a);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;color:white;box-shadow:0 3px 12px rgba(0,200,150,0.4)">
-                💳 دفع
-              </div>`
-            : `<div style="font-size:11px;color:var(--emerald);font-weight:600">مسوّي ✓</div>`
-          }
+          <div style="display:flex;align-items:center;gap:6px">
+            <button onclick="event.stopPropagation();editClientModal('${key}')"
+              style="padding:6px 10px;border-radius:14px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
+              ✏️ تعديل
+            </button>
+            <button onclick="event.stopPropagation();confirmDeleteClient('${key}','${c.name}')"
+              style="padding:6px 10px;border-radius:14px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
+              🗑️
+            </button>
+            ${hasDebt
+              ? `<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--emerald),#00875a);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;color:white;box-shadow:0 3px 12px rgba(0,200,150,0.4)">
+                  💳 دفع
+                </div>`
+              : `<div style="font-size:11px;color:var(--emerald);font-weight:600">مسوّي ✓</div>`
+            }
+          </div>
         </div>
       </div>
     `;
   }).join('');
 };
 
+// Sync version for quick use (no payments detail)
 function buildClientStatement(client) {
   const debt = client.totalDebt || 0;
-  let text = `🐟 كشف حساب - الحاج أحمد الحديدي\n`;
-  text += `━━━━━━━━━━━━━━━\n`;
-  text += `👤 العميل: ${client.name}\n`;
-  text += `📦 عدد الفواتير: ${client.invoiceCount||0}\n`;
-  text += `💰 إجمالي المشتريات: ${formatNum(client.totalPurchases||0)} ج.م\n`;
-  text += `✅ المدفوع: ${formatNum(client.totalPaid||0)} ج.م\n`;
-  text += `━━━━━━━━━━━━━━━\n`;
-  text += debt > 0 ? `⚠️ المتبقي: ${formatNum(debt)} ج.م\n` : `✅ الحساب مسوي\n`;
+  let text = '';
+  text += `🐟 *كشف حساب - الحاج أحمد الحديدي*\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+  text += `👤 العميل : ${client.name}\n`;
+  if (client.shopName) text += `🏪 المؤسسة: ${client.shopName}\n`;
+  if (client.phone)    text += `📱 الهاتف  : ${client.phone}\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+  text += `📦 عدد الفواتير      : ${client.invoiceCount||0}\n`;
+  text += `💰 إجمالي المشتريات : *${formatNum(client.totalPurchases||0)} ج.م*\n`;
+  text += `✅ إجمالي المدفوع   : *${formatNum(client.totalPaid||0)} ج.م*\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+  text += debt > 0
+    ? `⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n`
+    : `✅ *الحساب مسوّي بالكامل*\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
   text += `شكراً لتعاملكم معنا 🙏`;
   return text;
 }
+
+// Async version — fetches full payments list then opens WhatsApp
+async function buildClientStatementFull(client, clientKey) {
+  const debt = client.totalDebt || 0;
+  const now  = new Date().toLocaleDateString('ar-EG');
+
+  // Fetch invoices for this client
+  const clientInvoices = Object.entries(window.appState.invoices)
+    .filter(([,i]) => i.phone === client.phone)
+    .sort((a,b) => (a[1].createdAt||0) - (b[1].createdAt||0));
+
+  // Fetch payments for this client
+  let clientPayments = [];
+  try {
+    const snap = await get(ref(db, 'payments'));
+    const all  = snap.val() || {};
+    clientPayments = Object.entries(all)
+      .filter(([,p]) => p.clientKey === clientKey)
+      .sort((a,b) => new Date(a[1].customDate||a[1].date) - new Date(b[1].customDate||b[1].date));
+  } catch(e) {}
+
+  let text = '';
+  text += `🐟 *كشف حساب كامل - الحاج أحمد الحديدي*\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+  text += `👤 العميل : *${client.name}*\n`;
+  if (client.shopName) text += `🏪 المؤسسة: ${client.shopName}\n`;
+  if (client.phone)    text += `📱 الهاتف  : ${client.phone}\n`;
+  text += `📅 تاريخ الكشف: ${now}\n`;
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+
+  // --- Invoices section ---
+  if (clientInvoices.length > 0) {
+    text += `\n*📦 الفواتير (${clientInvoices.length}):*\n`;
+    clientInvoices.forEach(([,inv], idx) => {
+      const gross   = inv.gross || inv.total;
+      const hasComm = inv.commissionPct > 0;
+      text += `\n${idx+1}. 🧾 ${inv.dateStr}\n`;
+      inv.items.forEach(item => {
+        text += `   • ${item.fish}: ${item.kg}ك × ${item.pricePerKg} = ${(item.subtotal||0).toFixed(0)} ج.م\n`;
+      });
+      text += `   📦 إجمالي: ${formatNum(gross)} ج.م\n`;
+      if (hasComm) {
+        const commAmt = inv.commissionAmt || (gross * inv.commissionPct / 100);
+        text += `   🤝 عمولة (${inv.commissionPct}%): - ${commAmt.toFixed(0)} ج.م\n`;
+        text += `   💰 *صافي: ${formatNum(inv.total)} ج.م*\n`;
+      } else {
+        text += `   💰 *الإجمالي: ${formatNum(inv.total)} ج.م*\n`;
+      }
+    });
+  }
+
+  // --- Payments section ---
+  if (clientPayments.length > 0) {
+    text += `\n━━━━━━━━━━━━━━━━━━\n`;
+    text += `*💳 الدفعات المُسدَّدة (${clientPayments.length}):*\n`;
+    let runningTotal = 0;
+    clientPayments.forEach(([,pay], idx) => {
+      runningTotal += pay.amount || 0;
+      const payDate = pay.customDate
+        ? new Date(pay.customDate + 'T12:00:00').toLocaleDateString('ar-EG')
+        : (pay.dateStr || '');
+      text += `\n${idx+1}. ✅ ${payDate}\n`;
+      text += `   المبلغ  : *${formatNum(pay.amount)} ج.م*\n`;
+      if (pay.from && pay.from !== client.name) text += `   استُلم من: ${pay.from}\n`;
+      if (pay.notes) text += `   ملاحظات : ${pay.notes}\n`;
+      text += `   متبقي بعدها: ${formatNum(pay.remainingAfter)} ج.م\n`;
+    });
+    text += `\n📊 إجمالي ما دُفع: *${formatNum(runningTotal)} ج.م*\n`;
+  } else {
+    text += `\n━━━━━━━━━━━━━━━━━━\n`;
+    text += `💳 لا توجد دفعات مسجلة\n`;
+  }
+
+  // --- Final balance ---
+  text += `\n━━━━━━━━━━━━━━━━━━\n`;
+  text += `💰 إجمالي المشتريات : *${formatNum(client.totalPurchases||0)} ج.م*\n`;
+  text += `✅ إجمالي المدفوع   : *${formatNum(client.totalPaid||0)} ج.م*\n`;
+  if (debt > 0) {
+    text += `⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n`;
+  } else {
+    text += `✅ *الحساب مسوّي بالكامل* ✅\n`;
+  }
+  text += `━━━━━━━━━━━━━━━━━━\n`;
+  text += `شكراً لتعاملكم معنا 🙏`;
+  return text;
+}
+
+// Called from WhatsApp button in client account screen
+window.sendClientStatementWA = async function(clientKey) {
+  const c = window.appState.clients[clientKey];
+  if (!c) return;
+  showToast('⏳ جاري تحضير الكشف...');
+  try {
+    const text = await buildClientStatementFull(c, clientKey);
+    const url  = `https://wa.me/2${c.phone}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  } catch(e) {
+    showToast('❌ خطأ: ' + e.message);
+  }
+};
 
 // ============================================================
 // CLIENT ACCOUNT - FULL SCREEN
@@ -1307,7 +1444,6 @@ window.showClientAccount = async function(clientKey) {
     ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts: new Date(pay.date).getTime() }))
   ].sort((a,b) => b.ts - a.ts);
 
-  const waText = encodeURIComponent(buildClientStatement(c));
   const todayISO = new Date().toISOString().split('T')[0];
 
   const modal = document.createElement('div');
@@ -1326,8 +1462,8 @@ window.showClientAccount = async function(clientKey) {
           ${c.shopName?`<div style="font-size:10px;color:var(--text-secondary)">🏪 ${c.shopName}</div>`:''}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <a href="https://wa.me/2${c.phone}?text=${waText}" target="_blank"
-            style="text-decoration:none;background:linear-gradient(135deg,#25D366,#128C7E);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center">📲</a>
+          <button onclick="sendClientStatementWA('${clientKey}')"
+            style="text-decoration:none;background:linear-gradient(135deg,#25D366,#128C7E);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center;border:none;cursor:pointer" title="إرسال كشف الحساب كاملاً على واتساب">📲</button>
           <button onclick="showClientAccount('${clientKey}')" 
             style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:9px 11px;border-radius:10px;font-size:16px;cursor:pointer;color:var(--cyan-glow)" title="تحديث">🔄</button>
         </div>
@@ -1495,6 +1631,12 @@ window.showClientAccount = async function(clientKey) {
                   <div style="font-size:14px;font-weight:900;color:var(--emerald)">-${formatNum(pay.amount)}</div>
                   <div style="font-size:9px;color:var(--text-secondary)">ج.م دفع</div>
                   <div style="font-size:10px;color:var(--danger);margin-top:2px">متبقي: ${formatNum(pay.remainingAfter)}</div>
+                  <div style="display:flex;gap:4px;margin-top:6px">
+                    <button onclick="editPaymentModal('${item.id}','${clientKey}')"
+                      style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:10px;cursor:pointer">✏️</button>
+                    <button onclick="confirmDeletePayment('${item.id}','${clientKey}',${pay.amount},${pay.remainingAfter})"
+                      style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:10px;cursor:pointer">🗑️</button>
+                  </div>
                 </div>
               </div>
             `;
@@ -1608,15 +1750,37 @@ window.renderHistory = function() {
     return;
   }
 
-  container.innerHTML = invoices.map(([id, inv]) => `
-    <div class="history-item" onclick="showInvoiceDetail('${id}')">
-      <div class="history-header">
+  container.innerHTML = invoices.map(([id, inv]) => {
+    const gross = inv.gross || inv.total;
+    return `
+    <div class="history-item">
+      <div class="history-header" onclick="showInvoiceDetail('${id}')" style="cursor:pointer">
         <span class="history-client">👤 ${inv.clientName}</span>
-        <span class="history-amount">${formatNum(inv.total)} ج.م</span>
+        <div style="text-align:left">
+          <div class="history-amount">${formatNum(inv.total)} ج.م</div>
+          ${inv.commissionPct > 0 ? `<div style="font-size:10px;color:var(--warning)">قبل العمولة: ${formatNum(gross)} ج.م</div>` : ''}
+        </div>
       </div>
-      <div class="history-meta">📅 ${inv.dateStr} • 📦 ${(inv.items||[]).length} صنف • 📱 ${inv.phone}</div>
+      <div class="history-meta" onclick="showInvoiceDetail('${id}')" style="cursor:pointer;margin-bottom:8px">
+        📅 ${inv.dateStr} • 📦 ${(inv.items||[]).length} صنف
+        ${inv.commissionPct > 0 ? ` • 🤝 عمولة ${inv.commissionPct}%` : ''}
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="showInvoiceDetail('${id}')"
+          style="flex:2;padding:7px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,180,216,0.1);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
+          👁️ عرض
+        </button>
+        <button onclick="editInvoiceModal('${id}')"
+          style="flex:2;padding:7px;border-radius:8px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
+          ✏️ تعديل
+        </button>
+        <button onclick="confirmDeleteInvoice('${id}','${inv.clientName}')"
+          style="flex:1;padding:7px;border-radius:8px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">
+          🗑️
+        </button>
+      </div>
     </div>
-  `).join('');
+  `}).join('');
 };
 
 window.showInvoiceDetail = function(id) {
@@ -1758,6 +1922,494 @@ window.installPWA = async function() {
   }
   window.appState.deferredPrompt = null;
 };
+
+
+// ============================================================
+// CONFIRM DELETE — REUSABLE
+// ============================================================
+function showConfirmModal({ icon, title, msg, confirmLabel, confirmColor, onConfirm }) {
+  const old = document.getElementById('confirm-modal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'confirm-modal';
+  modal.innerHTML = `
+    <div class="modal-sheet" style="max-height:50vh;text-align:center">
+      <div class="modal-handle"></div>
+      <div style="font-size:44px;margin:8px 0">${icon}</div>
+      <div style="font-size:17px;font-weight:900;color:var(--text-primary);margin-bottom:8px">${title}</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.6">${msg}</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('confirm-modal').remove()"
+          style="flex:1;padding:13px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer">
+          إلغاء
+        </button>
+        <button id="confirm-action-btn"
+          style="flex:2;padding:13px;border-radius:12px;border:none;background:${confirmColor};color:white;font-family:'Cairo',sans-serif;font-size:14px;font-weight:900;cursor:pointer">
+          ${confirmLabel}
+        </button>
+      </div>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  document.getElementById('modals-container').appendChild(modal);
+  document.getElementById('confirm-action-btn').onclick = async () => {
+    const btn = document.getElementById('confirm-action-btn');
+    btn.innerHTML = '<span class="spinner"></span>';
+    btn.disabled = true;
+    await onConfirm();
+    modal.remove();
+  };
+}
+
+// ============================================================
+// DELETE INVOICE
+// ============================================================
+window.confirmDeleteInvoice = function(invoiceId, clientName) {
+  const inv = window.appState.invoices[invoiceId];
+  if (!inv) return;
+  showConfirmModal({
+    icon: '🗑️',
+    title: 'حذف الفاتورة',
+    msg: `هل تريد حذف فاتورة <strong>${clientName}</strong> بقيمة <strong>${formatNum(inv.total)} ج.م</strong>؟<br><span style="color:var(--danger);font-size:11px">سيتم تحديث رصيد العميل تلقائياً</span>`,
+    confirmLabel: '🗑️ حذف نهائي',
+    confirmColor: 'linear-gradient(135deg,var(--danger),#c0392b)',
+    onConfirm: () => deleteInvoice(invoiceId)
+  });
+};
+
+async function deleteInvoice(invoiceId) {
+  const inv = window.appState.invoices[invoiceId];
+  if (!inv) return;
+  try {
+    // Reverse client debt
+    const clientKey = inv.phone;
+    const clientRef = ref(db, 'clients/' + clientKey);
+    const snap = await get(clientRef);
+    if (snap.exists()) {
+      const c = snap.val();
+      const newDebt = Math.max((c.totalDebt || 0) - inv.total, 0);
+      const newPurchases = Math.max((c.totalPurchases || 0) - inv.total, 0);
+      const newCount = Math.max((c.invoiceCount || 1) - 1, 0);
+      await update(clientRef, { totalDebt: newDebt, totalPurchases: newPurchases, invoiceCount: newCount });
+    }
+    await remove(ref(db, 'invoices/' + invoiceId));
+    showToast('✅ تم حذف الفاتورة وتحديث رصيد العميل');
+  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+}
+
+// ============================================================
+// EDIT INVOICE MODAL
+// ============================================================
+window.editInvoiceModal = function(invoiceId) {
+  const inv = window.appState.invoices[invoiceId];
+  if (!inv) return;
+  const gross = inv.gross || inv.total;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'edit-invoice-modal';
+  modal.innerHTML = `
+    <div class="modal-sheet" style="max-height:90vh">
+      <div class="modal-handle"></div>
+      <div style="font-size:17px;font-weight:900;color:var(--gold);text-align:center;margin-bottom:16px">✏️ تعديل الفاتورة</div>
+
+      <div class="form-group">
+        <label class="form-label">👤 اسم العميل</label>
+        <input type="text" id="ei-client" class="form-input" value="${inv.clientName}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">📱 رقم الهاتف</label>
+        <input type="tel" id="ei-phone" class="form-input" value="${inv.phone}" maxlength="11" dir="ltr">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🏪 اسم المؤسسة</label>
+        <input type="text" id="ei-shop" class="form-input" value="${inv.shopName||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🤝 عمولة التاجر (%)</label>
+        <input type="number" id="ei-commission" class="form-input" value="${inv.commissionPct||0}" min="0" max="100" step="0.5" oninput="calcEditInvoice(${gross})">
+      </div>
+
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:12px;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-weight:700">📦 الأصناف والكميات</div>
+        ${(inv.items||[]).map((item, idx) => `
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:10px;padding:10px;margin-bottom:8px">
+            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">🐟 ${item.fish}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">الكيلو</label>
+                <input type="number" id="ei-kg-${idx}" class="form-input" value="${item.kg}" min="0" step="0.5"
+                  oninput="calcEditInvoice(${gross})" style="padding:8px;text-align:center">
+              </div>
+              <div>
+                <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:3px">سعر الكيلو</label>
+                <input type="number" id="ei-price-${idx}" class="form-input" value="${item.pricePerKg}" min="0"
+                  oninput="calcEditInvoice(${gross})" style="padding:8px;text-align:center">
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Live preview -->
+      <div id="ei-preview" style="background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.25);border-radius:12px;padding:12px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الفاتورة</span>
+          <span id="ei-gross-label" style="font-size:13px;font-weight:700;color:var(--text-primary)">${formatNum(gross)} ج.م</span>
+        </div>
+        <div id="ei-comm-row" style="display:${inv.commissionPct>0?'flex':'none'};justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--warning)">🤝 العمولة (<span id="ei-comm-pct">${inv.commissionPct||0}</span>%)</span>
+          <span id="ei-comm-val" style="font-size:13px;font-weight:700;color:var(--warning)">- ${formatNum(inv.commissionAmt||0)} ج.م</span>
+        </div>
+        <div style="height:1px;background:rgba(255,215,0,0.2);margin:6px 0"></div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:13px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span>
+          <span id="ei-net-label" style="font-size:18px;font-weight:900;color:var(--gold)">${formatNum(inv.total)} ج.م</span>
+        </div>
+      </div>
+
+      <button onclick="saveEditInvoice('${invoiceId}')"
+        style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--warning),#e67e00);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">
+        💾 حفظ التعديلات
+      </button>
+      <button onclick="closeEditInvoiceModal()"
+        style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">
+        إلغاء
+      </button>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) closeEditInvoiceModal(); };
+  const existing = document.getElementById('edit-invoice-modal');
+  if (existing) existing.remove();
+  document.getElementById('modals-container').appendChild(modal);
+
+  // Store items count for calcEditInvoice
+  window._editItems = inv.items || [];
+};
+
+window.closeEditInvoiceModal = function() {
+  const m = document.getElementById('edit-invoice-modal');
+  if (m) m.remove();
+};
+
+window.calcEditInvoice = function(originalGross) {
+  // Recalculate gross from item inputs
+  let newGross = 0;
+  (window._editItems || []).forEach((item, idx) => {
+    const kg    = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
+    const price = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
+    newGross += kg * price;
+  });
+  const commPct = parseFloat(document.getElementById('ei-commission')?.value) || 0;
+  const commAmt = (newGross * commPct) / 100;
+  const net     = newGross - commAmt;
+
+  const grossEl   = document.getElementById('ei-gross-label');
+  const commRow   = document.getElementById('ei-comm-row');
+  const commPctEl = document.getElementById('ei-comm-pct');
+  const commValEl = document.getElementById('ei-comm-val');
+  const netEl     = document.getElementById('ei-net-label');
+
+  if (grossEl)   grossEl.textContent   = formatNum(newGross) + ' ج.م';
+  if (commPctEl) commPctEl.textContent = commPct;
+  if (commValEl) commValEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
+  if (netEl)     netEl.textContent     = formatNum(net) + ' ج.م';
+  if (commRow)   commRow.style.display = commPct > 0 ? 'flex' : 'none';
+};
+
+window.saveEditInvoice = async function(invoiceId) {
+  const inv = window.appState.invoices[invoiceId];
+  if (!inv) return;
+
+  const newClientName  = document.getElementById('ei-client')?.value.trim();
+  const newPhone       = document.getElementById('ei-phone')?.value.trim();
+  const newShop        = document.getElementById('ei-shop')?.value.trim();
+  const newCommPct     = parseFloat(document.getElementById('ei-commission')?.value) || 0;
+
+  if (!newClientName) return showToast('❌ اسم العميل مطلوب');
+  if (!validatePhone(newPhone)) return showToast('❌ رقم الهاتف غير صحيح');
+
+  // Recalculate items
+  const newItems = (window._editItems || []).map((item, idx) => {
+    const kg       = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
+    const price    = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
+    return { ...item, kg, pricePerKg: price, subtotal: kg * price };
+  });
+
+  const newGross   = newItems.reduce((s, i) => s + i.subtotal, 0);
+  const newCommAmt = (newGross * newCommPct) / 100;
+  const newNet     = newGross - newCommAmt;
+  const oldNet     = inv.total;
+  const diff       = newNet - oldNet; // positive = more debt, negative = less debt
+
+  try {
+    // Update invoice
+    await update(ref(db, 'invoices/' + invoiceId), {
+      clientName:    newClientName,
+      phone:         newPhone,
+      shopName:      newShop,
+      items:         newItems,
+      gross:         newGross,
+      commissionPct: newCommPct,
+      commissionAmt: newCommAmt,
+      total:         newNet,
+      remaining:     newNet
+    });
+
+    // Adjust client balance by the difference
+    const clientKey = inv.phone; // use old phone for lookup
+    const clientRef = ref(db, 'clients/' + clientKey);
+    const snap = await get(clientRef);
+    if (snap.exists()) {
+      const c = snap.val();
+      await update(clientRef, {
+        name:           newClientName,
+        phone:          newPhone,
+        totalDebt:      Math.max((c.totalDebt || 0) + diff, 0),
+        totalPurchases: Math.max((c.totalPurchases || 0) + diff, 0)
+      });
+    }
+
+    closeEditInvoiceModal();
+    showToast('✅ تم حفظ التعديلات بنجاح');
+  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+};
+
+// ============================================================
+// DELETE PAYMENT
+// ============================================================
+window.confirmDeletePayment = function(paymentId, clientKey, amount, remainingAfter) {
+  showConfirmModal({
+    icon: '💳',
+    title: 'حذف الدفعة',
+    msg: `هل تريد حذف دفعة <strong>${formatNum(amount)} ج.م</strong>؟<br><span style="color:var(--warning);font-size:11px">سيتم إضافة المبلغ مرة أخرى لرصيد العميل</span>`,
+    confirmLabel: '🗑️ حذف الدفعة',
+    confirmColor: 'linear-gradient(135deg,var(--danger),#c0392b)',
+    onConfirm: () => deletePayment(paymentId, clientKey, amount)
+  });
+};
+
+async function deletePayment(paymentId, clientKey, amount) {
+  try {
+    const clientRef = ref(db, 'clients/' + clientKey);
+    const snap = await get(clientRef);
+    if (snap.exists()) {
+      const c = snap.val();
+      await update(clientRef, {
+        totalDebt: (c.totalDebt || 0) + amount,
+        totalPaid: Math.max((c.totalPaid || 0) - amount, 0)
+      });
+    }
+    await remove(ref(db, 'payments/' + paymentId));
+    // Refresh account view
+    const accModal = document.getElementById('client-account-modal');
+    if (accModal) { accModal.remove(); showClientAccount(clientKey); }
+    showToast('✅ تم حذف الدفعة وتحديث الرصيد');
+  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+}
+
+// ============================================================
+// EDIT PAYMENT MODAL
+// ============================================================
+window.editPaymentModal = async function(paymentId, clientKey) {
+  // Fetch payment
+  let pay;
+  try {
+    const snap = await get(ref(db, 'payments/' + paymentId));
+    pay = snap.val();
+  } catch(e) { showToast('❌ لم يتم تحميل بيانات الدفعة'); return; }
+  if (!pay) return showToast('❌ الدفعة غير موجودة');
+
+  const todayISO = new Date().toISOString().split('T')[0];
+  const payDateVal = pay.customDate || todayISO;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'edit-payment-modal';
+  modal.innerHTML = `
+    <div class="modal-sheet" style="max-height:80vh">
+      <div class="modal-handle"></div>
+      <div style="font-size:17px;font-weight:900;color:var(--emerald);text-align:center;margin-bottom:16px">✏️ تعديل الدفعة</div>
+
+      <div class="form-group">
+        <label class="form-label">💵 المبلغ المدفوع (ج.م)</label>
+        <input type="number" id="ep-amount" class="form-input" value="${pay.amount}" min="0"
+          style="font-size:20px;font-weight:900;text-align:center" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label class="form-label">👤 استُلم من</label>
+        <input type="text" id="ep-from" class="form-input" value="${pay.from||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">📅 تاريخ الدفع</label>
+        <input type="date" id="ep-date" class="form-input" value="${payDateVal}"
+          style="-webkit-appearance:none">
+      </div>
+      <div class="form-group">
+        <label class="form-label">📝 ملاحظات</label>
+        <input type="text" id="ep-notes" class="form-input" value="${pay.notes||''}" placeholder="مثال: كاش — شيك">
+      </div>
+
+      <button onclick="saveEditPayment('${paymentId}','${clientKey}',${pay.amount})"
+        style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">
+        💾 حفظ التعديلات
+      </button>
+      <button onclick="document.getElementById('edit-payment-modal').remove()"
+        style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">
+        إلغاء
+      </button>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  const old = document.getElementById('edit-payment-modal');
+  if (old) old.remove();
+  document.getElementById('modals-container').appendChild(modal);
+};
+
+window.saveEditPayment = async function(paymentId, clientKey, oldAmount) {
+  const newAmount = parseFloat(document.getElementById('ep-amount')?.value) || 0;
+  const newFrom   = (document.getElementById('ep-from')?.value || '').trim();
+  const newDate   = document.getElementById('ep-date')?.value || '';
+  const newNotes  = (document.getElementById('ep-notes')?.value || '').trim();
+
+  if (newAmount <= 0) return showToast('❌ المبلغ يجب أن يكون أكبر من صفر');
+
+  const diff = newAmount - oldAmount; // positive = paid more, negative = paid less
+  const dateStr = newDate ? new Date(newDate + 'T12:00:00').toLocaleDateString('ar-EG') : '';
+
+  try {
+    await update(ref(db, 'payments/' + paymentId), {
+      amount: newAmount,
+      from: newFrom,
+      customDate: newDate,
+      dateStr,
+      notes: newNotes
+    });
+
+    // Adjust client totals
+    const clientRef = ref(db, 'clients/' + clientKey);
+    const snap = await get(clientRef);
+    if (snap.exists()) {
+      const c = snap.val();
+      await update(clientRef, {
+        totalDebt: Math.max((c.totalDebt || 0) - diff, 0),
+        totalPaid: Math.max((c.totalPaid || 0) + diff, 0)
+      });
+    }
+
+    document.getElementById('edit-payment-modal')?.remove();
+    // Refresh account view
+    const accModal = document.getElementById('client-account-modal');
+    if (accModal) { accModal.remove(); showClientAccount(clientKey); }
+    showToast('✅ تم تعديل الدفعة بنجاح');
+  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+};
+
+// ============================================================
+// EDIT CLIENT MODAL
+// ============================================================
+window.editClientModal = function(clientKey) {
+  const c = window.appState.clients[clientKey];
+  if (!c) return;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'edit-client-modal';
+  modal.innerHTML = `
+    <div class="modal-sheet" style="max-height:80vh">
+      <div class="modal-handle"></div>
+      <div style="font-size:17px;font-weight:900;color:var(--warning);text-align:center;margin-bottom:16px">✏️ تعديل بيانات العميل</div>
+
+      <div class="form-group">
+        <label class="form-label">👤 اسم العميل</label>
+        <input type="text" id="ec-name" class="form-input" value="${c.name}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">📱 رقم الهاتف</label>
+        <input type="tel" id="ec-phone" class="form-input" value="${c.phone}" maxlength="11" dir="ltr">
+        <div id="ec-phone-error" style="color:var(--danger);font-size:11px;margin-top:4px;display:none">❌ رقم الهاتف غير صحيح</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">🏪 اسم المؤسسة</label>
+        <input type="text" id="ec-shop" class="form-input" value="${c.shopName||''}">
+      </div>
+
+      <div style="background:rgba(255,71,87,0.07);border:1px solid rgba(255,71,87,0.2);border-radius:12px;padding:12px;margin-bottom:14px">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-weight:700">⚙️ تعديل الأرصدة (بحذر)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label style="font-size:11px;color:var(--danger);display:block;margin-bottom:4px">⚠️ الرصيد المتبقي</label>
+            <input type="number" id="ec-debt" class="form-input" value="${c.totalDebt||0}" min="0" style="text-align:center">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--emerald);display:block;margin-bottom:4px">✅ إجمالي المدفوع</label>
+            <input type="number" id="ec-paid" class="form-input" value="${c.totalPaid||0}" min="0" style="text-align:center">
+          </div>
+        </div>
+      </div>
+
+      <button onclick="saveEditClient('${clientKey}')"
+        style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--warning),#e67e00);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">
+        💾 حفظ التعديلات
+      </button>
+      <button onclick="document.getElementById('edit-client-modal').remove()"
+        style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">
+        إلغاء
+      </button>
+    </div>
+  `;
+  document.getElementById('ec-phone').addEventListener('input', function() {
+    document.getElementById('ec-phone-error').style.display =
+      this.value.length > 0 && !validatePhone(this.value) ? 'block' : 'none';
+  });
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  const old = document.getElementById('edit-client-modal');
+  if (old) old.remove();
+  document.getElementById('modals-container').appendChild(modal);
+};
+
+window.saveEditClient = async function(clientKey) {
+  const name  = document.getElementById('ec-name')?.value.trim();
+  const phone = document.getElementById('ec-phone')?.value.trim();
+  const shop  = document.getElementById('ec-shop')?.value.trim();
+  const debt  = parseFloat(document.getElementById('ec-debt')?.value) || 0;
+  const paid  = parseFloat(document.getElementById('ec-paid')?.value) || 0;
+
+  if (!name) return showToast('❌ اسم العميل مطلوب');
+  if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
+
+  try {
+    await update(ref(db, 'clients/' + clientKey), {
+      name, phone, shopName: shop, totalDebt: debt, totalPaid: paid
+    });
+    document.getElementById('edit-client-modal')?.remove();
+    showToast('✅ تم تحديث بيانات العميل');
+  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+};
+
+// ============================================================
+// DELETE CLIENT
+// ============================================================
+window.confirmDeleteClient = function(clientKey, clientName) {
+  const c = window.appState.clients[clientKey];
+  const debt = c?.totalDebt || 0;
+  showConfirmModal({
+    icon: '👤',
+    title: 'حذف العميل',
+    msg: `هل تريد حذف العميل <strong>${clientName}</strong>؟<br>${debt > 0 ? `<span style="color:var(--danger)">⚠️ لا يزال عليه ${formatNum(debt)} ج.م</span><br>` : ''}<span style="font-size:11px;color:var(--text-secondary)">لن يتم حذف الفواتير المرتبطة به</span>`,
+    confirmLabel: '🗑️ حذف العميل',
+    confirmColor: 'linear-gradient(135deg,var(--danger),#c0392b)',
+    onConfirm: () => deleteClient(clientKey)
+  });
+};
+
+async function deleteClient(clientKey) {
+  try {
+    await remove(ref(db, 'clients/' + clientKey));
+    showToast('✅ تم حذف العميل');
+  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+}
 
 // ============================================================
 // INIT
