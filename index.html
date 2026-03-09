@@ -10,6 +10,8 @@
 <link rel="manifest" href="manifest.json">
 <title>الحاج أحمد الحديدي - تجارة الأسماك</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<!-- jsPDF for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --ocean-deep: #0a1628;
@@ -33,7 +35,6 @@
   html, body { height: 100%; overflow: hidden; font-family: 'Cairo', sans-serif; background: var(--ocean-deep); color: var(--text-primary); }
 
   #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-
   #app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
 
   .app-header {
@@ -146,7 +147,11 @@
   .form-select option { background: var(--ocean-deep); color: var(--text-primary); }
   .form-input::placeholder { color: rgba(255,255,255,0.3); }
 
-  /* ===================== FISH CHIPS ===================== */
+  /* date input fix */
+  input[type="date"] {
+    color-scheme: dark;
+  }
+
   .fish-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
   .fish-chip {
     padding: 8px 14px; border-radius: 22px;
@@ -165,8 +170,14 @@
     color: var(--cyan-glow);
     box-shadow: 0 0 10px rgba(0,180,216,0.2);
   }
+  /* "أخرى" chip special — always clickable to add more */
+  .fish-chip.other-chip {
+    border-color: rgba(255,215,0,0.4);
+    background: rgba(255,215,0,0.08);
+    color: var(--gold);
+  }
+  .fish-chip.other-chip:active { transform: scale(0.95); }
 
-  /* ===================== FISH ITEM ROW ===================== */
   .fish-item-row {
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--glass-border);
@@ -192,7 +203,6 @@
     padding: 3px 10px; border-radius: 20px;
   }
 
-  /* Unit buttons grid */
   .unit-grid {
     display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 5px; margin-bottom: 10px;
@@ -245,7 +255,6 @@
     color: var(--emerald);
   }
 
-  /* custom name input for أخرى */
   .custom-fish-input {
     width: 100%; padding: 8px 12px; border-radius: 9px;
     border: 1px solid rgba(255,215,0,0.3);
@@ -257,7 +266,6 @@
   .custom-fish-input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.15); }
   .custom-fish-input::placeholder { color: rgba(255,215,0,0.4); }
 
-  /* remove button */
   .remove-fish-btn {
     position: absolute; top: 10px; left: 10px;
     width: 26px; height: 26px; border-radius: 50%;
@@ -269,7 +277,36 @@
   }
   .remove-fish-btn:hover, .remove-fish-btn:active { background: rgba(255,71,87,0.25); transform: scale(1.1); }
 
-  /* Summary */
+  /* Extra expenses */
+  .expense-row {
+    display: flex; gap: 8px; align-items: center;
+    background: rgba(255,165,0,0.05);
+    border: 1px solid rgba(255,165,0,0.2);
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 8px;
+    animation: fishRowIn 0.3s ease;
+  }
+  .expense-row input {
+    padding: 9px 10px; border-radius: 9px;
+    border: 1px solid rgba(255,165,0,0.25);
+    background: rgba(255,165,0,0.06);
+    color: var(--text-primary); font-family: 'Cairo', sans-serif;
+    font-size: 13px; outline: none; transition: all 0.2s;
+    -webkit-appearance: none;
+  }
+  .expense-row input:focus { border-color: var(--warning); }
+  .expense-row .expense-desc { flex: 2; }
+  .expense-row .expense-amt { flex: 1; text-align: center; font-weight: 700; }
+  .expense-remove-btn {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid rgba(255,71,87,0.4);
+    background: rgba(255,71,87,0.1);
+    color: var(--danger); font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+  }
+
   .invoice-summary-card {
     background: linear-gradient(135deg, rgba(0,180,216,0.08), rgba(21,101,192,0.05));
     border: 1px solid rgba(0,180,216,0.3);
@@ -285,12 +322,6 @@
   .summary-total-value { font-size: 24px; font-weight: 900; color: var(--gold); }
   .summary-divider { height: 1px; background: rgba(255,215,0,0.2); margin: 8px 0; }
 
-  /* Commission box */
-  .commission-preview {
-    background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.25);
-    border-radius: 12px; padding: 12px; margin-top: 8px; display: none;
-  }
-
   .btn {
     padding: 12px 20px; border-radius: 12px; border: none;
     font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
@@ -304,6 +335,7 @@
   .btn-danger { background: linear-gradient(135deg, var(--danger), #c0392b); color: white; }
   .btn-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; box-shadow: 0 4px 15px rgba(37,211,102,0.3); }
   .btn-outline { background: transparent; border: 1px solid var(--glass-border); color: var(--text-primary); }
+  .btn-pdf { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; box-shadow: 0 4px 15px rgba(231,76,60,0.3); }
 
   .invoice-preview {
     background: linear-gradient(135deg, rgba(21,101,192,0.15), rgba(10,22,40,0.95));
@@ -403,7 +435,6 @@
   .install-banner-text { flex: 1; font-size: 12px; color: var(--text-primary); }
   .install-banner-btn { padding: 7px 14px; border-radius: 8px; background: var(--cyan-glow); color: var(--ocean-deep); font-weight: 700; font-size: 12px; border: none; cursor: pointer; font-family: 'Cairo', sans-serif; white-space: nowrap; }
 
-  /* no fish selected info */
   .no-fish-hint {
     text-align: center; padding: 20px; color: var(--text-secondary);
     font-size: 13px; border: 1px dashed var(--glass-border);
@@ -448,11 +479,20 @@
     margin-bottom: 28px;
   }
 
+  .login-dots {
+    display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;
+  }
+  .login-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--glass-border); transition: all 0.2s;
+  }
+  .login-dot.filled { background: var(--cyan-glow); box-shadow: 0 0 8px var(--cyan-glow); }
+
   .login-input-wrap {
     position: relative; margin-bottom: 14px;
   }
   .login-input {
-    width: 100%; padding: 14px 50px 14px 16px;
+    width: 100%; padding: 14px 16px 14px 50px;
     border-radius: 12px;
     border: 1px solid var(--glass-border);
     background: rgba(255,255,255,0.07);
@@ -472,8 +512,9 @@
     position: absolute; left: 14px; top: 50%;
     transform: translateY(-50%);
     font-size: 20px; cursor: pointer; user-select: none;
-    color: var(--text-secondary);
+    color: var(--text-secondary); transition: all 0.2s;
   }
+  .login-eye:hover { color: var(--cyan-glow); transform: translateY(-50%) scale(1.1); }
 
   .login-btn {
     width: 100%; padding: 14px;
@@ -493,16 +534,6 @@
     min-height: 18px; transition: all 0.2s;
   }
 
-  .login-dots {
-    display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;
-  }
-  .login-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--glass-border); transition: all 0.2s;
-  }
-  .login-dot.filled { background: var(--cyan-glow); box-shadow: 0 0 8px var(--cyan-glow); }
-
-  /* Welcome toast special */
   .welcome-toast {
     position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
     background: linear-gradient(135deg, rgba(0,180,216,0.95), rgba(21,101,192,0.95));
@@ -521,7 +552,6 @@
   .welcome-name { font-size: 18px; font-weight: 900; color: white; line-height: 1.3; }
   .welcome-role { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
 
-  /* Role badge in header */
   .role-badge {
     display: inline-flex; align-items: center; gap: 4px;
     padding: 3px 10px; border-radius: 20px;
@@ -531,6 +561,13 @@
   .role-badge.admin { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
   .role-badge.viewer { background: rgba(0,180,216,0.15); color: var(--cyan-glow); border: 1px solid rgba(0,180,216,0.3); }
 
+  /* date display badge */
+  .inv-date-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px;
+    background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3);
+    color: var(--cyan-glow); font-size: 12px; font-weight: 700;
+  }
 </style>
 </head>
 <body>
@@ -572,7 +609,10 @@
         <div class="header-subtitle">تجارة الأسماك</div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="header-date" id="header-date"></div><div class="role-badge admin" id="role-badge" onclick="confirmLogout()">👑 أدمن • خروج</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <div class="header-date" id="header-date"></div>
+      <div class="role-badge admin" id="role-badge" onclick="confirmLogout()">👑 أدمن • خروج</div>
+    </div>
   </header>
 
   <div class="content" id="main-content">
@@ -616,6 +656,13 @@
     <div class="page" id="page-invoice">
       <div class="glass-card">
         <div class="section-title">🧾 بيانات الفاتورة</div>
+
+        <!-- DATE FIELD -->
+        <div class="form-group">
+          <label class="form-label">📅 تاريخ الفاتورة *</label>
+          <input type="date" id="inv-date" class="form-input" style="color-scheme:dark">
+        </div>
+
         <div class="form-group">
           <label class="form-label">🏪 اسم المؤسسة (اختياري)</label>
           <input type="text" id="inv-shop" class="form-input" placeholder="اسم المؤسسة أو المحل">
@@ -649,6 +696,15 @@
         <div id="fish-items-container"></div>
       </div>
 
+      <!-- Extra Expenses -->
+      <div class="glass-card">
+        <div class="section-title">💸 مصاريف إضافية</div>
+        <div id="expenses-container"></div>
+        <button onclick="addExpenseRow()" style="width:100%;padding:10px;border-radius:10px;border:1px dashed rgba(255,165,0,0.4);background:rgba(255,165,0,0.06);color:var(--warning);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px">
+          ➕ إضافة مصروف
+        </button>
+      </div>
+
       <!-- Summary -->
       <div id="invoice-summary" style="display:none">
         <div class="invoice-summary-card">
@@ -657,16 +713,22 @@
             <span class="summary-value" id="inv-items-count">0 صنف</span>
           </div>
           <div class="summary-row">
-            <span class="summary-label">📦 إجمالي الفاتورة</span>
+            <span class="summary-label">📦 إجمالي الأصناف</span>
             <span class="summary-value" id="inv-gross-display">0 ج.م</span>
+          </div>
+          <div id="expenses-summary-row" style="display:none">
+            <div class="summary-row">
+              <span class="summary-label" style="color:var(--warning)">💸 إجمالي المصاريف</span>
+              <span class="summary-value" style="color:var(--warning)" id="expenses-total-display">0 ج.م</span>
+            </div>
           </div>
           <div id="commission-row" style="display:none">
             <div class="summary-row">
               <span class="summary-label" style="color:var(--warning)">🤝 عمولة (<span id="comm-pct-lbl">0</span>%)</span>
               <span class="summary-value" style="color:var(--warning)" id="comm-amt-display">- 0 ج.م</span>
             </div>
-            <div class="summary-divider"></div>
           </div>
+          <div class="summary-divider"></div>
           <div class="summary-row">
             <span class="summary-total-label">💰 المتبقى على التاجر</span>
             <span class="summary-total-value" id="inv-grand-total">0 ج.م</span>
@@ -758,10 +820,10 @@ const FISH_TYPES = [
 ];
 
 const UNITS = {
-  kg:    { label: 'كيلو',                short: 'ك',        kgFactor: 1    },
-  wqa:   { label: 'وقة',                 short: 'وقة',      kgFactor: 1.25 },
-  box20: { label: 'بوكشة 20 (25 ك)',     short: 'ب20',      kgFactor: 25   },
-  box25: { label: 'بوكشة 25 ك',          short: 'ب25',      kgFactor: 25   },
+  kg:    { label: 'كيلو',            short: 'ك',   kgFactor: 1    },
+  wqa:   { label: 'وقة',             short: 'وقة', kgFactor: 1.25 },
+  box20: { label: 'بوكشة 20 (25 ك)', short: 'ب20', kgFactor: 25   },
+  box25: { label: 'بوكشة 25 ك',      short: 'ب25', kgFactor: 25   },
 };
 
 // ============================================================
@@ -772,9 +834,10 @@ window.appState = {
   clients: {},
   currentFilter: 'all',
   deferredPrompt: null,
-  // Each fish item: { id, fishName, unit, qty, price, subtotal, kg }
-  fishItems: [],
+  fishItems: [],   // { id, fishName, isOther, customName, unit, qty, price, subtotal, kg }
+  expenses: [],    // { id, desc, amount }
   nextItemId: 0,
+  nextExpId: 0,
 };
 
 // ============================================================
@@ -833,6 +896,14 @@ function updateDate() {
   const now = new Date();
   document.getElementById('header-date').textContent = now.toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
 }
+function getTodayISO() {
+  return new Date().toISOString().split('T')[0];
+}
+function isoToArabicDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
+}
 
 // ============================================================
 // PAGE NAVIGATION
@@ -849,56 +920,79 @@ window.switchPage = function(page, btn) {
 };
 
 // ============================================================
-// ======   INVOICE FORM — REDESIGNED   ======================
+// ======   INVOICE FORM   ===================================
 // ============================================================
 
 function initInvoiceForm() {
-  // Reset state
   window.appState.fishItems = [];
+  window.appState.expenses = [];
   window.appState.nextItemId = 0;
+  window.appState.nextExpId = 0;
 
-  // Reset form fields
+  // Set today's date
+  document.getElementById('inv-date').value = getTodayISO();
   document.getElementById('inv-client').value = '';
   document.getElementById('inv-phone').value = '';
   document.getElementById('inv-shop').value = '';
   document.getElementById('inv-commission').value = '';
   document.getElementById('phone-error').style.display = 'none';
 
-  // Render chips
   renderFishChips();
-
-  // Clear items
   document.getElementById('fish-items-container').innerHTML = '';
   document.getElementById('no-fish-hint').style.display = 'block';
   document.getElementById('invoice-summary').style.display = 'none';
+  document.getElementById('expenses-container').innerHTML = '';
 
   updateClientDatalist();
 }
 
 function renderFishChips() {
   const container = document.getElementById('fish-chips-container');
-  const selectedNames = window.appState.fishItems.map(i => i.fishName);
-  container.innerHTML = FISH_TYPES.map(f => `
-    <div class="fish-chip ${selectedNames.includes(f) ? 'selected' : ''}"
-      onclick="toggleFish('${f}', this)">${f}</div>
-  `).join('');
+  const regularSelected = window.appState.fishItems
+    .filter(i => !i.isOther)
+    .map(i => i.fishName);
+
+  container.innerHTML = FISH_TYPES.map(f => {
+    if (f === 'أخرى') {
+      // Always show as special, always clickable to add more
+      return `<div class="fish-chip other-chip" onclick="addOtherFish()" title="إضافة صنف مخصص">➕ أخرى</div>`;
+    }
+    const sel = regularSelected.includes(f);
+    return `<div class="fish-chip ${sel ? 'selected' : ''}" onclick="toggleFish('${f}', this)">${f}</div>`;
+  }).join('');
 }
 
+// Add "أخرى" — unlimited
+window.addOtherFish = function() {
+  const id = window.appState.nextItemId++;
+  window.appState.fishItems.push({ id, fishName: 'أخرى', isOther: true, customName: '', unit: 'kg', qty: 0, price: 0, subtotal: 0, kg: 0 });
+  document.getElementById('no-fish-hint').style.display = 'none';
+  document.getElementById('invoice-summary').style.display = 'block';
+  const container = document.getElementById('fish-items-container');
+  const tmp = document.createElement('div');
+  tmp.innerHTML = buildFishRowHTML(window.appState.fishItems.at(-1));
+  container.appendChild(tmp.firstElementChild);
+  setTimeout(() => {
+    const el = document.getElementById('fish-row-' + id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const nameInput = document.getElementById('fish-custom-' + id);
+    if (nameInput) nameInput.focus();
+  }, 100);
+  updateInvoiceSummary();
+};
+
 window.toggleFish = function(fishName, chipEl) {
-  const existingIdx = window.appState.fishItems.findIndex(i => i.fishName === fishName);
+  const existingIdx = window.appState.fishItems.findIndex(i => i.fishName === fishName && !i.isOther);
   if (existingIdx === -1) {
-    // ADD fish item
     const id = window.appState.nextItemId++;
-    window.appState.fishItems.push({ id, fishName, unit: 'kg', qty: 0, price: 0, subtotal: 0, kg: 0 });
+    window.appState.fishItems.push({ id, fishName, isOther: false, unit: 'kg', qty: 0, price: 0, subtotal: 0, kg: 0 });
     chipEl.classList.add('selected');
     renderFishItems();
-    // Scroll to the newly added item
     setTimeout(() => {
       const el = document.getElementById('fish-row-' + id);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   } else {
-    // REMOVE fish item
     window.appState.fishItems.splice(existingIdx, 1);
     chipEl.classList.remove('selected');
     renderFishItems();
@@ -909,9 +1003,7 @@ window.toggleFish = function(fishName, chipEl) {
 window.removeFishItem = function(id) {
   const idx = window.appState.fishItems.findIndex(i => i.id === id);
   if (idx === -1) return;
-  const fishName = window.appState.fishItems[idx].fishName;
   window.appState.fishItems.splice(idx, 1);
-  // Deselect chip
   renderFishChips();
   renderFishItems();
   updateInvoiceSummary();
@@ -920,75 +1012,61 @@ window.removeFishItem = function(id) {
 function renderFishItems() {
   const container = document.getElementById('fish-items-container');
   const hint = document.getElementById('no-fish-hint');
-
   if (window.appState.fishItems.length === 0) {
     container.innerHTML = '';
     hint.style.display = 'block';
     document.getElementById('invoice-summary').style.display = 'none';
     return;
   }
-
   hint.style.display = 'none';
   document.getElementById('invoice-summary').style.display = 'block';
-
   container.innerHTML = window.appState.fishItems.map(item => buildFishRowHTML(item)).join('');
 }
 
 function buildFishRowHTML(item) {
   const id = item.id;
-  const isOther = item.fishName === 'أخرى';
   const unit = item.unit || 'kg';
   const uDef = UNITS[unit] || UNITS.kg;
-
   const unitButtons = Object.entries(UNITS).map(([u, def]) => {
     const isActive = u === unit;
-    let activeClass = '';
-    if (isActive) activeClass = 'active-' + u;
-    return `<button class="unit-btn ${activeClass}" onclick="setItemUnit(${id},'${u}')">${def.label}</button>`;
+    return `<button class="unit-btn ${isActive ? 'active-' + u : ''}" onclick="setItemUnit(${id},'${u}')">${def.label}</button>`;
   }).join('');
-
-  const unitInfoVisible = unit !== 'kg';
   const kgEq = item.qty * uDef.kgFactor;
   const kgEqText = unit !== 'kg' ? `${item.qty} ${uDef.label} = ${kgEq.toFixed(unit==='wqa'?2:0)} كيلو` : '';
+
+  const displayName = item.isOther ? '✏️ صنف مخصص' : ('🐟 ' + item.fishName);
 
   return `
     <div class="fish-item-row" id="fish-row-${id}">
       <button class="remove-fish-btn" onclick="removeFishItem(${id})" title="حذف هذا الصنف">✕</button>
-
       <div class="fish-row-header">
-        <div class="fish-row-name">🐟 ${item.fishName}</div>
+        <div class="fish-row-name">${displayName}</div>
         <div class="fish-row-total" id="fish-total-${id}">${item.subtotal > 0 ? formatNum(item.subtotal) + ' ج.م' : '0 ج.م'}</div>
       </div>
-
-      ${isOther ? `
+      ${item.isOther ? `
         <input type="text" class="custom-fish-input" id="fish-custom-${id}"
-          placeholder="اكتب اسم الصنف..."
+          placeholder="اكتب اسم الصنف المخصص..."
           value="${item.customName || ''}"
           oninput="window.appState.fishItems.find(x=>x.id===${id}).customName=this.value">
       ` : ''}
-
       <div class="unit-grid">${unitButtons}</div>
-
       <div class="unit-info-box" id="fish-info-${id}"
-        style="${unitInfoVisible && item.qty > 0 ? 'display:block;' : 'display:none;'}background:${unit==='wqa'?'rgba(255,165,0,0.08)':unit==='box20'?'rgba(0,200,150,0.08)':'rgba(192,132,252,0.08)'};border:1px solid ${unit==='wqa'?'rgba(255,165,0,0.3)':unit==='box20'?'rgba(0,200,150,0.3)':'rgba(192,132,252,0.3)'};color:${unit==='wqa'?'var(--warning)':unit==='box20'?'var(--emerald)':'#c084fc'}">
+        style="${unit !== 'kg' && item.qty > 0 ? 'display:block;' : 'display:none;'}background:${unit==='wqa'?'rgba(255,165,0,0.08)':unit==='box20'?'rgba(0,200,150,0.08)':'rgba(192,132,252,0.08)'};border:1px solid ${unit==='wqa'?'rgba(255,165,0,0.3)':unit==='box20'?'rgba(0,200,150,0.3)':'rgba(192,132,252,0.3)'};color:${unit==='wqa'?'var(--warning)':unit==='box20'?'var(--emerald)':'#c084fc'}">
         📐 <span id="fish-convert-${id}">${kgEqText}</span>
       </div>
-
       <div class="fish-inputs-row">
         <div class="fish-input-group">
           <label id="fish-qty-lbl-${id}">الكمية (${uDef.label})</label>
           <input type="number" id="fish-qty-${id}"
             value="${item.qty > 0 ? item.qty : ''}"
-            placeholder="0" min="0" step="0.5"
-            inputmode="decimal"
+            placeholder="0" min="0" step="0.5" inputmode="decimal"
             oninput="onFishInput(${id})">
         </div>
         <div class="fish-input-group">
           <label id="fish-price-lbl-${id}">سعر ال${uDef.label}</label>
           <input type="number" id="fish-price-${id}"
             value="${item.price > 0 ? item.price : ''}"
-            placeholder="0" min="0"
-            inputmode="decimal"
+            placeholder="0" min="0" inputmode="decimal"
             oninput="onFishInput(${id})">
         </div>
         <div class="fish-input-group">
@@ -1002,29 +1080,19 @@ function buildFishRowHTML(item) {
   `;
 }
 
-// Called when qty or price changes
 window.onFishInput = function(id) {
   const item = window.appState.fishItems.find(x => x.id === id);
   if (!item) return;
-
   const qty = parseFloat(document.getElementById('fish-qty-' + id)?.value) || 0;
   const price = parseFloat(document.getElementById('fish-price-' + id)?.value) || 0;
   const uDef = UNITS[item.unit] || UNITS.kg;
-
-  item.qty = qty;
-  item.price = price;
+  item.qty = qty; item.price = price;
   item.kg = qty * uDef.kgFactor;
   item.subtotal = qty * price;
-
-  // Update subtotal input
   const subEl = document.getElementById('fish-subtotal-' + id);
   if (subEl) subEl.value = item.subtotal > 0 ? item.subtotal.toFixed(2) : '';
-
-  // Update total badge
   const totalEl = document.getElementById('fish-total-' + id);
   if (totalEl) totalEl.textContent = formatNum(item.subtotal) + ' ج.م';
-
-  // Update conversion info
   const infoEl = document.getElementById('fish-info-' + id);
   const convertEl = document.getElementById('fish-convert-' + id);
   if (infoEl && item.unit !== 'kg') {
@@ -1032,45 +1100,67 @@ window.onFishInput = function(id) {
       const kgEq = qty * uDef.kgFactor;
       if (convertEl) convertEl.textContent = `${qty} ${uDef.label} = ${kgEq.toFixed(item.unit==='wqa'?2:0)} كيلو`;
       infoEl.style.display = 'block';
-    } else {
-      infoEl.style.display = 'none';
-    }
+    } else { infoEl.style.display = 'none'; }
   }
-
   updateInvoiceSummary();
 };
 
-// Called when unit button clicked
 window.setItemUnit = function(id, unit) {
   const item = window.appState.fishItems.find(x => x.id === id);
   if (!item) return;
-
-  item.unit = unit;
-  item.qty = 0;
-  item.price = 0;
-  item.subtotal = 0;
-  item.kg = 0;
-
-  // Re-render just this row (replace DOM node)
+  item.unit = unit; item.qty = 0; item.price = 0; item.subtotal = 0; item.kg = 0;
   const row = document.getElementById('fish-row-' + id);
   if (row) {
     const tmp = document.createElement('div');
     tmp.innerHTML = buildFishRowHTML(item);
-    const newRow = tmp.firstElementChild;
-    row.replaceWith(newRow);
+    row.replaceWith(tmp.firstElementChild);
   }
-
   updateInvoiceSummary();
 };
 
+// ============================================================
+// EXPENSES
+// ============================================================
+window.addExpenseRow = function() {
+  const id = window.appState.nextExpId++;
+  window.appState.expenses.push({ id, desc: '', amount: 0 });
+  const container = document.getElementById('expenses-container');
+  const row = document.createElement('div');
+  row.className = 'expense-row'; row.id = 'exp-row-' + id;
+  row.innerHTML = `
+    <input type="text" class="expense-desc" id="exp-desc-${id}" placeholder="وصف المصروف"
+      oninput="window.appState.expenses.find(e=>e.id===${id}).desc=this.value">
+    <input type="number" class="expense-amt" id="exp-amt-${id}" placeholder="0" min="0" inputmode="decimal"
+      oninput="window.appState.expenses.find(e=>e.id===${id}).amount=parseFloat(this.value)||0;updateInvoiceSummary()">
+    <button class="expense-remove-btn" onclick="removeExpenseRow(${id})">✕</button>
+  `;
+  container.appendChild(row);
+  updateInvoiceSummary();
+};
+
+window.removeExpenseRow = function(id) {
+  const idx = window.appState.expenses.findIndex(e => e.id === id);
+  if (idx !== -1) window.appState.expenses.splice(idx, 1);
+  document.getElementById('exp-row-' + id)?.remove();
+  updateInvoiceSummary();
+};
+
+function getTotalExpenses() {
+  return window.appState.expenses.reduce((s, e) => s + (e.amount || 0), 0);
+}
+
+// ============================================================
+// SUMMARY UPDATE
+// ============================================================
 function updateInvoiceSummary() {
-  let gross = 0;
+  let fishGross = 0;
   let count = 0;
   window.appState.fishItems.forEach(item => {
-    gross += item.subtotal || 0;
+    fishGross += item.subtotal || 0;
     if ((item.qty || 0) > 0) count++;
   });
-
+  const expTotal = getTotalExpenses();
+  const gross = fishGross + expTotal;
   const commPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
   const commAmt = (gross * commPct) / 100;
   const net = gross - commAmt;
@@ -1081,14 +1171,21 @@ function updateInvoiceSummary() {
   const commRow = document.getElementById('commission-row');
   const commPctLbl = document.getElementById('comm-pct-lbl');
   const commAmtEl = document.getElementById('comm-amt-display');
+  const expSumRow = document.getElementById('expenses-summary-row');
+  const expTotalEl = document.getElementById('expenses-total-display');
 
-  if (grossEl) grossEl.textContent = formatNum(gross) + ' ج.م';
+  if (grossEl) grossEl.textContent = formatNum(fishGross) + ' ج.م';
   if (totalEl) totalEl.textContent = formatNum(net) + ' ج.م';
   if (countEl) countEl.textContent = window.appState.fishItems.length + ' صنف';
-
+  if (expSumRow) expSumRow.style.display = expTotal > 0 ? 'block' : 'none';
+  if (expTotalEl) expTotalEl.textContent = formatNum(expTotal) + ' ج.م';
   if (commRow) commRow.style.display = commPct > 0 && gross > 0 ? 'block' : 'none';
   if (commPctLbl) commPctLbl.textContent = commPct;
   if (commAmtEl) commAmtEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
+
+  // Show summary if there are fish items OR expenses
+  const hasSomething = window.appState.fishItems.length > 0 || window.appState.expenses.length > 0;
+  document.getElementById('invoice-summary').style.display = hasSomething ? 'block' : 'none';
 }
 
 // ============================================================
@@ -1097,7 +1194,6 @@ function updateInvoiceSummary() {
 function validatePhone(phone) {
   return phone && phone.length === 11 && phone.startsWith('01') && /^\d+$/.test(phone);
 }
-
 document.getElementById('inv-phone').addEventListener('input', function() {
   document.getElementById('phone-error').style.display =
     this.value.length > 0 && !validatePhone(this.value) ? 'block' : 'none';
@@ -1110,52 +1206,60 @@ window.saveInvoice = async function() {
   const clientName = document.getElementById('inv-client').value.trim();
   const phone = document.getElementById('inv-phone').value.trim();
   const shopName = document.getElementById('inv-shop').value.trim();
+  const invDateISO = document.getElementById('inv-date').value || getTodayISO();
 
   if (!clientName) return showToast('❌ يرجى إدخال اسم العميل');
   if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
   if (window.appState.fishItems.length === 0) return showToast('❌ يرجى اختيار صنف واحد على الأقل');
 
   const items = [];
-  let total = 0;
-
+  let fishTotal = 0;
   for (const item of window.appState.fishItems) {
     if ((item.qty || 0) <= 0) continue;
     const uDef = UNITS[item.unit] || UNITS.kg;
     let displayName = item.fishName;
-    if (item.fishName === 'أخرى' && item.customName) displayName = item.customName;
-
+    if (item.isOther && item.customName) displayName = item.customName;
+    else if (item.isOther) displayName = 'أخرى';
     items.push({
       fish: displayName,
-      unit: item.unit,
-      unitLabel: uDef.label,
-      qty: item.qty,
-      kg: item.kg,
+      unit: item.unit, unitLabel: uDef.label,
+      qty: item.qty, kg: item.kg,
       pricePerUnit: item.price,
       pricePerKg: +(item.price / uDef.kgFactor).toFixed(4),
       subtotal: item.subtotal
     });
-    total += item.subtotal;
+    fishTotal += item.subtotal;
   }
-
   if (items.length === 0) return showToast('❌ يرجى إدخال كميات وأسعار');
 
+  const expensesList = window.appState.expenses
+    .filter(e => e.amount > 0 || e.desc)
+    .map(e => ({ desc: e.desc || 'مصروف', amount: e.amount || 0 }));
+  const expTotal = expensesList.reduce((s, e) => s + e.amount, 0);
+  const gross = fishTotal + expTotal;
+
   const commissionPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
-  const commissionAmt = (total * commissionPct) / 100;
-  const netTotal = total - commissionAmt;
+  const commissionAmt = (gross * commissionPct) / 100;
+  const netTotal = gross - commissionAmt;
 
   const btn = document.getElementById('save-invoice-btn');
   btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...';
   btn.disabled = true;
 
   try {
-    const now = new Date();
+    const invDate = new Date(invDateISO + 'T12:00:00');
+    const dateStr = invDate.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
+
     const invoice = {
       clientName, phone, shopName, items,
-      gross: total, commissionPct, commissionAmt, total: netTotal,
+      expenses: expensesList,
+      fishTotal, expTotal,
+      gross, commissionPct, commissionAmt, total: netTotal,
       paid: 0, remaining: netTotal,
-      date: now.toISOString(),
-      dateStr: now.toLocaleDateString('ar-EG'),
-      createdAt: now.getTime()
+      date: invDate.toISOString(),
+      dateStr,
+      invDateISO,
+      createdAt: Date.now()
     };
 
     const invRef = push(ref(db, 'invoices'));
@@ -1164,7 +1268,6 @@ window.saveInvoice = async function() {
     const clientKey = phone;
     const clientRef = ref(db, 'clients/' + clientKey);
     const clientSnap = await get(clientRef);
-
     if (clientSnap.exists()) {
       const existing = clientSnap.val();
       await update(clientRef, {
@@ -1172,13 +1275,13 @@ window.saveInvoice = async function() {
         totalDebt: (existing.totalDebt || 0) + netTotal,
         totalPurchases: (existing.totalPurchases || 0) + netTotal,
         invoiceCount: (existing.invoiceCount || 0) + 1,
-        lastInvoice: now.toISOString()
+        lastInvoice: invDate.toISOString()
       });
     } else {
       await set(clientRef, {
         name: clientName, phone, shopName,
         totalDebt: netTotal, totalPurchases: netTotal, totalPaid: 0,
-        invoiceCount: 1, lastInvoice: now.toISOString()
+        invoiceCount: 1, lastInvoice: invDate.toISOString()
       });
     }
 
@@ -1211,14 +1314,23 @@ function showInvoicePreview(invoice, invoiceId) {
     </tr>`;
   }).join('');
 
+  const expensesHtml = (invoice.expenses || []).filter(e => e.amount > 0).map(e => `
+    <tr>
+      <td colspan="3" style="text-align:right;color:var(--warning)">💸 ${e.desc}</td>
+      <td style="color:var(--warning);font-weight:700">${formatNum(e.amount)}</td>
+    </tr>
+  `).join('');
+
   const gross = invoice.gross || invoice.total;
+  const fishTotal = invoice.fishTotal || gross;
+  const expTotal = invoice.expTotal || 0;
   const hasComm = invoice.commissionPct > 0;
+  const hasExpenses = expTotal > 0;
   const waMsg = encodeURIComponent(buildInvoiceText(invoice));
   const waNum = '2' + invoice.phone;
 
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.id = 'invoice-modal';
+  modal.className = 'modal-overlay'; modal.id = 'invoice-modal';
   modal.innerHTML = `
     <div class="modal-sheet">
       <div class="modal-handle"></div>
@@ -1234,13 +1346,22 @@ function showInvoicePreview(invoice, invoiceId) {
         </div>
         <table class="invoice-table">
           <thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-          <tbody>${itemsHtml}</tbody>
+          <tbody>
+            ${itemsHtml}
+            ${expensesHtml}
+          </tbody>
         </table>
         <div style="padding-top:10px;border-top:1px solid var(--glass-border)">
           <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الفاتورة</span>
-            <span style="font-weight:700">${formatNum(gross)} ج.م</span>
+            <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الأصناف</span>
+            <span style="font-weight:700">${formatNum(fishTotal)} ج.م</span>
           </div>
+          ${hasExpenses ? `
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--warning)">💸 المصاريف الإضافية</span>
+            <span style="color:var(--warning);font-weight:700">${formatNum(expTotal)} ج.م</span>
+          </div>
+          ` : ''}
           ${hasComm ? `
           <div style="display:flex;justify-content:space-between;margin-bottom:6px">
             <span style="font-size:12px;color:var(--warning)">🤝 عمولة (${invoice.commissionPct}%)</span>
@@ -1256,6 +1377,7 @@ function showInvoicePreview(invoice, invoiceId) {
       </div>
       <div class="glow-divider"></div>
       <a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="btn btn-whatsapp">📲 إرسال الفاتورة واتساب</a>
+      <button class="btn btn-pdf" onclick="exportInvoicePDF('${invoiceId}')">📄 تصدير PDF</button>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <button class="btn" onclick="closeModal();editInvoiceModal('${invoiceId}')"
           style="background:rgba(255,165,0,0.15);border:1px solid rgba(255,165,0,0.4);color:var(--warning)">
@@ -1278,7 +1400,10 @@ function showInvoicePreview(invoice, invoiceId) {
 
 function buildInvoiceText(invoice) {
   const gross = invoice.gross || invoice.total;
+  const fishTotal = invoice.fishTotal || gross;
+  const expTotal = invoice.expTotal || 0;
   const hasComm = invoice.commissionPct > 0;
+  const hasExp = expTotal > 0;
   let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n━━━━━━━━━━━━━━━━━━\n`;
   text += `👤 العميل : ${invoice.clientName}\n`;
   if (invoice.shopName) text += `🏪 المؤسسة: ${invoice.shopName}\n`;
@@ -1291,13 +1416,18 @@ function buildInvoiceText(invoice) {
     text += `${idx+1}. 🐟 ${item.fish}\n    ${qty} ${uDef.label} × ${prc} ج.م = *${(item.subtotal||0).toFixed(2)} ج.م*\n`;
     if (unit !== 'kg') text += `    📐 يساوي ${(item.kg||0).toFixed(unit==='wqa'?2:0)} كيلو\n`;
   });
-  text += `━━━━━━━━━━━━━━━━━━\n📦 إجمالي الفاتورة : *${formatNum(gross)} ج.م*\n`;
+  text += `─────────────────────\n📦 إجمالي الأصناف: *${formatNum(fishTotal)} ج.م*\n`;
+  if (hasExp) {
+    text += `\n💸 *المصاريف الإضافية:*\n`;
+    (invoice.expenses||[]).forEach(e => { text += `  • ${e.desc}: ${formatNum(e.amount)} ج.م\n`; });
+    text += `💸 إجمالي المصاريف: *${formatNum(expTotal)} ج.م*\n`;
+  }
+  text += `━━━━━━━━━━━━━━━━━━\n📦 الإجمالي الكلي: *${formatNum(gross)} ج.م*\n`;
   if (hasComm) {
     text += `🤝 عمولة (${invoice.commissionPct}%) : *- ${formatNum(invoice.commissionAmt||0)} ج.م*\n`;
-    text += `─────────────────────\n💰 *المتبقى على التاجر : ${formatNum(invoice.total)} ج.م*\n`;
-  } else {
-    text += `💰 *الإجمالي : ${formatNum(invoice.total)} ج.م*\n`;
+    text += `─────────────────────\n`;
   }
+  text += `💰 *المتبقى على التاجر : ${formatNum(invoice.total)} ج.م*\n`;
   text += `━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
   return text;
 }
@@ -1305,6 +1435,397 @@ function buildInvoiceText(invoice) {
 window.closeModal = function() {
   const m = document.querySelector('.modal-overlay');
   if (m) m.remove();
+};
+
+// ============================================================
+// PDF EXPORT — INVOICE
+// ============================================================
+window.exportInvoicePDF = function(invoiceId) {
+  const inv = invoiceId === '__current__'
+    ? window._currentInvoiceForPDF
+    : window.appState.invoices[invoiceId];
+  if (!inv) return showToast('❌ الفاتورة غير موجودة');
+
+  showToast('⏳ جاري إنشاء PDF...');
+  setTimeout(() => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const W = doc.internal.pageSize.getWidth();
+      const H = doc.internal.pageSize.getHeight();
+      let y = 0;
+
+      // Background
+      doc.setFillColor(10, 22, 40);
+      doc.rect(0, 0, W, H, 'F');
+
+      // Header band
+      doc.setFillColor(13, 52, 96);
+      doc.rect(0, 0, W, 40, 'F');
+
+      // Gold line
+      doc.setDrawColor(255, 215, 0);
+      doc.setLineWidth(0.8);
+      doc.line(0, 40, W, 40);
+
+      // Shop title
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(255, 215, 0);
+      doc.text('Al-Haj Ahmed Al-Hadeedi', W/2, 14, { align:'center' });
+
+      doc.setFontSize(11);
+      doc.setTextColor(0, 180, 216);
+      doc.text('Fish Trading | تجارة الأسماك', W/2, 22, { align:'center' });
+
+      doc.setFontSize(9);
+      doc.setTextColor(200, 220, 240);
+      doc.text('INVOICE', W/2, 30, { align:'center' });
+      doc.text(inv.dateStr || inv.date, W/2, 36, { align:'center' });
+
+      y = 50;
+
+      // Client info box
+      doc.setFillColor(20, 40, 70);
+      doc.setDrawColor(0, 100, 160);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(10, y, W-20, 28, 3, 3, 'FD');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 180, 216);
+      doc.text('Client Details', 15, y+8);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(230, 240, 250);
+      doc.text('Name: ' + inv.clientName, 15, y+16);
+      doc.text('Phone: ' + inv.phone, 15, y+23);
+      if (inv.shopName) doc.text('Shop: ' + inv.shopName, W/2, y+16);
+
+      y += 34;
+
+      // Items table header
+      doc.setFillColor(0, 100, 160);
+      doc.rect(10, y, W-20, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      const cols = [15, 65, 105, 140, 175];
+      const headers = ['Fish / الصنف', 'Qty / الكمية', 'Unit / الوحدة', 'Price / السعر', 'Total / الإجمالي'];
+      headers.forEach((h, i) => doc.text(h, cols[i], y+5.5));
+      y += 8;
+
+      // Items rows
+      (inv.items || []).forEach((item, idx) => {
+        const rowH = 9;
+        doc.setFillColor(idx % 2 === 0 ? 15 : 20, idx % 2 === 0 ? 30 : 35, idx % 2 === 0 ? 55 : 65);
+        doc.rect(10, y, W-20, rowH, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(220, 235, 250);
+        const unit = item.unit || 'kg';
+        const uDef = UNITS[unit] || UNITS.kg;
+        const qty = item.qty !== undefined ? item.qty : item.kg;
+        const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+        doc.text(String(item.fish).substring(0,22), cols[0], y+6);
+        doc.text(String(qty), cols[1], y+6);
+        doc.text(uDef.label, cols[2], y+6);
+        doc.text(prc + ' EGP', cols[3], y+6);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 215, 0);
+        doc.text(formatNum(item.subtotal) + ' EGP', cols[4], y+6);
+        y += rowH;
+      });
+
+      // Expenses rows
+      if ((inv.expenses || []).length > 0) {
+        (inv.expenses || []).filter(e => e.amount > 0).forEach((exp, idx) => {
+          const rowH = 9;
+          doc.setFillColor(40, 25, 10);
+          doc.rect(10, y, W-20, rowH, 'F');
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(8);
+          doc.setTextColor(255, 165, 0);
+          doc.text('Expense: ' + exp.desc, cols[0], y+6);
+          doc.text('—', cols[1], y+6);
+          doc.text('—', cols[2], y+6);
+          doc.text('—', cols[3], y+6);
+          doc.setFont('helvetica', 'bold');
+          doc.text(formatNum(exp.amount) + ' EGP', cols[4], y+6);
+          y += rowH;
+        });
+      }
+
+      // Totals
+      y += 4;
+      doc.setDrawColor(0, 180, 216);
+      doc.setLineWidth(0.5);
+      doc.line(10, y, W-10, y);
+      y += 6;
+
+      const totals = [];
+      const fishTot = inv.fishTotal || (inv.gross || inv.total);
+      const expTot = inv.expTotal || 0;
+      totals.push(['Fish Subtotal:', formatNum(fishTot) + ' EGP']);
+      if (expTot > 0) totals.push(['Extra Expenses:', formatNum(expTot) + ' EGP']);
+      if ((inv.commissionPct || 0) > 0) {
+        totals.push(['Gross Total:', formatNum(inv.gross || inv.total) + ' EGP']);
+        totals.push([`Commission (${inv.commissionPct}%):`, '- ' + formatNum(inv.commissionAmt||0) + ' EGP']);
+      }
+
+      doc.setFontSize(9);
+      totals.forEach(([label, val]) => {
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(180, 210, 240);
+        doc.text(label, W - 80, y);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(230, 230, 230);
+        doc.text(val, W - 12, y, { align:'right' });
+        y += 8;
+      });
+
+      // Grand total
+      doc.setFillColor(0, 60, 30);
+      doc.setDrawColor(0, 200, 150);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(10, y, W-20, 14, 2, 2, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(0, 200, 150);
+      doc.text('NET AMOUNT DUE:', 15, y+9);
+      doc.setFontSize(13);
+      doc.setTextColor(255, 215, 0);
+      doc.text(formatNum(inv.total) + ' EGP', W-12, y+9, { align:'right' });
+      y += 20;
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(100, 140, 180);
+      doc.text('Thank you for your business | شكراً لتعاملكم معنا 🙏', W/2, H-10, { align:'center' });
+
+      const fname = `invoice_${inv.clientName}_${inv.dateStr || 'date'}.pdf`.replace(/\s/g, '_');
+      doc.save(fname);
+      showToast('✅ تم تحميل PDF بنجاح!');
+    } catch(e) {
+      console.error(e);
+      showToast('❌ خطأ في إنشاء PDF: ' + e.message);
+    }
+  }, 300);
+};
+
+// ============================================================
+// PDF EXPORT — CLIENT STATEMENT
+// ============================================================
+window.exportClientStatementPDF = async function(clientKey) {
+  showToast('⏳ جاري إنشاء كشف الحساب PDF...');
+  const c = window.appState.clients[clientKey];
+  if (!c) return showToast('❌ العميل غير موجود');
+
+  let clientPayments = [];
+  try {
+    const snap = await get(ref(db, 'payments'));
+    const all = snap.val() || {};
+    clientPayments = Object.entries(all)
+      .filter(([,p]) => p.clientKey === clientKey)
+      .sort((a,b) => new Date(a[1].customDate||a[1].date) - new Date(b[1].customDate||b[1].date));
+  } catch(e) {}
+
+  const clientInvoices = Object.entries(window.appState.invoices)
+    .filter(([,i]) => i.phone === c.phone)
+    .sort((a,b) => (a[1].createdAt||0) - (b[1].createdAt||0));
+
+  const timeline = [
+    ...clientInvoices.map(([id,inv]) => ({ type:'invoice', id, data:inv, ts:inv.createdAt||0 })),
+    ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts:new Date(pay.customDate?pay.customDate+'T12:00:00':pay.date).getTime() }))
+  ].sort((a,b) => a.ts - b.ts);
+
+  setTimeout(() => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const W = doc.internal.pageSize.getWidth();
+      const PH = doc.internal.pageSize.getHeight();
+      let y = 0;
+
+      // BG
+      doc.setFillColor(10, 22, 40);
+      doc.rect(0, 0, W, PH, 'F');
+
+      // Header
+      doc.setFillColor(13, 52, 96);
+      doc.rect(0, 0, W, 45, 'F');
+      doc.setDrawColor(255, 215, 0);
+      doc.setLineWidth(0.8);
+      doc.line(0, 45, W, 45);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(255, 215, 0);
+      doc.text('Al-Haj Ahmed Al-Hadeedi', W/2, 13, { align:'center' });
+      doc.setFontSize(10);
+      doc.setTextColor(0, 180, 216);
+      doc.text('Fish Trading | تجارة الأسماك', W/2, 21, { align:'center' });
+      doc.setFontSize(12);
+      doc.setTextColor(255, 255, 255);
+      doc.text('ACCOUNT STATEMENT', W/2, 30, { align:'center' });
+      doc.setFontSize(8);
+      doc.setTextColor(180, 210, 240);
+      const nowStr = new Date().toLocaleDateString('en-GB');
+      doc.text('Date: ' + nowStr, W/2, 38, { align:'center' });
+
+      y = 52;
+
+      // Client info
+      doc.setFillColor(20, 40, 70);
+      doc.setDrawColor(0, 180, 216);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(10, y, W-20, 22, 3, 3, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(0, 180, 216);
+      doc.text('Client:', 15, y+8);
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(11);
+      doc.text(c.name, 35, y+8);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(180, 210, 240);
+      doc.text('Phone: ' + c.phone, 15, y+15);
+      if (c.shopName) doc.text('Shop: ' + c.shopName, 15, y+20);
+
+      // Summary badges
+      const debt = c.totalDebt || 0;
+      const paid = c.totalPaid || 0;
+      const total = c.totalPurchases || 0;
+      const bY = y + 28;
+      const bW = (W-30)/3;
+      const badges = [
+        { label:'Total Purchases', val:formatNum(total)+' EGP', color:[0,100,160], tcolor:[0,180,216] },
+        { label:'Total Paid', val:formatNum(paid)+' EGP', color:[0,80,50], tcolor:[0,200,150] },
+        { label:'Balance Due', val:formatNum(debt)+' EGP', color:[80,20,20], tcolor:[255,71,87] },
+      ];
+      badges.forEach((b,i) => {
+        doc.setFillColor(...b.color);
+        doc.setDrawColor(...b.tcolor);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(10 + i*(bW+5), bY, bW, 16, 2, 2, 'FD');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(...b.tcolor);
+        doc.text(b.label, 10 + i*(bW+5) + bW/2, bY+5.5, { align:'center' });
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.text(b.val, 10 + i*(bW+5) + bW/2, bY+12, { align:'center' });
+      });
+      y = bY + 22;
+
+      // Timeline header
+      doc.setFillColor(0, 80, 140);
+      doc.rect(10, y, W-20, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(255,255,255);
+      doc.text('#', 14, y+5.5);
+      doc.text('Date', 22, y+5.5);
+      doc.text('Type', 55, y+5.5);
+      doc.text('Details', 90, y+5.5);
+      doc.text('Amount', W-12, y+5.5, { align:'right' });
+      y += 8;
+
+      let runBal = 0;
+      timeline.forEach((item, idx) => {
+        const rowH = 11;
+        if (y + rowH > PH - 25) {
+          doc.addPage();
+          doc.setFillColor(10, 22, 40);
+          doc.rect(0, 0, W, PH, 'F');
+          y = 15;
+        }
+        doc.setFillColor(idx%2===0 ? 15 : 20, idx%2===0 ? 28 : 35, idx%2===0 ? 50 : 60);
+        doc.rect(10, y, W-20, rowH, 'F');
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+
+        if (item.type === 'invoice') {
+          const inv = item.data;
+          runBal += inv.total;
+          const dateStr = inv.dateStr || inv.invDateISO || '';
+          doc.setTextColor(200, 220, 250);
+          doc.text(String(idx+1), 14, y+7);
+          doc.text(dateStr.substring(0,14), 22, y+7);
+          doc.setTextColor(255, 215, 0);
+          doc.text('Invoice', 55, y+7);
+          doc.setTextColor(200, 220, 250);
+          const items = (inv.items||[]).map(i=>i.fish).join(', ').substring(0,25);
+          doc.text(items, 90, y+7);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(255, 215, 0);
+          doc.text('+' + formatNum(inv.total) + ' EGP', W-12, y+7, { align:'right' });
+        } else {
+          const pay = item.data;
+          runBal -= pay.amount || 0;
+          if (runBal < 0) runBal = 0;
+          const payDate = pay.customDate
+            ? new Date(pay.customDate+'T12:00:00').toLocaleDateString('en-GB')
+            : (pay.dateStr || '');
+          doc.setTextColor(200, 220, 250);
+          doc.text(String(idx+1), 14, y+7);
+          doc.text(payDate.substring(0,14), 22, y+7);
+          doc.setTextColor(0, 200, 150);
+          doc.text('Payment', 55, y+7);
+          doc.setTextColor(200, 220, 250);
+          const details = (pay.notes ? pay.notes : (pay.from ? pay.from : '')).substring(0,25);
+          doc.text(details, 90, y+7);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(0, 200, 150);
+          doc.text('-' + formatNum(pay.amount) + ' EGP', W-12, y+7, { align:'right' });
+        }
+        y += rowH;
+      });
+
+      // Final balance
+      y += 5;
+      if (y + 20 > PH - 20) {
+        doc.addPage();
+        doc.setFillColor(10, 22, 40);
+        doc.rect(0, 0, W, PH, 'F');
+        y = 20;
+      }
+      doc.setDrawColor(255, 215, 0);
+      doc.setLineWidth(0.5);
+      doc.line(10, y, W-10, y);
+      y += 6;
+
+      const balColor = debt > 0 ? [80,20,20] : [0,60,30];
+      const balTxt = debt > 0 ? [255,71,87] : [0,200,150];
+      doc.setFillColor(...balColor);
+      doc.setDrawColor(...balTxt);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(10, y, W-20, 14, 2, 2, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...balTxt);
+      doc.text(debt > 0 ? 'BALANCE DUE:' : 'ACCOUNT SETTLED:', 15, y+9);
+      doc.setFontSize(12);
+      doc.setTextColor(255, 215, 0);
+      doc.text(formatNum(debt) + ' EGP', W-12, y+9, { align:'right' });
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(100, 140, 180);
+      doc.text('Thank you | شكراً لتعاملكم معنا', W/2, PH-8, { align:'center' });
+
+      const fname = `statement_${c.name}.pdf`.replace(/\s/g, '_');
+      doc.save(fname);
+      showToast('✅ تم تحميل كشف الحساب PDF!');
+    } catch(e) {
+      console.error(e);
+      showToast('❌ خطأ في إنشاء PDF: ' + e.message);
+    }
+  }, 300);
 };
 
 // ============================================================
@@ -1342,9 +1863,8 @@ function renderPriceLeaders() {
   const priceMap = {};
   invoices.forEach(inv => {
     (inv.items||[]).forEach(item => {
-      const pkgName = item.fish;
-      if (!priceMap[pkgName] || item.pricePerKg > priceMap[pkgName].maxPrice) {
-        priceMap[pkgName] = { maxPrice: item.pricePerKg, clientName: inv.clientName };
+      if (!priceMap[item.fish] || item.pricePerKg > priceMap[item.fish].maxPrice) {
+        priceMap[item.fish] = { maxPrice: item.pricePerKg, clientName: inv.clientName };
       }
     });
   });
@@ -1401,32 +1921,21 @@ window.renderClients = function() {
   const filter = window.appState.currentFilter;
   const container = document.getElementById('clients-list');
   if (!container) return;
-
   let clients = Object.entries(window.appState.clients);
-  if (search) clients = clients.filter(([,c]) => c.name?.toLowerCase().includes(search) || c.phone?.includes(search));
-  if (filter === 'debt') clients = clients.filter(([,c]) => (c.totalDebt||0) > 0);
-  if (filter === 'paid') clients = clients.filter(([,c]) => (c.totalDebt||0) <= 0);
-
-  if (clients.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء</div></div>';
-    return;
-  }
-
+  if (search) clients = clients.filter(([,c]) => c.name?.toLowerCase().includes(search)||c.phone?.includes(search));
+  if (filter==='debt') clients = clients.filter(([,c]) => (c.totalDebt||0)>0);
+  if (filter==='paid') clients = clients.filter(([,c]) => (c.totalDebt||0)<=0);
+  if (clients.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء</div></div>'; return; }
   clients.sort((a,b) => (b[1].totalDebt||0)-(a[1].totalDebt||0));
-
   container.innerHTML = clients.map(([key,c]) => {
-    const debt = c.totalDebt||0;
-    const totalPurchases = c.totalPurchases||0;
-    const totalPaid = c.totalPaid||0;
-    const hasDebt = debt > 0;
-    const paidPct = totalPurchases > 0 ? Math.min(100, Math.round((totalPaid/totalPurchases)*100)) : 0;
+    const debt=c.totalDebt||0, totalPurchases=c.totalPurchases||0, totalPaid=c.totalPaid||0;
+    const hasDebt=debt>0;
+    const paidPct=totalPurchases>0?Math.min(100,Math.round((totalPaid/totalPurchases)*100)):0;
     return `
       <div class="client-card ${hasDebt?'has-debt':'paid'}" onclick="showClientAccount('${key}')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:44px;height:44px;border-radius:50%;background:${hasDebt?'linear-gradient(135deg,rgba(255,71,87,0.3),rgba(255,71,87,0.1))':'linear-gradient(135deg,rgba(0,200,150,0.3),rgba(0,200,150,0.1))'};border:2px solid ${hasDebt?'var(--danger)':'var(--emerald)'};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">
-              ${hasDebt?'👤':'✅'}
-            </div>
+            <div style="width:44px;height:44px;border-radius:50%;background:${hasDebt?'linear-gradient(135deg,rgba(255,71,87,0.3),rgba(255,71,87,0.1))':'linear-gradient(135deg,rgba(0,200,150,0.3),rgba(0,200,150,0.1))'};border:2px solid ${hasDebt?'var(--danger)':'var(--emerald)'};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${hasDebt?'👤':'✅'}</div>
             <div>
               <div class="client-name">${c.name}</div>
               <div class="client-phone">📱 ${c.phone}</div>
@@ -1462,12 +1971,11 @@ window.renderClients = function() {
 };
 
 // ============================================================
-// CLIENT ACCOUNT MODAL (full screen)
+// CLIENT ACCOUNT MODAL
 // ============================================================
 window.showClientAccount = async function(clientKey) {
   const c = window.appState.clients[clientKey];
   if (!c) return;
-
   let clientPayments = [];
   try {
     const snap = await get(ref(db, 'payments'));
@@ -1477,26 +1985,23 @@ window.showClientAccount = async function(clientKey) {
       .sort((a,b) => new Date(b[1].date)-new Date(a[1].date));
   } catch(e) {}
 
-  const debt = c.totalDebt||0;
-  const totalPurchases = c.totalPurchases||0;
-  const totalPaid = c.totalPaid||0;
-  const hasDebt = debt > 0;
-  const paidPct = totalPurchases>0 ? Math.min(100,Math.round((totalPaid/totalPurchases)*100)) : 0;
+  const debt=c.totalDebt||0, totalPurchases=c.totalPurchases||0, totalPaid=c.totalPaid||0;
+  const hasDebt=debt>0;
+  const paidPct=totalPurchases>0?Math.min(100,Math.round((totalPaid/totalPurchases)*100)):0;
 
   const clientInvoices = Object.entries(window.appState.invoices)
-    .filter(([,i]) => i.phone === c.phone)
+    .filter(([,i]) => i.phone===c.phone)
     .sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0));
 
   const timeline = [
-    ...clientInvoices.map(([id,inv]) => ({ type:'invoice', id, data:inv, ts:inv.createdAt||0 })),
-    ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts:new Date(pay.date).getTime() }))
+    ...clientInvoices.map(([id,inv]) => ({type:'invoice',id,data:inv,ts:inv.createdAt||0})),
+    ...clientPayments.map(([id,pay]) => ({type:'payment',id,data:pay,ts:new Date(pay.date).getTime()}))
   ].sort((a,b) => b.ts-a.ts);
 
-  const todayISO = new Date().toISOString().split('T')[0];
+  const todayISO = getTodayISO();
 
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.id = 'client-account-modal';
+  modal.className = 'modal-overlay'; modal.id = 'client-account-modal';
   modal.innerHTML = `
     <div class="modal-sheet" style="max-height:95vh">
       <div class="modal-handle"></div>
@@ -1507,8 +2012,12 @@ window.showClientAccount = async function(clientKey) {
           <div style="font-size:12px;color:var(--cyan-glow)">📱 ${c.phone}</div>
           ${c.shopName?`<div style="font-size:10px;color:var(--text-secondary)">🏪 ${c.shopName}</div>`:''}
         </div>
-        <button onclick="sendClientStatementWA('${clientKey}')"
-          style="background:linear-gradient(135deg,#25D366,#128C7E);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center;border:none;cursor:pointer">📲</button>
+        <div style="display:flex;gap:6px">
+          <button onclick="sendClientStatementWA('${clientKey}')"
+            style="background:linear-gradient(135deg,#25D366,#128C7E);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center;border:none;cursor:pointer">📲</button>
+          <button onclick="exportClientStatementPDF('${clientKey}')"
+            style="background:linear-gradient(135deg,#e74c3c,#c0392b);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center;border:none;cursor:pointer">📄</button>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px">
@@ -1562,7 +2071,7 @@ window.showClientAccount = async function(clientKey) {
           </div>
           <div>
             <label style="font-size:11px;color:var(--text-secondary);display:block;margin-bottom:5px">📅 تاريخ الدفع</label>
-            <input type="date" id="payment-date" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:12px;outline:none;-webkit-appearance:none" value="${todayISO}">
+            <input type="date" id="payment-date" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:white;font-family:'Cairo',sans-serif;font-size:12px;outline:none;-webkit-appearance:none;color-scheme:dark" value="${todayISO}">
           </div>
         </div>
         <div style="margin-bottom:12px">
@@ -1596,10 +2105,10 @@ window.showClientAccount = async function(clientKey) {
           🕐 سجل الحركات
           <span style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:2px 8px;border-radius:20px;font-size:10px;color:var(--cyan-glow)">${timeline.length} حركة</span>
         </div>
-        ${timeline.length === 0 ? '<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات</div>' :
+        ${timeline.length===0?'<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات</div>':
           timeline.map(item => {
-            if (item.type === 'invoice') {
-              const inv = item.data;
+            if (item.type==='invoice') {
+              const inv=item.data;
               return `<div onclick="closeModal();showInvoiceDetail('${item.id}')"
                 style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;margin-bottom:7px;cursor:pointer">
                 <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🧾</div>
@@ -1614,14 +2123,14 @@ window.showClientAccount = async function(clientKey) {
                 </div>
               </div>`;
             } else {
-              const pay = item.data;
-              const payDate = pay.customDate ? new Date(pay.customDate+'T12:00:00').toLocaleDateString('ar-EG') : (pay.dateStr||'');
+              const pay=item.data;
+              const payDate=pay.customDate?new Date(pay.customDate+'T12:00:00').toLocaleDateString('ar-EG'):(pay.dateStr||'');
               return `<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:12px;margin-bottom:7px">
                 <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">💳</div>
                 <div style="flex:1;min-width:0">
                   <div style="font-size:12px;font-weight:700;color:var(--emerald)">دفعة مالية</div>
-                  ${pay.from ? `<div style="font-size:10px;color:var(--text-secondary)">👤 ${pay.from}</div>` : ''}
-                  ${pay.notes ? `<div style="font-size:10px;color:var(--text-secondary)">📝 ${pay.notes}</div>` : ''}
+                  ${pay.from?`<div style="font-size:10px;color:var(--text-secondary)">👤 ${pay.from}</div>`:''}
+                  ${pay.notes?`<div style="font-size:10px;color:var(--text-secondary)">📝 ${pay.notes}</div>`:''}
                   <div style="font-size:10px;color:var(--text-secondary)">📅 ${payDate}</div>
                 </div>
                 <div style="text-align:left;flex-shrink:0">
@@ -1637,11 +2146,10 @@ window.showClientAccount = async function(clientKey) {
             }
           }).join('')}
       </div>
-
       <button onclick="closeModal()" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer">إغلاق</button>
     </div>
   `;
-  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+  modal.onclick = (e) => { if(e.target===modal) closeModal(); };
   const existing = document.getElementById('client-account-modal');
   if (existing) existing.remove();
   document.getElementById('modals-container').appendChild(modal);
@@ -1655,45 +2163,44 @@ window.setPayAmount = function(amount, maxDebt) {
   const input = document.getElementById('payment-amount');
   if (input) { input.value = amount; updatePayPreview(maxDebt); }
 };
-
 window.updatePayPreview = function(maxDebt) {
-  const val = parseFloat(document.getElementById('payment-amount')?.value) || 0;
+  const val = parseFloat(document.getElementById('payment-amount')?.value)||0;
   const capped = Math.min(val, maxDebt);
-  const rem = Math.max(maxDebt - capped, 0);
+  const rem = Math.max(maxDebt-capped, 0);
   const remEl = document.getElementById('remaining-preview');
   const payEl = document.getElementById('payment-preview');
-  if (remEl) { remEl.textContent = formatNum(rem) + ' ج.م'; remEl.style.color = rem === 0 ? 'var(--emerald)' : 'var(--danger)'; }
-  if (payEl) payEl.textContent = formatNum(capped) + ' ج.م';
+  if (remEl) { remEl.textContent=formatNum(rem)+' ج.م'; remEl.style.color=rem===0?'var(--emerald)':'var(--danger)'; }
+  if (payEl) payEl.textContent=formatNum(capped)+' ج.م';
 };
 
 window.processPayment = async function(clientKey, currentDebt) {
-  const amount = parseFloat(document.getElementById('payment-amount')?.value) || 0;
-  const fromVal = (document.getElementById('payment-from')?.value || '').trim();
-  const dateVal = document.getElementById('payment-date')?.value || new Date().toISOString().split('T')[0];
-  const notes = (document.getElementById('payment-notes')?.value || '').trim();
-  if (amount <= 0) return showToast('❌ يرجى إدخال مبلغ أكبر من صفر');
-  const actualPaid = Math.min(amount, currentDebt);
-  const newDebt = Math.max(currentDebt - actualPaid, 0);
-  const c = window.appState.clients[clientKey];
-  const btn = document.getElementById('confirm-pay-btn');
-  if (btn) { btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...'; btn.disabled = true; }
+  const amount=parseFloat(document.getElementById('payment-amount')?.value)||0;
+  const fromVal=(document.getElementById('payment-from')?.value||'').trim();
+  const dateVal=document.getElementById('payment-date')?.value||getTodayISO();
+  const notes=(document.getElementById('payment-notes')?.value||'').trim();
+  if (amount<=0) return showToast('❌ يرجى إدخال مبلغ أكبر من صفر');
+  const actualPaid=Math.min(amount,currentDebt);
+  const newDebt=Math.max(currentDebt-actualPaid,0);
+  const c=window.appState.clients[clientKey];
+  const btn=document.getElementById('confirm-pay-btn');
+  if (btn){btn.innerHTML='<span class="spinner"></span> جاري الحفظ...';btn.disabled=true;}
   try {
-    const clientRef = ref(db, 'clients/' + clientKey);
-    const snap = await get(clientRef);
-    const existing = snap.val() || {};
-    await update(clientRef, { totalDebt: newDebt, totalPaid: (existing.totalPaid||0) + actualPaid });
-    const customDateStr = new Date(dateVal + 'T12:00:00').toLocaleDateString('ar-EG');
-    await push(ref(db, 'payments'), {
-      clientKey, clientName: c?.name||existing.name, clientPhone: c?.phone||existing.phone,
-      amount: actualPaid, remainingAfter: newDebt,
-      from: fromVal||c?.name||existing.name, notes, customDate: dateVal, dateStr: customDateStr,
-      date: new Date().toISOString(), savedAt: Date.now()
+    const clientRef=ref(db,'clients/'+clientKey);
+    const snap=await get(clientRef);
+    const existing=snap.val()||{};
+    await update(clientRef,{totalDebt:newDebt,totalPaid:(existing.totalPaid||0)+actualPaid});
+    const customDateStr=new Date(dateVal+'T12:00:00').toLocaleDateString('ar-EG');
+    await push(ref(db,'payments'),{
+      clientKey,clientName:c?.name||existing.name,clientPhone:c?.phone||existing.phone,
+      amount:actualPaid,remainingAfter:newDebt,
+      from:fromVal||c?.name||existing.name,notes,customDate:dateVal,dateStr:customDateStr,
+      date:new Date().toISOString(),savedAt:Date.now()
     });
     closeModal();
     showToast(`✅ تم تسجيل ${formatNum(actualPaid)} ج.م — المتبقي: ${formatNum(newDebt)} ج.م`);
-  } catch (err) {
-    showToast('❌ خطأ: ' + err.message);
-    if (btn) { btn.innerHTML = '✅ تأكيد وحفظ الدفعة'; btn.disabled = false; }
+  } catch(err) {
+    showToast('❌ خطأ: '+err.message);
+    if(btn){btn.innerHTML='✅ تأكيد وحفظ الدفعة';btn.disabled=false;}
   }
 };
 
@@ -1701,33 +2208,31 @@ window.processPayment = async function(clientKey, currentDebt) {
 // HISTORY
 // ============================================================
 window.renderHistory = function() {
-  const search = (document.getElementById('history-search')?.value||'').toLowerCase();
-  const container = document.getElementById('history-list');
+  const search=(document.getElementById('history-search')?.value||'').toLowerCase();
+  const container=document.getElementById('history-list');
   if (!container) return;
-  let invoices = Object.entries(window.appState.invoices).sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0));
-  if (search) invoices = invoices.filter(([,i]) => i.clientName?.toLowerCase().includes(search)||i.phone?.includes(search));
-  if (invoices.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير</div></div>';
-    return;
-  }
-  container.innerHTML = invoices.map(([id,inv]) => {
-    const gross = inv.gross||inv.total;
+  let invoices=Object.entries(window.appState.invoices).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  if (search) invoices=invoices.filter(([,i])=>i.clientName?.toLowerCase().includes(search)||i.phone?.includes(search));
+  if (invoices.length===0){container.innerHTML='<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير</div></div>';return;}
+  container.innerHTML=invoices.map(([id,inv])=>{
+    const gross=inv.gross||inv.total;
     return `
     <div class="history-item">
       <div class="history-header" onclick="showInvoiceDetail('${id}')" style="cursor:pointer">
         <span class="history-client">👤 ${inv.clientName}</span>
         <div style="text-align:left">
           <div class="history-amount">${formatNum(inv.total)} ج.م</div>
-          ${inv.commissionPct>0 ? `<div style="font-size:10px;color:var(--warning)">قبل العمولة: ${formatNum(gross)} ج.م</div>` : ''}
+          ${inv.commissionPct>0?`<div style="font-size:10px;color:var(--warning)">قبل العمولة: ${formatNum(gross)} ج.م</div>`:''}
         </div>
       </div>
       <div class="history-meta" onclick="showInvoiceDetail('${id}')" style="cursor:pointer;margin-bottom:8px">
         📅 ${inv.dateStr} • 📦 ${(inv.items||[]).length} صنف
-        ${inv.commissionPct>0 ? ` • 🤝 عمولة ${inv.commissionPct}%` : ''}
+        ${inv.commissionPct>0?` • 🤝 عمولة ${inv.commissionPct}%`:''}
       </div>
       <div style="display:flex;gap:6px">
-        <button onclick="showInvoiceDetail('${id}')" style="flex:2;padding:7px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,180,216,0.1);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">👁️ عرض</button>
-        <button onclick="editInvoiceModal('${id}')" style="flex:2;padding:7px;border-radius:8px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">✏️ تعديل</button>
+        <button onclick="showInvoiceDetail('${id}')" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,180,216,0.1);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">👁️ عرض</button>
+        <button onclick="exportInvoicePDF('${id}')" style="flex:1;padding:7px;border-radius:8px;border:1px solid rgba(231,76,60,0.4);background:rgba(231,76,60,0.1);color:#e74c3c;font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
+        <button onclick="editInvoiceModal('${id}')" style="flex:1;padding:7px;border-radius:8px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">✏️ تعديل</button>
         <button onclick="confirmDeleteInvoice('${id}','${inv.clientName}')" style="flex:1;padding:7px;border-radius:8px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">🗑️</button>
       </div>
     </div>
@@ -1744,37 +2249,37 @@ window.showInvoiceDetail = function(id) {
 // PRICES PAGE
 // ============================================================
 window.renderPricesPage = function() {
-  const invoices = Object.values(window.appState.invoices);
-  if (invoices.length === 0) return;
-  const fishData = {};
-  invoices.forEach(inv => {
-    (inv.items||[]).forEach(item => {
-      if (!fishData[item.fish]) fishData[item.fish] = [];
-      fishData[item.fish].push({ client:inv.clientName, price:item.pricePerKg, kg:item.kg, date:inv.dateStr });
+  const invoices=Object.values(window.appState.invoices);
+  if (invoices.length===0) return;
+  const fishData={};
+  invoices.forEach(inv=>{
+    (inv.items||[]).forEach(item=>{
+      if (!fishData[item.fish]) fishData[item.fish]=[];
+      fishData[item.fish].push({client:inv.clientName,price:item.pricePerKg,kg:item.kg,date:inv.dateStr});
     });
   });
-  const fishes = Object.keys(fishData);
-  if (fishes.length === 0) return;
-  const tabBar = document.getElementById('prices-fish-tabs');
-  tabBar.innerHTML = fishes.map((f,i) => `<button class="tab-btn ${i===0?'active':''}" onclick="showFishPrices('${f}',this)">${f}</button>`).join('');
-  window._fishPriceData = fishData;
-  showFishPrices(fishes[0], tabBar.children[0]);
+  const fishes=Object.keys(fishData);
+  if (fishes.length===0) return;
+  const tabBar=document.getElementById('prices-fish-tabs');
+  tabBar.innerHTML=fishes.map((f,i)=>`<button class="tab-btn ${i===0?'active':''}" onclick="showFishPrices('${f}',this)">${f}</button>`).join('');
+  window._fishPriceData=fishData;
+  showFishPrices(fishes[0],tabBar.children[0]);
 };
 
-window.showFishPrices = function(fishName, btn) {
-  document.querySelectorAll('#prices-fish-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+window.showFishPrices = function(fishName,btn) {
+  document.querySelectorAll('#prices-fish-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  const data = (window._fishPriceData||{})[fishName]||[];
-  const sorted = [...data].sort((a,b) => b.price-a.price);
-  const maxPrice = sorted[0]?.price||0;
-  document.getElementById('prices-content').innerHTML = `
+  const data=(window._fishPriceData||{})[fishName]||[];
+  const sorted=[...data].sort((a,b)=>b.price-a.price);
+  const maxPrice=sorted[0]?.price||0;
+  document.getElementById('prices-content').innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:12px;background:var(--glass);border-radius:10px">
       <span style="color:var(--text-secondary);font-size:12px">أعلى سعر لـ${fishName}</span>
       <span style="font-size:20px;font-weight:900;color:var(--gold)">${maxPrice} ج.م/ك</span>
     </div>
     <table class="price-table">
       <thead><tr><th>#</th><th>العميل</th><th>الكيلو</th><th>السعر</th><th>التاريخ</th></tr></thead>
-      <tbody>${sorted.map((d,i) => `
+      <tbody>${sorted.map((d,i)=>`
         <tr>
           <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'•'}</td>
           <td style="font-weight:600">${d.client}</td>
@@ -1791,168 +2296,93 @@ window.showFishPrices = function(fishName, btn) {
 // CLIENT DATALIST
 // ============================================================
 function updateClientDatalist() {
-  const dl = document.getElementById('clients-datalist');
+  const dl=document.getElementById('clients-datalist');
   if (!dl) return;
-  dl.innerHTML = Object.values(window.appState.clients).map(c => `<option value="${c.name}" data-phone="${c.phone}">`).join('');
+  dl.innerHTML=Object.values(window.appState.clients).map(c=>`<option value="${c.name}" data-phone="${c.phone}">`).join('');
 }
-document.getElementById('inv-client').addEventListener('input', function() {
-  const match = Object.values(window.appState.clients).find(c => c.name === this.value);
-  if (match) {
-    document.getElementById('inv-phone').value = match.phone;
-    document.getElementById('inv-shop').value = match.shopName||'';
-  }
+document.getElementById('inv-client').addEventListener('input',function(){
+  const match=Object.values(window.appState.clients).find(c=>c.name===this.value);
+  if (match){document.getElementById('inv-phone').value=match.phone;document.getElementById('inv-shop').value=match.shopName||'';}
 });
 
 // ============================================================
 // SEND CLIENT STATEMENT WA
 // ============================================================
 window.sendClientStatementWA = async function(clientKey) {
-  const c = window.appState.clients[clientKey];
+  const c=window.appState.clients[clientKey];
   if (!c) return;
   showToast('⏳ جاري تحضير الكشف الكامل...');
   try {
-    const debt = c.totalDebt || 0;
-    const now  = new Date().toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
-
-    // ── جلب الفواتير ──
-    const clientInvoices = Object.entries(window.appState.invoices)
-      .filter(([, i]) => i.phone === c.phone)
-      .sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0));
-
-    // ── جلب الدفعات ──
-    let clientPayments = [];
+    const debt=c.totalDebt||0;
+    const now=new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
+    const clientInvoices=Object.entries(window.appState.invoices)
+      .filter(([,i])=>i.phone===c.phone)
+      .sort((a,b)=>(a[1].createdAt||0)-(b[1].createdAt||0));
+    let clientPayments=[];
     try {
-      const snap = await get(ref(db, 'payments'));
-      const all  = snap.val() || {};
-      clientPayments = Object.entries(all)
-        .filter(([, p]) => p.clientKey === clientKey)
-        .sort((a, b) => {
-          const da = new Date(a[1].customDate || a[1].date);
-          const db2 = new Date(b[1].customDate || b[1].date);
-          return da - db2;
-        });
-    } catch(e) {}
-
-    // ── دمج الفواتير والدفعات في timeline مرتب زمنياً ──
-    const timeline = [
-      ...clientInvoices.map(([id, inv]) => ({
-        type: 'invoice', id, data: inv,
-        ts: inv.createdAt || new Date(inv.date).getTime()
-      })),
-      ...clientPayments.map(([id, pay]) => ({
-        type: 'payment', id, data: pay,
-        ts: new Date((pay.customDate ? pay.customDate + 'T12:00:00' : pay.date)).getTime()
-      }))
-    ].sort((a, b) => a.ts - b.ts);
-
-    // ── بناء نص الكشف ──
-    let text = '';
-    text += `🐟 *كشف حساب كامل*\n`;
-    text += `🏪 الحاج أحمد الحديدي - تجارة الأسماك\n`;
-    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `👤 العميل  : *${c.name}*\n`;
-    if (c.shopName) text += `🏪 المؤسسة : ${c.shopName}\n`;
-    if (c.phone)    text += `📱 الهاتف   : ${c.phone}\n`;
-    text += `📅 تاريخ الكشف : ${now}\n`;
-    text += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-
-    if (timeline.length === 0) {
-      text += `📭 لا توجد حركات مسجلة بعد\n`;
-    } else {
-      text += `📋 *تفاصيل جميع الحركات (${timeline.length}):*\n`;
-
-      let runningBalance = 0;
-
-      timeline.forEach((item, index) => {
-        const num = index + 1;
-
-        if (item.type === 'invoice') {
-          const inv = item.data;
-          const gross = inv.gross || inv.total;
-          const hasComm = (inv.commissionPct || 0) > 0;
-          runningBalance += inv.total;
-
-          text += `🧾 *[${num}] فاتورة بيع*\n`;
-          text += `📅 التاريخ : ${inv.dateStr}\n`;
-          text += `─────────────────────\n`;
-          if (hasComm) {
-            const commAmt = inv.commissionAmt || (gross * inv.commissionPct / 100);
-            text += `   📦 مبلغ الفاتورة : ${formatNum(gross)} ج.م\n`;
-            text += `   🤝 عمولة (${inv.commissionPct}%) : - ${formatNum(commAmt)} ج.م\n`;
-            text += `   💰 *صافي على التاجر : ${formatNum(inv.total)} ج.م*\n`;
-          } else {
-            text += `   💰 *مبلغ الفاتورة : ${formatNum(inv.total)} ج.م*\n`;
-          }
-          text += `   📊 الرصيد المتراكم : *${formatNum(runningBalance)} ج.م*\n`;
-          text += `─────────────────────\n`;
-
+      const snap=await get(ref(db,'payments'));
+      const all=snap.val()||{};
+      clientPayments=Object.entries(all).filter(([,p])=>p.clientKey===clientKey)
+        .sort((a,b)=>new Date(a[1].customDate||a[1].date)-new Date(b[1].customDate||b[1].date));
+    } catch(e){}
+    const timeline=[
+      ...clientInvoices.map(([id,inv])=>({type:'invoice',id,data:inv,ts:inv.createdAt||new Date(inv.date).getTime()})),
+      ...clientPayments.map(([id,pay])=>({type:'payment',id,data:pay,ts:new Date(pay.customDate?pay.customDate+'T12:00:00':pay.date).getTime()}))
+    ].sort((a,b)=>a.ts-b.ts);
+    let text=`🐟 *كشف حساب كامل*\n🏪 الحاج أحمد الحديدي - تجارة الأسماك\n━━━━━━━━━━━━━━━━━━━━━━\n`;
+    text+=`👤 العميل  : *${c.name}*\n`;
+    if (c.shopName) text+=`🏪 المؤسسة : ${c.shopName}\n`;
+    text+=`📅 تاريخ الكشف : ${now}\n━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    if (timeline.length===0){text+=`📭 لا توجد حركات مسجلة بعد\n`;}
+    else {
+      text+=`📋 *تفاصيل جميع الحركات (${timeline.length}):*\n`;
+      let runBal=0;
+      timeline.forEach((item,index)=>{
+        if (item.type==='invoice'){
+          const inv=item.data; runBal+=inv.total;
+          text+=`🧾 *[${index+1}] فاتورة بيع*\n📅 ${inv.dateStr}\n─────────────────────\n`;
+          text+=`   💰 *مبلغ الفاتورة : ${formatNum(inv.total)} ج.م*\n`;
+          if ((inv.expTotal||0)>0) text+=`   💸 مصاريف إضافية: ${formatNum(inv.expTotal)} ج.م\n`;
+          text+=`   📊 الرصيد المتراكم : *${formatNum(runBal)} ج.م*\n─────────────────────\n`;
         } else {
-          const pay = item.data;
-          runningBalance -= pay.amount || 0;
-          if (runningBalance < 0) runningBalance = 0;
-
-          const payDate = pay.customDate
-            ? new Date(pay.customDate + 'T12:00:00').toLocaleDateString('ar-EG')
-            : (pay.dateStr || '');
-
-          text += `💳 *[${num}] دفعة مالية*\n`;
-          text += `📅 التاريخ : ${payDate}\n`;
-          text += `─────────────────────\n`;
-          text += `   💵 المبلغ المدفوع : *${formatNum(pay.amount)} ج.م*\n`;
-          if (pay.from && pay.from !== c.name) {
-            text += `   👤 استُلم من    : ${pay.from}\n`;
-          }
-          if (pay.notes) {
-            text += `   📝 ملاحظات      : ${pay.notes}\n`;
-          }
-          text += `   📊 الرصيد بعدها : *${formatNum(runningBalance)} ج.م*\n`;
-          text += `─────────────────────\n`;
+          const pay=item.data; runBal-=pay.amount||0; if(runBal<0)runBal=0;
+          const payDate=pay.customDate?new Date(pay.customDate+'T12:00:00').toLocaleDateString('ar-EG'):(pay.dateStr||'');
+          text+=`💳 *[${index+1}] دفعة مالية*\n📅 ${payDate}\n─────────────────────\n`;
+          text+=`   💵 المبلغ المدفوع : *${formatNum(pay.amount)} ج.م*\n`;
+          if (pay.notes) text+=`   📝 ملاحظات : ${pay.notes}\n`;
+          text+=`   📊 الرصيد بعدها : *${formatNum(runBal)} ج.م*\n─────────────────────\n`;
         }
       });
     }
-
-    // ── ملخص نهائي ──
-    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `📊 *الملخص النهائي:*\n`;
-    text += `💰 إجمالي المشتريات : *${formatNum(c.totalPurchases || 0)} ج.م*\n`;
-    text += `✅ إجمالي المدفوع   : *${formatNum(c.totalPaid || 0)} ج.م*\n`;
-    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-    if (debt > 0) {
-      text += `⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n`;
-    } else {
-      text += `✅ *الحساب مسوّي بالكامل* ✅\n`;
-    }
-    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `شكراً لتعاملكم معنا 🙏`;
-
-    window.open(`https://wa.me/2${c.phone}?text=${encodeURIComponent(text)}`, '_blank');
-  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+    text+=`━━━━━━━━━━━━━━━━━━━━━━\n📊 *الملخص النهائي:*\n💰 إجمالي المشتريات : *${formatNum(c.totalPurchases||0)} ج.م*\n✅ إجمالي المدفوع   : *${formatNum(c.totalPaid||0)} ج.م*\n━━━━━━━━━━━━━━━━━━━━━━\n`;
+    text+=debt>0?`⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n`:`✅ *الحساب مسوّي بالكامل* ✅\n`;
+    text+=`━━━━━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
+    window.open(`https://wa.me/2${c.phone}?text=${encodeURIComponent(text)}`,'_blank');
+  } catch(e){showToast('❌ خطأ: '+e.message);}
 };
 
 // ============================================================
 // TOAST & HELPERS
 // ============================================================
 window.showToast = function(msg) {
-  const existing = document.querySelector('.toast');
+  const existing=document.querySelector('.toast');
   if (existing) existing.remove();
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = msg;
+  const toast=document.createElement('div');
+  toast.className='toast'; toast.textContent=msg;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+  setTimeout(()=>toast.remove(),3000);
 };
-
-function formatNum(n) { return Math.round(n||0).toLocaleString('ar-EG'); }
+function formatNum(n){return Math.round(n||0).toLocaleString('ar-EG');}
 
 // ============================================================
 // CONFIRM MODAL
 // ============================================================
-function showConfirmModal({ icon, title, msg, confirmLabel, confirmColor, onConfirm }) {
-  const old = document.getElementById('confirm-modal');
-  if (old) old.remove();
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay'; modal.id = 'confirm-modal';
-  modal.innerHTML = `
+function showConfirmModal({icon,title,msg,confirmLabel,confirmColor,onConfirm}){
+  const old=document.getElementById('confirm-modal');
+  if(old)old.remove();
+  const modal=document.createElement('div');
+  modal.className='modal-overlay';modal.id='confirm-modal';
+  modal.innerHTML=`
     <div class="modal-sheet" style="max-height:50vh;text-align:center">
       <div class="modal-handle"></div>
       <div style="font-size:44px;margin:8px 0">${icon}</div>
@@ -1966,64 +2396,68 @@ function showConfirmModal({ icon, title, msg, confirmLabel, confirmColor, onConf
       </div>
     </div>
   `;
-  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
+  modal.onclick=(e)=>{if(e.target===modal)modal.remove();};
   document.getElementById('modals-container').appendChild(modal);
-  document.getElementById('confirm-action-btn').onclick = async () => {
-    const btn = document.getElementById('confirm-action-btn');
-    btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
-    await onConfirm(); modal.remove();
+  document.getElementById('confirm-action-btn').onclick=async()=>{
+    const btn=document.getElementById('confirm-action-btn');
+    btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
+    await onConfirm();modal.remove();
   };
 }
 
 // ============================================================
 // DELETE INVOICE
 // ============================================================
-window.confirmDeleteInvoice = function(invoiceId, clientName) {
-  const inv = window.appState.invoices[invoiceId];
-  if (!inv) return;
+window.confirmDeleteInvoice=function(invoiceId,clientName){
+  const inv=window.appState.invoices[invoiceId];
+  if(!inv)return;
   showConfirmModal({
-    icon:'🗑️', title:'حذف الفاتورة',
+    icon:'🗑️',title:'حذف الفاتورة',
     msg:`هل تريد حذف فاتورة <strong>${clientName}</strong> بقيمة <strong>${formatNum(inv.total)} ج.م</strong>؟<br><span style="color:var(--danger);font-size:11px">سيتم تحديث رصيد العميل تلقائياً</span>`,
     confirmLabel:'🗑️ حذف نهائي',
     confirmColor:'linear-gradient(135deg,var(--danger),#c0392b)',
-    onConfirm: () => deleteInvoice(invoiceId)
+    onConfirm:()=>deleteInvoice(invoiceId)
   });
 };
 
-async function deleteInvoice(invoiceId) {
-  const inv = window.appState.invoices[invoiceId];
-  if (!inv) return;
+async function deleteInvoice(invoiceId){
+  const inv=window.appState.invoices[invoiceId];
+  if(!inv)return;
   try {
-    const clientRef = ref(db, 'clients/' + inv.phone);
-    const snap = await get(clientRef);
-    if (snap.exists()) {
-      const c = snap.val();
-      await update(clientRef, {
-        totalDebt: Math.max((c.totalDebt||0)-inv.total, 0),
-        totalPurchases: Math.max((c.totalPurchases||0)-inv.total, 0),
-        invoiceCount: Math.max((c.invoiceCount||1)-1, 0)
+    const clientRef=ref(db,'clients/'+inv.phone);
+    const snap=await get(clientRef);
+    if(snap.exists()){
+      const c=snap.val();
+      await update(clientRef,{
+        totalDebt:Math.max((c.totalDebt||0)-inv.total,0),
+        totalPurchases:Math.max((c.totalPurchases||0)-inv.total,0),
+        invoiceCount:Math.max((c.invoiceCount||1)-1,0)
       });
     }
-    await remove(ref(db, 'invoices/' + invoiceId));
+    await remove(ref(db,'invoices/'+invoiceId));
     showToast('✅ تم حذف الفاتورة وتحديث رصيد العميل');
-  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+  } catch(e){showToast('❌ خطأ: '+e.message);}
 }
 
 // ============================================================
 // EDIT INVOICE MODAL
 // ============================================================
-window.editInvoiceModal = function(invoiceId) {
-  const inv = window.appState.invoices[invoiceId];
-  if (!inv) return;
-  const gross = inv.gross||inv.total;
-  window._editItems = inv.items||[];
-
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay'; modal.id = 'edit-invoice-modal';
-  modal.innerHTML = `
+window.editInvoiceModal=function(invoiceId){
+  const inv=window.appState.invoices[invoiceId];
+  if(!inv)return;
+  const gross=inv.gross||inv.total;
+  window._editItems=inv.items||[];
+  const currentDate=inv.invDateISO||getTodayISO();
+  const modal=document.createElement('div');
+  modal.className='modal-overlay';modal.id='edit-invoice-modal';
+  modal.innerHTML=`
     <div class="modal-sheet" style="max-height:90vh">
       <div class="modal-handle"></div>
       <div style="font-size:17px;font-weight:900;color:var(--gold);text-align:center;margin-bottom:16px">✏️ تعديل الفاتورة</div>
+      <div class="form-group">
+        <label class="form-label">📅 تاريخ الفاتورة</label>
+        <input type="date" id="ei-date" class="form-input" value="${currentDate}" style="color-scheme:dark">
+      </div>
       <div class="form-group">
         <label class="form-label">👤 اسم العميل</label>
         <input type="text" id="ei-client" class="form-input" value="${inv.clientName}">
@@ -2042,15 +2476,15 @@ window.editInvoiceModal = function(invoiceId) {
       </div>
       <div style="background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:12px;margin-bottom:12px">
         <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-weight:700">📦 الأصناف</div>
-        ${(inv.items||[]).map((item,idx) => {
-          const unit = item.unit||'kg';
-          const qty = item.qty!==undefined ? item.qty : item.kg;
-          const prc = item.pricePerUnit!==undefined ? item.pricePerUnit : item.pricePerKg;
+        ${(inv.items||[]).map((item,idx)=>{
+          const unit=item.unit||'kg';
+          const qty=item.qty!==undefined?item.qty:item.kg;
+          const prc=item.pricePerUnit!==undefined?item.pricePerUnit:item.pricePerKg;
           return `
           <div style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:10px;padding:10px;margin-bottom:8px">
             <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">🐟 ${item.fish}</div>
             <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-              ${Object.entries(UNITS).map(([u,def]) => `
+              ${Object.entries(UNITS).map(([u,def])=>`
                 <button id="ei-unit-${u}-${idx}" onclick="toggleEditUnit(${idx},'${u}')"
                   style="padding:4px 10px;border-radius:7px;border:${unit===u?'2px solid var(--cyan-glow)':'1px solid var(--glass-border)'};background:${unit===u?'rgba(0,180,216,0.15)':'transparent'};color:${unit===u?'var(--cyan-glow)':'var(--text-secondary)'};font-family:'Cairo',sans-serif;font-size:10px;font-weight:700;cursor:pointer">
                   ${def.label}
@@ -2092,179 +2526,174 @@ window.editInvoiceModal = function(invoiceId) {
       <button onclick="closeEditInvoiceModal()" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
     </div>
   `;
-  modal.onclick = (e) => { if(e.target===modal) closeEditInvoiceModal(); };
-  const existing = document.getElementById('edit-invoice-modal');
-  if (existing) existing.remove();
+  modal.onclick=(e)=>{if(e.target===modal)closeEditInvoiceModal();};
+  const existing=document.getElementById('edit-invoice-modal');
+  if(existing)existing.remove();
   document.getElementById('modals-container').appendChild(modal);
 };
 
-window.closeEditInvoiceModal = function() {
-  const m = document.getElementById('edit-invoice-modal');
-  if (m) m.remove();
+window.closeEditInvoiceModal=function(){
+  const m=document.getElementById('edit-invoice-modal');
+  if(m)m.remove();
+};
+window.calcEditInvoice=function(){
+  let newGross=0;
+  (window._editItems||[]).forEach((item,idx)=>{
+    const kg=parseFloat(document.getElementById('ei-kg-'+idx)?.value)||0;
+    const price=parseFloat(document.getElementById('ei-price-'+idx)?.value)||0;
+    newGross+=kg*price;
+  });
+  const commPct=parseFloat(document.getElementById('ei-commission')?.value)||0;
+  const commAmt=(newGross*commPct)/100;
+  const net=newGross-commAmt;
+  const grossEl=document.getElementById('ei-gross-label');
+  const commRow=document.getElementById('ei-comm-row');
+  const commPctEl=document.getElementById('ei-comm-pct');
+  const commValEl=document.getElementById('ei-comm-val');
+  const netEl=document.getElementById('ei-net-label');
+  if(grossEl)grossEl.textContent=formatNum(newGross)+' ج.م';
+  if(commPctEl)commPctEl.textContent=commPct;
+  if(commValEl)commValEl.textContent='- '+formatNum(commAmt)+' ج.م';
+  if(netEl)netEl.textContent=formatNum(net)+' ج.م';
+  if(commRow)commRow.style.display=commPct>0?'flex':'none';
 };
 
-window.calcEditInvoice = function() {
-  let newGross = 0;
-  (window._editItems||[]).forEach((item,idx) => {
-    const kg = parseFloat(document.getElementById('ei-kg-'+idx)?.value)||0;
-    const price = parseFloat(document.getElementById('ei-price-'+idx)?.value)||0;
-    newGross += kg * price;
+window.saveEditInvoice=async function(invoiceId){
+  const inv=window.appState.invoices[invoiceId];
+  if(!inv)return;
+  const newClientName=document.getElementById('ei-client')?.value.trim();
+  const newPhone=document.getElementById('ei-phone')?.value.trim();
+  const newShop=document.getElementById('ei-shop')?.value.trim();
+  const newCommPct=parseFloat(document.getElementById('ei-commission')?.value)||0;
+  const newDateISO=document.getElementById('ei-date')?.value||getTodayISO();
+  if(!newClientName)return showToast('❌ اسم العميل مطلوب');
+  if(!validatePhone(newPhone))return showToast('❌ رقم الهاتف غير صحيح');
+  const newDateStr=new Date(newDateISO+'T12:00:00').toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
+  const newItems=(window._editItems||[]).map((item,idx)=>{
+    const unit=document.getElementById('ei-unit-'+idx)?.value||item.unit||'kg';
+    const qty=parseFloat(document.getElementById('ei-kg-'+idx)?.value)||0;
+    const priceRaw=parseFloat(document.getElementById('ei-price-'+idx)?.value)||0;
+    const uDef=UNITS[unit]||UNITS.kg;
+    const kgEquiv=qty*uDef.kgFactor;
+    return{...item,unit,unitLabel:uDef.label,qty,kg:kgEquiv,pricePerUnit:priceRaw,pricePerKg:+(priceRaw/uDef.kgFactor).toFixed(4),subtotal:qty*priceRaw};
   });
-  const commPct = parseFloat(document.getElementById('ei-commission')?.value)||0;
-  const commAmt = (newGross * commPct)/100;
-  const net = newGross - commAmt;
-  const grossEl = document.getElementById('ei-gross-label');
-  const commRow = document.getElementById('ei-comm-row');
-  const commPctEl = document.getElementById('ei-comm-pct');
-  const commValEl = document.getElementById('ei-comm-val');
-  const netEl = document.getElementById('ei-net-label');
-  if (grossEl) grossEl.textContent = formatNum(newGross) + ' ج.م';
-  if (commPctEl) commPctEl.textContent = commPct;
-  if (commValEl) commValEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
-  if (netEl) netEl.textContent = formatNum(net) + ' ج.م';
-  if (commRow) commRow.style.display = commPct > 0 ? 'flex' : 'none';
-};
-
-window.saveEditInvoice = async function(invoiceId) {
-  const inv = window.appState.invoices[invoiceId];
-  if (!inv) return;
-  const newClientName = document.getElementById('ei-client')?.value.trim();
-  const newPhone = document.getElementById('ei-phone')?.value.trim();
-  const newShop = document.getElementById('ei-shop')?.value.trim();
-  const newCommPct = parseFloat(document.getElementById('ei-commission')?.value)||0;
-  if (!newClientName) return showToast('❌ اسم العميل مطلوب');
-  if (!validatePhone(newPhone)) return showToast('❌ رقم الهاتف غير صحيح');
-  const newItems = (window._editItems||[]).map((item,idx) => {
-    const unit = document.getElementById('ei-unit-'+idx)?.value||item.unit||'kg';
-    const qty = parseFloat(document.getElementById('ei-kg-'+idx)?.value)||0;
-    const priceRaw = parseFloat(document.getElementById('ei-price-'+idx)?.value)||0;
-    const uDef = UNITS[unit]||UNITS.kg;
-    const kgEquiv = qty * uDef.kgFactor;
-    return { ...item, unit, unitLabel:uDef.label, qty, kg:kgEquiv, pricePerUnit:priceRaw, pricePerKg:+(priceRaw/uDef.kgFactor).toFixed(4), subtotal:qty*priceRaw };
-  });
-  const newGross = newItems.reduce((s,i) => s+i.subtotal, 0);
-  const newCommAmt = (newGross*newCommPct)/100;
-  const newNet = newGross - newCommAmt;
-  const diff = newNet - inv.total;
+  const newGross=newItems.reduce((s,i)=>s+i.subtotal,0);
+  const newCommAmt=(newGross*newCommPct)/100;
+  const newNet=newGross-newCommAmt;
+  const diff=newNet-inv.total;
   try {
-    await update(ref(db, 'invoices/'+invoiceId), { clientName:newClientName, phone:newPhone, shopName:newShop, items:newItems, gross:newGross, commissionPct:newCommPct, commissionAmt:newCommAmt, total:newNet, remaining:newNet });
-    const clientRef = ref(db, 'clients/'+inv.phone);
-    const snap = await get(clientRef);
-    if (snap.exists()) {
-      const c = snap.val();
-      await update(clientRef, { name:newClientName, phone:newPhone, totalDebt:Math.max((c.totalDebt||0)+diff,0), totalPurchases:Math.max((c.totalPurchases||0)+diff,0) });
+    await update(ref(db,'invoices/'+invoiceId),{clientName:newClientName,phone:newPhone,shopName:newShop,items:newItems,gross:newGross,commissionPct:newCommPct,commissionAmt:newCommAmt,total:newNet,remaining:newNet,invDateISO:newDateISO,dateStr:newDateStr});
+    const clientRef=ref(db,'clients/'+inv.phone);
+    const snap=await get(clientRef);
+    if(snap.exists()){
+      const c=snap.val();
+      await update(clientRef,{name:newClientName,phone:newPhone,totalDebt:Math.max((c.totalDebt||0)+diff,0),totalPurchases:Math.max((c.totalPurchases||0)+diff,0)});
     }
     closeEditInvoiceModal();
     showToast('✅ تم حفظ التعديلات بنجاح');
-  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+  } catch(e){showToast('❌ خطأ: '+e.message);}
 };
 
-window.toggleEditUnit = function(idx, unit) {
-  const def = UNITS[unit]||UNITS.kg;
-  Object.keys(UNITS).forEach(u => {
-    const b = document.getElementById('ei-unit-'+u+'-'+idx);
-    if (b) { b.style.border='1px solid var(--glass-border)'; b.style.background='transparent'; b.style.color='var(--text-secondary)'; }
+window.toggleEditUnit=function(idx,unit){
+  const def=UNITS[unit]||UNITS.kg;
+  Object.keys(UNITS).forEach(u=>{
+    const b=document.getElementById('ei-unit-'+u+'-'+idx);
+    if(b){b.style.border='1px solid var(--glass-border)';b.style.background='transparent';b.style.color='var(--text-secondary)';}
   });
-  const activeB = document.getElementById('ei-unit-'+unit+'-'+idx);
-  if (activeB) {
-    const colors = { kg:'var(--cyan-glow)', wqa:'var(--warning)', box20:'var(--emerald)', box25:'#c084fc' };
-    const bgs = { kg:'rgba(0,180,216,0.15)', wqa:'rgba(255,165,0,0.15)', box20:'rgba(0,200,150,0.15)', box25:'rgba(192,132,252,0.15)' };
-    activeB.style.border = `2px solid ${colors[unit]}`;
-    activeB.style.background = bgs[unit];
-    activeB.style.color = colors[unit];
+  const activeB=document.getElementById('ei-unit-'+unit+'-'+idx);
+  if(activeB){
+    const colors={kg:'var(--cyan-glow)',wqa:'var(--warning)',box20:'var(--emerald)',box25:'#c084fc'};
+    const bgs={kg:'rgba(0,180,216,0.15)',wqa:'rgba(255,165,0,0.15)',box20:'rgba(0,200,150,0.15)',box25:'rgba(192,132,252,0.15)'};
+    activeB.style.border=`2px solid ${colors[unit]}`;
+    activeB.style.background=bgs[unit];
+    activeB.style.color=colors[unit];
   }
-  const unitEl = document.getElementById('ei-unit-'+idx);
-  const qtyLbl = document.getElementById('ei-qty-lbl-'+idx);
-  const prcLbl = document.getElementById('ei-prc-lbl-'+idx);
-  if (unitEl) unitEl.value = unit;
-  if (qtyLbl) qtyLbl.textContent = def.label;
-  if (prcLbl) prcLbl.textContent = 'سعر ال'+def.label;
+  const unitEl=document.getElementById('ei-unit-'+idx);
+  const qtyLbl=document.getElementById('ei-qty-lbl-'+idx);
+  const prcLbl=document.getElementById('ei-prc-lbl-'+idx);
+  if(unitEl)unitEl.value=unit;
+  if(qtyLbl)qtyLbl.textContent=def.label;
+  if(prcLbl)prcLbl.textContent='سعر ال'+def.label;
 };
 
 // ============================================================
 // DELETE PAYMENT
 // ============================================================
-window.confirmDeletePayment = function(paymentId, clientKey, amount, remainingAfter) {
+window.confirmDeletePayment=function(paymentId,clientKey,amount,remainingAfter){
   showConfirmModal({
-    icon:'💳', title:'حذف الدفعة',
+    icon:'💳',title:'حذف الدفعة',
     msg:`هل تريد حذف دفعة <strong>${formatNum(amount)} ج.م</strong>؟<br><span style="color:var(--warning);font-size:11px">سيتم إضافة المبلغ مرة أخرى لرصيد العميل</span>`,
     confirmLabel:'🗑️ حذف الدفعة',
     confirmColor:'linear-gradient(135deg,var(--danger),#c0392b)',
-    onConfirm: () => deletePayment(paymentId, clientKey, amount)
+    onConfirm:()=>deletePayment(paymentId,clientKey,amount)
   });
 };
-async function deletePayment(paymentId, clientKey, amount) {
+async function deletePayment(paymentId,clientKey,amount){
   try {
-    const clientRef = ref(db, 'clients/'+clientKey);
-    const snap = await get(clientRef);
-    if (snap.exists()) {
-      const c = snap.val();
-      await update(clientRef, { totalDebt:(c.totalDebt||0)+amount, totalPaid:Math.max((c.totalPaid||0)-amount,0) });
-    }
-    await remove(ref(db, 'payments/'+paymentId));
-    const accModal = document.getElementById('client-account-modal');
-    if (accModal) { accModal.remove(); showClientAccount(clientKey); }
+    const clientRef=ref(db,'clients/'+clientKey);
+    const snap=await get(clientRef);
+    if(snap.exists()){const c=snap.val();await update(clientRef,{totalDebt:(c.totalDebt||0)+amount,totalPaid:Math.max((c.totalPaid||0)-amount,0)});}
+    await remove(ref(db,'payments/'+paymentId));
+    const accModal=document.getElementById('client-account-modal');
+    if(accModal){accModal.remove();showClientAccount(clientKey);}
     showToast('✅ تم حذف الدفعة وتحديث الرصيد');
-  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+  } catch(e){showToast('❌ خطأ: '+e.message);}
 }
 
-window.editPaymentModal = async function(paymentId, clientKey) {
+window.editPaymentModal=async function(paymentId,clientKey){
   let pay;
-  try { const snap = await get(ref(db, 'payments/'+paymentId)); pay = snap.val(); } catch(e) { return showToast('❌ خطأ'); }
-  if (!pay) return showToast('❌ الدفعة غير موجودة');
-  const todayISO = new Date().toISOString().split('T')[0];
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay'; modal.id = 'edit-payment-modal';
-  modal.innerHTML = `
+  try{const snap=await get(ref(db,'payments/'+paymentId));pay=snap.val();}catch(e){return showToast('❌ خطأ');}
+  if(!pay)return showToast('❌ الدفعة غير موجودة');
+  const todayISO=getTodayISO();
+  const modal=document.createElement('div');
+  modal.className='modal-overlay';modal.id='edit-payment-modal';
+  modal.innerHTML=`
     <div class="modal-sheet" style="max-height:80vh">
       <div class="modal-handle"></div>
       <div style="font-size:17px;font-weight:900;color:var(--emerald);text-align:center;margin-bottom:16px">✏️ تعديل الدفعة</div>
       <div class="form-group"><label class="form-label">💵 المبلغ</label><input type="number" id="ep-amount" class="form-input" value="${pay.amount}" min="0" style="font-size:20px;font-weight:900;text-align:center" inputmode="numeric"></div>
       <div class="form-group"><label class="form-label">👤 استُلم من</label><input type="text" id="ep-from" class="form-input" value="${pay.from||''}"></div>
-      <div class="form-group"><label class="form-label">📅 التاريخ</label><input type="date" id="ep-date" class="form-input" value="${pay.customDate||todayISO}" style="-webkit-appearance:none"></div>
+      <div class="form-group"><label class="form-label">📅 التاريخ</label><input type="date" id="ep-date" class="form-input" value="${pay.customDate||todayISO}" style="-webkit-appearance:none;color-scheme:dark"></div>
       <div class="form-group"><label class="form-label">📝 ملاحظات</label><input type="text" id="ep-notes" class="form-input" value="${pay.notes||''}" placeholder="كاش — شيك"></div>
       <button onclick="saveEditPayment('${paymentId}','${clientKey}',${pay.amount})" style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--emerald),#00875a);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">💾 حفظ</button>
       <button onclick="document.getElementById('edit-payment-modal').remove()" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
     </div>
   `;
-  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
-  const old = document.getElementById('edit-payment-modal');
-  if (old) old.remove();
+  modal.onclick=(e)=>{if(e.target===modal)modal.remove();};
+  const old=document.getElementById('edit-payment-modal');
+  if(old)old.remove();
   document.getElementById('modals-container').appendChild(modal);
 };
 
-window.saveEditPayment = async function(paymentId, clientKey, oldAmount) {
-  const newAmount = parseFloat(document.getElementById('ep-amount')?.value)||0;
-  const newFrom = (document.getElementById('ep-from')?.value||'').trim();
-  const newDate = document.getElementById('ep-date')?.value||'';
-  const newNotes = (document.getElementById('ep-notes')?.value||'').trim();
-  if (newAmount <= 0) return showToast('❌ المبلغ يجب أن يكون أكبر من صفر');
-  const diff = newAmount - oldAmount;
-  const dateStr = newDate ? new Date(newDate+'T12:00:00').toLocaleDateString('ar-EG') : '';
+window.saveEditPayment=async function(paymentId,clientKey,oldAmount){
+  const newAmount=parseFloat(document.getElementById('ep-amount')?.value)||0;
+  const newFrom=(document.getElementById('ep-from')?.value||'').trim();
+  const newDate=document.getElementById('ep-date')?.value||'';
+  const newNotes=(document.getElementById('ep-notes')?.value||'').trim();
+  if(newAmount<=0)return showToast('❌ المبلغ يجب أن يكون أكبر من صفر');
+  const diff=newAmount-oldAmount;
+  const dateStr=newDate?new Date(newDate+'T12:00:00').toLocaleDateString('ar-EG'):'';
   try {
-    await update(ref(db, 'payments/'+paymentId), { amount:newAmount, from:newFrom, customDate:newDate, dateStr, notes:newNotes });
-    const clientRef = ref(db, 'clients/'+clientKey);
-    const snap = await get(clientRef);
-    if (snap.exists()) {
-      const c = snap.val();
-      await update(clientRef, { totalDebt:Math.max((c.totalDebt||0)-diff,0), totalPaid:Math.max((c.totalPaid||0)+diff,0) });
-    }
+    await update(ref(db,'payments/'+paymentId),{amount:newAmount,from:newFrom,customDate:newDate,dateStr,notes:newNotes});
+    const clientRef=ref(db,'clients/'+clientKey);
+    const snap=await get(clientRef);
+    if(snap.exists()){const c=snap.val();await update(clientRef,{totalDebt:Math.max((c.totalDebt||0)-diff,0),totalPaid:Math.max((c.totalPaid||0)+diff,0)});}
     document.getElementById('edit-payment-modal')?.remove();
-    const accModal = document.getElementById('client-account-modal');
-    if (accModal) { accModal.remove(); showClientAccount(clientKey); }
+    const accModal=document.getElementById('client-account-modal');
+    if(accModal){accModal.remove();showClientAccount(clientKey);}
     showToast('✅ تم تعديل الدفعة بنجاح');
-  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+  } catch(e){showToast('❌ خطأ: '+e.message);}
 };
 
 // ============================================================
 // EDIT CLIENT
 // ============================================================
-window.editClientModal = function(clientKey) {
-  const c = window.appState.clients[clientKey];
-  if (!c) return;
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay'; modal.id = 'edit-client-modal';
-  modal.innerHTML = `
+window.editClientModal=function(clientKey){
+  const c=window.appState.clients[clientKey];
+  if(!c)return;
+  const modal=document.createElement('div');
+  modal.className='modal-overlay';modal.id='edit-client-modal';
+  modal.innerHTML=`
     <div class="modal-sheet" style="max-height:80vh">
       <div class="modal-handle"></div>
       <div style="font-size:17px;font-weight:900;color:var(--warning);text-align:center;margin-bottom:16px">✏️ تعديل بيانات العميل</div>
@@ -2282,49 +2711,46 @@ window.editClientModal = function(clientKey) {
       <button onclick="document.getElementById('edit-client-modal').remove()" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
     </div>
   `;
-  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
-  const old = document.getElementById('edit-client-modal');
-  if (old) old.remove();
+  modal.onclick=(e)=>{if(e.target===modal)modal.remove();};
+  const old=document.getElementById('edit-client-modal');
+  if(old)old.remove();
   document.getElementById('modals-container').appendChild(modal);
 };
 
-window.saveEditClient = async function(clientKey) {
-  const name = document.getElementById('ec-name')?.value.trim();
-  const phone = document.getElementById('ec-phone')?.value.trim();
-  const shop = document.getElementById('ec-shop')?.value.trim();
-  const debt = parseFloat(document.getElementById('ec-debt')?.value)||0;
-  const paid = parseFloat(document.getElementById('ec-paid')?.value)||0;
-  if (!name) return showToast('❌ اسم العميل مطلوب');
-  if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
+window.saveEditClient=async function(clientKey){
+  const name=document.getElementById('ec-name')?.value.trim();
+  const phone=document.getElementById('ec-phone')?.value.trim();
+  const shop=document.getElementById('ec-shop')?.value.trim();
+  const debt=parseFloat(document.getElementById('ec-debt')?.value)||0;
+  const paid=parseFloat(document.getElementById('ec-paid')?.value)||0;
+  if(!name)return showToast('❌ اسم العميل مطلوب');
+  if(!validatePhone(phone))return showToast('❌ رقم الهاتف غير صحيح');
   try {
-    await update(ref(db, 'clients/'+clientKey), { name, phone, shopName:shop, totalDebt:debt, totalPaid:paid });
+    await update(ref(db,'clients/'+clientKey),{name,phone,shopName:shop,totalDebt:debt,totalPaid:paid});
     document.getElementById('edit-client-modal')?.remove();
     showToast('✅ تم تحديث بيانات العميل');
-  } catch(e) { showToast('❌ خطأ: ' + e.message); }
+  } catch(e){showToast('❌ خطأ: '+e.message);}
 };
 
-// ============================================================
-// DELETE CLIENT
-// ============================================================
-window.confirmDeleteClient = function(clientKey, clientName) {
-  const c = window.appState.clients[clientKey];
-  const debt = c?.totalDebt||0;
+window.confirmDeleteClient=function(clientKey,clientName){
+  const c=window.appState.clients[clientKey];
+  const debt=c?.totalDebt||0;
   showConfirmModal({
-    icon:'👤', title:'حذف العميل',
+    icon:'👤',title:'حذف العميل',
     msg:`هل تريد حذف العميل <strong>${clientName}</strong>؟<br>${debt>0?`<span style="color:var(--danger)">⚠️ لا يزال عليه ${formatNum(debt)} ج.م</span><br>`:''}`,
     confirmLabel:'🗑️ حذف العميل',
     confirmColor:'linear-gradient(135deg,var(--danger),#c0392b)',
-    onConfirm: () => remove(ref(db, 'clients/'+clientKey)).then(() => showToast('✅ تم حذف العميل'))
+    onConfirm:()=>remove(ref(db,'clients/'+clientKey)).then(()=>showToast('✅ تم حذف العميل'))
   });
 };
 
 // ============================================================
 // PWA
 // ============================================================
-window.addEventListener('beforeinstallprompt', (e) => {
+window.addEventListener('beforeinstallprompt',(e)=>{
   e.preventDefault();
-  window.appState.deferredPrompt = e;
-  document.getElementById('install-banner-container').innerHTML = `
+  window.appState.deferredPrompt=e;
+  document.getElementById('install-banner-container').innerHTML=`
     <div class="install-banner">
       <div style="font-size:24px">📲</div>
       <div class="install-banner-text">ثبّت التطبيق على شاشتك الرئيسية!</div>
@@ -2332,112 +2758,86 @@ window.addEventListener('beforeinstallprompt', (e) => {
     </div>
   `;
 });
-window.installPWA = async function() {
-  const prompt = window.appState.deferredPrompt;
-  if (!prompt) return;
+window.installPWA=async function(){
+  const prompt=window.appState.deferredPrompt;
+  if(!prompt)return;
   prompt.prompt();
-  const result = await prompt.userChoice;
-  if (result.outcome === 'accepted') { document.getElementById('install-banner-container').innerHTML=''; showToast('✅ تم تثبيت التطبيق!'); }
-  window.appState.deferredPrompt = null;
+  const result=await prompt.userChoice;
+  if(result.outcome==='accepted'){document.getElementById('install-banner-container').innerHTML='';showToast('✅ تم تثبيت التطبيق!');}
+  window.appState.deferredPrompt=null;
 };
-
 
 // ============================================================
 // AUTH SYSTEM
 // ============================================================
 const USERS = {
-  '666666': {
-    role: 'admin',
-    greeting: 'مرحباً أستاذ باسل الحديدي 👑',
-    subtext: 'تم تسجيل الدخول كمدير النظام',
-    badge: '👑 أدمن • خروج',
-    badgeClass: 'admin',
-    icon: '👑'
-  },
-  '123456': {
-    role: 'viewer',
-    greeting: 'مرحباً بمحاسبنا الرائع 📊',
-    subtext: 'تم تسجيل الدخول كمحاسب',
-    badge: '👁️ محاسب • خروج',
-    badgeClass: 'viewer',
-    icon: '📊'
-  }
+  '666666': { role:'admin', greeting:'مرحباً أستاذ باسل الحديدي 👑', subtext:'تم تسجيل الدخول كمدير النظام', badge:'👑 أدمن • خروج', badgeClass:'admin', icon:'👑' },
+  '123456': { role:'viewer', greeting:'مرحباً بمحاسبنا الرائع 📊', subtext:'تم تسجيل الدخول كمحاسب', badge:'👁️ محاسب • خروج', badgeClass:'viewer', icon:'📊' }
 };
 
-window.currentUser = null; // null = not logged in
+window.currentUser = null;
 
-function onLoginInput(val) {
-  // Update dots
-  for (let i = 0; i < 6; i++) {
-    const dot = document.getElementById('dot-' + i);
-    if (dot) dot.classList.toggle('filled', i < val.length);
+window.onLoginInput = function(val) {
+  for(let i=0;i<6;i++){
+    const dot=document.getElementById('dot-'+i);
+    if(dot)dot.classList.toggle('filled',i<val.length);
   }
-  // Clear error on type
-  document.getElementById('login-error').textContent = '';
-  // Auto-submit when 6 digits entered
-  if (val.length === 6) {
-    setTimeout(() => doLogin(), 150);
-  }
-}
+  document.getElementById('login-error').textContent='';
+  if(val.length===6) setTimeout(()=>doLogin(),150);
+};
 
-function toggleLoginEye() {
+// ============================================================
+// FIXED EYE TOGGLE — shows actual typed password
+// ============================================================
+window.toggleLoginEye = function() {
   const inp = document.getElementById('login-password');
   const eye = document.getElementById('login-eye');
+  if (!inp) return;
   if (inp.type === 'password') {
     inp.type = 'text';
     eye.textContent = '🙈';
+    // Remove letter-spacing so digits don't look weird when visible
+    inp.style.letterSpacing = '4px';
   } else {
     inp.type = 'password';
     eye.textContent = '👁️';
+    inp.style.letterSpacing = '8px';
   }
-}
+};
 
 window.doLogin = function() {
-  const pwd = document.getElementById('login-password').value.trim();
-  const user = USERS[pwd];
-  if (!user) {
-    document.getElementById('login-error').textContent = '❌ كلمة المرور غير صحيحة، حاول مرة أخرى';
-    document.getElementById('login-password').value = '';
-    for (let i = 0; i < 6; i++) {
-      const dot = document.getElementById('dot-' + i);
-      if (dot) dot.classList.remove('filled');
-    }
-    // Shake animation
-    const box = document.querySelector('.login-box');
-    box.style.animation = 'none';
-    box.style.transform = 'translateX(-8px)';
-    setTimeout(() => { box.style.transition = 'transform 0.4s cubic-bezier(0.25,0.8,0.25,1)'; box.style.transform = 'translateX(0)'; }, 50);
+  const pwd=document.getElementById('login-password').value.trim();
+  const user=USERS[pwd];
+  if(!user){
+    document.getElementById('login-error').textContent='❌ كلمة المرور غير صحيحة، حاول مرة أخرى';
+    document.getElementById('login-password').value='';
+    for(let i=0;i<6;i++){const dot=document.getElementById('dot-'+i);if(dot)dot.classList.remove('filled');}
+    // Make sure type is back to password on failed attempt
+    const inp=document.getElementById('login-password');
+    const eye=document.getElementById('login-eye');
+    if(inp.type==='text'){inp.type='password';eye.textContent='👁️';inp.style.letterSpacing='8px';}
+    const box=document.querySelector('.login-box');
+    box.style.animation='none';
+    box.style.transform='translateX(-8px)';
+    setTimeout(()=>{box.style.transition='transform 0.4s cubic-bezier(0.25,0.8,0.25,1)';box.style.transform='translateX(0)';},50);
     return;
   }
-
-  window.currentUser = user;
-
-  // Hide login screen
-  const screen = document.getElementById('login-screen');
-  screen.style.opacity = '0';
-  screen.style.transition = 'opacity 0.4s ease';
-  setTimeout(() => screen.classList.add('hidden'), 400);
-
-  // Update role badge
-  const badge = document.getElementById('role-badge');
-  badge.textContent = user.badge;
-  badge.className = 'role-badge ' + user.badgeClass;
-
-  // Show welcome banner
+  window.currentUser=user;
+  const screen=document.getElementById('login-screen');
+  screen.style.opacity='0';screen.style.transition='opacity 0.4s ease';
+  setTimeout(()=>screen.classList.add('hidden'),400);
+  const badge=document.getElementById('role-badge');
+  badge.textContent=user.badge;badge.className='role-badge '+user.badgeClass;
   showWelcomeBanner(user);
-
-  // Apply permissions
   applyPermissions(user.role);
 };
 
-function showWelcomeBanner(user) {
-  const existing = document.getElementById('welcome-banner');
-  if (existing) existing.remove();
-
-  const banner = document.createElement('div');
-  banner.id = 'welcome-banner';
-  banner.className = 'welcome-toast';
-  banner.innerHTML = `
+function showWelcomeBanner(user){
+  const existing=document.getElementById('welcome-banner');
+  if(existing)existing.remove();
+  const banner=document.createElement('div');
+  banner.id='welcome-banner';banner.className='welcome-toast';
+  banner.innerHTML=`
     <div class="welcome-icon">${user.icon}</div>
     <div class="welcome-text">
       <div class="welcome-greeting">أهلاً وسهلاً</div>
@@ -2446,44 +2846,30 @@ function showWelcomeBanner(user) {
     </div>
   `;
   document.body.appendChild(banner);
-
-  setTimeout(() => {
-    banner.classList.add('hiding');
-    setTimeout(() => banner.remove(), 400);
-  }, 3500);
+  setTimeout(()=>{banner.classList.add('hiding');setTimeout(()=>banner.remove(),400);},3500);
 }
 
-function applyPermissions(role) {
-  const isAdmin = role === 'admin';
-
-  // Invoice page nav — hide for viewer
-  const invoiceNav = document.querySelectorAll('.nav-item')[1];
-  if (invoiceNav) invoiceNav.style.display = isAdmin ? '' : 'none';
-
-  // Store role on appState
-  window.appState.userRole = role;
+function applyPermissions(role){
+  const isAdmin=role==='admin';
+  const invoiceNav=document.querySelectorAll('.nav-item')[1];
+  if(invoiceNav)invoiceNav.style.display=isAdmin?'':'none';
+  window.appState.userRole=role;
 }
 
-// Override all destructive/edit functions for viewer
-const _guardedFns = ['saveInvoice','confirmDeleteInvoice','confirmDeleteClient','confirmDeletePayment',
+const _guardedFns=['saveInvoice','confirmDeleteInvoice','confirmDeleteClient','confirmDeletePayment',
   'editInvoiceModal','editClientModal','editPaymentModal','saveEditInvoice','saveEditClient','saveEditPayment','processPayment'];
-
-_guardedFns.forEach(fnName => {
-  const original = window[fnName];
-  window[fnName] = function(...args) {
-    if (window.currentUser?.role !== 'admin') {
-      showToast('🔒 ليس لديك صلاحية لهذا الإجراء');
-      return;
-    }
-    return original?.apply(this, args);
+_guardedFns.forEach(fnName=>{
+  const original=window[fnName];
+  window[fnName]=function(...args){
+    if(window.currentUser?.role!=='admin'){showToast('🔒 ليس لديك صلاحية لهذا الإجراء');return;}
+    return original?.apply(this,args);
   };
 });
 
-window.confirmLogout = function() {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.id = 'logout-modal';
-  modal.innerHTML = `
+window.confirmLogout=function(){
+  const modal=document.createElement('div');
+  modal.className='modal-overlay';modal.id='logout-modal';
+  modal.innerHTML=`
     <div class="modal-sheet" style="max-height:40vh;text-align:center">
       <div class="modal-handle"></div>
       <div style="font-size:44px;margin:8px 0">🔐</div>
@@ -2497,28 +2883,24 @@ window.confirmLogout = function() {
       </div>
     </div>
   `;
-  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
+  modal.onclick=(e)=>{if(e.target===modal)modal.remove();};
   document.getElementById('modals-container').appendChild(modal);
 };
 
-window.doLogout = function() {
-  window.currentUser = null;
-  window.appState.userRole = null;
+window.doLogout=function(){
+  window.currentUser=null;window.appState.userRole=null;
   document.getElementById('logout-modal')?.remove();
-  // Reset & show login
-  document.getElementById('login-password').value = '';
-  for (let i = 0; i < 6; i++) {
-    const dot = document.getElementById('dot-' + i);
-    if (dot) dot.classList.remove('filled');
-  }
-  document.getElementById('login-error').textContent = '';
-  const screen = document.getElementById('login-screen');
-  screen.classList.remove('hidden');
-  screen.style.opacity = '0';
-  setTimeout(() => { screen.style.transition = 'opacity 0.4s ease'; screen.style.opacity = '1'; }, 10);
-  // Show invoice nav again (reset)
-  const invoiceNav = document.querySelectorAll('.nav-item')[1];
-  if (invoiceNav) invoiceNav.style.display = '';
+  const inp=document.getElementById('login-password');
+  inp.value='';inp.type='password';inp.style.letterSpacing='8px';
+  const eye=document.getElementById('login-eye');
+  if(eye)eye.textContent='👁️';
+  for(let i=0;i<6;i++){const dot=document.getElementById('dot-'+i);if(dot)dot.classList.remove('filled');}
+  document.getElementById('login-error').textContent='';
+  const screen=document.getElementById('login-screen');
+  screen.classList.remove('hidden');screen.style.opacity='0';
+  setTimeout(()=>{screen.style.transition='opacity 0.4s ease';screen.style.opacity='1';},10);
+  const invoiceNav=document.querySelectorAll('.nav-item')[1];
+  if(invoiceNav)invoiceNav.style.display='';
 };
 
 // ============================================================
@@ -2529,8 +2911,8 @@ updateDate();
 setupListeners();
 initInvoiceForm();
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(e => console.log('SW:', e));
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW:',e));
 }
 </script>
 </body>
