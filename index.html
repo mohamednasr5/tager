@@ -409,9 +409,157 @@
     font-size: 13px; border: 1px dashed var(--glass-border);
     border-radius: 12px; margin-bottom: 8px;
   }
+
+  /* ===================== LOGIN SCREEN ===================== */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #040d1a 0%, #061525 50%, #050f1e 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.4s ease;
+  }
+  #login-screen.hidden { display: none; }
+
+  .login-box {
+    width: 100%; max-width: 380px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    padding: 36px 28px 32px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    text-align: center;
+    animation: slideUp 0.5s cubic-bezier(0.25,0.8,0.25,1);
+  }
+
+  .login-fish {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 10px;
+    animation: fishSwim 3s ease-in-out infinite;
+  }
+
+  .login-title {
+    font-size: 20px; font-weight: 900;
+    color: var(--gold); margin-bottom: 4px;
+  }
+  .login-subtitle {
+    font-size: 12px; color: var(--text-secondary);
+    margin-bottom: 28px;
+  }
+
+  .login-input-wrap {
+    position: relative; margin-bottom: 14px;
+  }
+  .login-input {
+    width: 100%; padding: 14px 50px 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.07);
+    color: var(--text-primary);
+    font-family: 'Cairo', sans-serif;
+    font-size: 22px; font-weight: 700;
+    text-align: center; letter-spacing: 8px;
+    outline: none; transition: all 0.3s;
+    -webkit-appearance: none;
+  }
+  .login-input:focus {
+    border-color: var(--cyan-glow);
+    background: rgba(0,180,216,0.08);
+    box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
+  }
+  .login-eye {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px; cursor: pointer; user-select: none;
+    color: var(--text-secondary);
+  }
+
+  .login-btn {
+    width: 100%; padding: 14px;
+    border-radius: 12px; border: none;
+    background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue));
+    color: white; font-family: 'Cairo', sans-serif;
+    font-size: 16px; font-weight: 900;
+    cursor: pointer; transition: all 0.25s;
+    box-shadow: 0 4px 20px rgba(0,180,216,0.4);
+    margin-top: 6px;
+  }
+  .login-btn:active { transform: scale(0.97); }
+
+  .login-error {
+    color: var(--danger); font-size: 12px;
+    font-weight: 600; margin-top: 10px;
+    min-height: 18px; transition: all 0.2s;
+  }
+
+  .login-dots {
+    display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;
+  }
+  .login-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--glass-border); transition: all 0.2s;
+  }
+  .login-dot.filled { background: var(--cyan-glow); box-shadow: 0 0 8px var(--cyan-glow); }
+
+  /* Welcome toast special */
+  .welcome-toast {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
+    background: linear-gradient(135deg, rgba(0,180,216,0.95), rgba(21,101,192,0.95));
+    backdrop-filter: blur(10px);
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    animation: slideDown 0.5s cubic-bezier(0.25,0.8,0.25,1);
+  }
+  @keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+  .welcome-toast.hiding { animation: slideUp2 0.4s ease forwards; }
+  @keyframes slideUp2 { from{transform:translateY(0)} to{transform:translateY(-100%)} }
+  .welcome-icon { font-size: 36px; flex-shrink: 0; }
+  .welcome-text { flex: 1; }
+  .welcome-greeting { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 400; }
+  .welcome-name { font-size: 18px; font-weight: 900; color: white; line-height: 1.3; }
+  .welcome-role { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+
+  /* Role badge in header */
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+    cursor: pointer;
+  }
+  .role-badge.admin { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
+  .role-badge.viewer { background: rgba(0,180,216,0.15); color: var(--cyan-glow); border: 1px solid rgba(0,180,216,0.3); }
+
 </style>
 </head>
 <body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <span class="login-fish">🐟</span>
+    <div class="login-title">الحاج أحمد الحديدي</div>
+    <div class="login-subtitle">تجارة الأسماك — يرجى تسجيل الدخول</div>
+    <div class="login-dots">
+      <div class="login-dot" id="dot-0"></div>
+      <div class="login-dot" id="dot-1"></div>
+      <div class="login-dot" id="dot-2"></div>
+      <div class="login-dot" id="dot-3"></div>
+      <div class="login-dot" id="dot-4"></div>
+      <div class="login-dot" id="dot-5"></div>
+    </div>
+    <div class="login-input-wrap">
+      <input type="password" id="login-password" class="login-input"
+        placeholder="••••••" maxlength="6" inputmode="numeric"
+        oninput="onLoginInput(this.value)"
+        onkeydown="if(event.key==='Enter') doLogin()">
+      <span class="login-eye" id="login-eye" onclick="toggleLoginEye()">👁️</span>
+    </div>
+    <button class="login-btn" onclick="doLogin()">🔐 دخول</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
 
 <canvas id="bg-canvas"></canvas>
 
@@ -424,7 +572,7 @@
         <div class="header-subtitle">تجارة الأسماك</div>
       </div>
     </div>
-    <div class="header-date" id="header-date"></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="header-date" id="header-date"></div><div class="role-badge admin" id="role-badge" onclick="confirmLogout()">👑 أدمن • خروج</div></div>
   </header>
 
   <div class="content" id="main-content">
@@ -2191,6 +2339,186 @@ window.installPWA = async function() {
   const result = await prompt.userChoice;
   if (result.outcome === 'accepted') { document.getElementById('install-banner-container').innerHTML=''; showToast('✅ تم تثبيت التطبيق!'); }
   window.appState.deferredPrompt = null;
+};
+
+
+// ============================================================
+// AUTH SYSTEM
+// ============================================================
+const USERS = {
+  '666666': {
+    role: 'admin',
+    greeting: 'مرحباً أستاذ باسل الحديدي 👑',
+    subtext: 'تم تسجيل الدخول كمدير النظام',
+    badge: '👑 أدمن • خروج',
+    badgeClass: 'admin',
+    icon: '👑'
+  },
+  '123456': {
+    role: 'viewer',
+    greeting: 'مرحباً بمحاسبنا الرائع 📊',
+    subtext: 'تم تسجيل الدخول كمحاسب — صلاحية عرض فقط',
+    badge: '👁️ محاسب • خروج',
+    badgeClass: 'viewer',
+    icon: '📊'
+  }
+};
+
+window.currentUser = null; // null = not logged in
+
+function onLoginInput(val) {
+  // Update dots
+  for (let i = 0; i < 6; i++) {
+    const dot = document.getElementById('dot-' + i);
+    if (dot) dot.classList.toggle('filled', i < val.length);
+  }
+  // Clear error on type
+  document.getElementById('login-error').textContent = '';
+  // Auto-submit when 6 digits entered
+  if (val.length === 6) {
+    setTimeout(() => doLogin(), 150);
+  }
+}
+
+function toggleLoginEye() {
+  const inp = document.getElementById('login-password');
+  const eye = document.getElementById('login-eye');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    eye.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    eye.textContent = '👁️';
+  }
+}
+
+window.doLogin = function() {
+  const pwd = document.getElementById('login-password').value.trim();
+  const user = USERS[pwd];
+  if (!user) {
+    document.getElementById('login-error').textContent = '❌ كلمة المرور غير صحيحة، حاول مرة أخرى';
+    document.getElementById('login-password').value = '';
+    for (let i = 0; i < 6; i++) {
+      const dot = document.getElementById('dot-' + i);
+      if (dot) dot.classList.remove('filled');
+    }
+    // Shake animation
+    const box = document.querySelector('.login-box');
+    box.style.animation = 'none';
+    box.style.transform = 'translateX(-8px)';
+    setTimeout(() => { box.style.transition = 'transform 0.4s cubic-bezier(0.25,0.8,0.25,1)'; box.style.transform = 'translateX(0)'; }, 50);
+    return;
+  }
+
+  window.currentUser = user;
+
+  // Hide login screen
+  const screen = document.getElementById('login-screen');
+  screen.style.opacity = '0';
+  screen.style.transition = 'opacity 0.4s ease';
+  setTimeout(() => screen.classList.add('hidden'), 400);
+
+  // Update role badge
+  const badge = document.getElementById('role-badge');
+  badge.textContent = user.badge;
+  badge.className = 'role-badge ' + user.badgeClass;
+
+  // Show welcome banner
+  showWelcomeBanner(user);
+
+  // Apply permissions
+  applyPermissions(user.role);
+};
+
+function showWelcomeBanner(user) {
+  const existing = document.getElementById('welcome-banner');
+  if (existing) existing.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'welcome-banner';
+  banner.className = 'welcome-toast';
+  banner.innerHTML = `
+    <div class="welcome-icon">${user.icon}</div>
+    <div class="welcome-text">
+      <div class="welcome-greeting">أهلاً وسهلاً</div>
+      <div class="welcome-name">${user.greeting}</div>
+      <div class="welcome-role">${user.subtext}</div>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  setTimeout(() => {
+    banner.classList.add('hiding');
+    setTimeout(() => banner.remove(), 400);
+  }, 3500);
+}
+
+function applyPermissions(role) {
+  const isAdmin = role === 'admin';
+
+  // Invoice page nav — hide for viewer
+  const invoiceNav = document.querySelectorAll('.nav-item')[1];
+  if (invoiceNav) invoiceNav.style.display = isAdmin ? '' : 'none';
+
+  // Store role on appState
+  window.appState.userRole = role;
+}
+
+// Override all destructive/edit functions for viewer
+const _guardedFns = ['saveInvoice','confirmDeleteInvoice','confirmDeleteClient','confirmDeletePayment',
+  'editInvoiceModal','editClientModal','editPaymentModal','saveEditInvoice','saveEditClient','saveEditPayment','processPayment'];
+
+_guardedFns.forEach(fnName => {
+  const original = window[fnName];
+  window[fnName] = function(...args) {
+    if (window.currentUser?.role !== 'admin') {
+      showToast('🔒 ليس لديك صلاحية لهذا الإجراء');
+      return;
+    }
+    return original?.apply(this, args);
+  };
+});
+
+window.confirmLogout = function() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'logout-modal';
+  modal.innerHTML = `
+    <div class="modal-sheet" style="max-height:40vh;text-align:center">
+      <div class="modal-handle"></div>
+      <div style="font-size:44px;margin:8px 0">🔐</div>
+      <div style="font-size:17px;font-weight:900;color:var(--text-primary);margin-bottom:8px">تسجيل الخروج</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px">هل تريد الخروج من الحساب الحالي؟</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('logout-modal').remove()"
+          style="flex:1;padding:13px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
+        <button onclick="doLogout()"
+          style="flex:2;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--danger),#c0392b);color:white;font-family:'Cairo',sans-serif;font-size:14px;font-weight:900;cursor:pointer">🚪 خروج</button>
+      </div>
+    </div>
+  `;
+  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
+  document.getElementById('modals-container').appendChild(modal);
+};
+
+window.doLogout = function() {
+  window.currentUser = null;
+  window.appState.userRole = null;
+  document.getElementById('logout-modal')?.remove();
+  // Reset & show login
+  document.getElementById('login-password').value = '';
+  for (let i = 0; i < 6; i++) {
+    const dot = document.getElementById('dot-' + i);
+    if (dot) dot.classList.remove('filled');
+  }
+  document.getElementById('login-error').textContent = '';
+  const screen = document.getElementById('login-screen');
+  screen.classList.remove('hidden');
+  screen.style.opacity = '0';
+  setTimeout(() => { screen.style.transition = 'opacity 0.4s ease'; screen.style.opacity = '1'; }, 10);
+  // Show invoice nav again (reset)
+  const invoiceNav = document.querySelectorAll('.nav-item')[1];
+  if (invoiceNav) invoiceNav.style.display = '';
 };
 
 // ============================================================
