@@ -1625,14 +1625,41 @@ window.exportInvoicePDF = function(invoiceId) {
 };
 
 function openPrintWindow(html, fileName) {
-  const win = window.open('', '_blank', 'width=900,height=1200,scrollbars=yes');
-  if (!win) { showToast('❌ يُرجى السماح بالنوافذ المنبثقة في المتصفح'); return; }
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
-  win.document.title = fileName;
-  win.addEventListener('load', function() {
-    setTimeout(function() { win.focus(); win.print(); }, 500);
+  // Remove any existing print iframe
+  const old = document.getElementById('__print_frame__');
+  if (old) old.remove();
+
+  // Create hidden iframe — works on GitHub Pages without popup blockers
+  const iframe = document.createElement('iframe');
+  iframe.id = '__print_frame__';
+  iframe.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:99999;background:#fff;';
+  document.body.appendChild(iframe);
+
+  // Write HTML into iframe
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
+
+  // Add close button overlay inside the iframe after load
+  iframe.addEventListener('load', function() {
+    try {
+      const iDoc = iframe.contentDocument;
+      // Inject close button + print button into the page
+      const bar = iDoc.createElement('div');
+      bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1a3a6b;padding:10px 20px;display:flex;gap:10px;justify-content:center;z-index:9999;print-color-adjust:exact;-webkit-print-color-adjust:exact;';
+      bar.innerHTML = `
+        <button onclick="window.print()" style="background:#ffd700;color:#1a1a2e;border:none;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:900;cursor:pointer;font-family:Cairo,Arial,sans-serif">🖨️ طباعة / حفظ PDF</button>
+        <button onclick="window.parent.document.getElementById('__print_frame__').remove()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,Arial,sans-serif">✖ إغلاق</button>
+      `;
+      // Add print CSS to hide the bar when printing
+      const printStyle = iDoc.createElement('style');
+      printStyle.textContent = '@media print { #__ctrl_bar__ { display:none!important; } }';
+      bar.id = '__ctrl_bar__';
+      iDoc.body.appendChild(bar);
+      iDoc.head.appendChild(printStyle);
+      // Add bottom padding so content isn't hidden behind bar
+      iDoc.body.style.paddingBottom = '70px';
+    } catch(e) {}
   });
 }
 
