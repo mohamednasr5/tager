@@ -1736,6 +1736,7 @@ window.sendClientStatementWA = async function(clientKey) {
             text += `   💰 *مبلغ الفاتورة : ${formatNum(inv.total)} ج.م*\n`;
           }
           text += `   📊 الرصيد المتراكم : *${formatNum(runningBalance)} ج.م*\n`;
+          text += `─────────────────────\n`;
 
         } else {
           const pay = item.data;
@@ -1757,6 +1758,7 @@ window.sendClientStatementWA = async function(clientKey) {
             text += `   📝 ملاحظات      : ${pay.notes}\n`;
           }
           text += `   📊 الرصيد بعدها : *${formatNum(runningBalance)} ج.م*\n`;
+          text += `─────────────────────\n`;
         }
       });
     }
