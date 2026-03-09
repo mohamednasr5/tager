@@ -612,7 +612,7 @@ const FISH_TYPES = [
 const UNITS = {
   kg:    { label: 'كيلو',                short: 'ك',        kgFactor: 1    },
   wqa:   { label: 'وقة',                 short: 'وقة',      kgFactor: 1.25 },
-  box20: { label: 'بوكشة 20 وقة (25 ك)',     short: 'ب20',      kgFactor: 25   },
+  box20: { label: 'بوكشة 20 (25 ك)',     short: 'ب20',      kgFactor: 25   },
   box25: { label: 'بوكشة 25 ك',          short: 'ب25',      kgFactor: 25   },
 };
 
@@ -1711,9 +1711,9 @@ window.sendClientStatementWA = async function(clientKey) {
     if (timeline.length === 0) {
       text += `📭 لا توجد حركات مسجلة بعد\n`;
     } else {
-      text += `📋 *تفاصيل جميع الحركات (${timeline.length}):*\n\n`;
+      text += `📋 *تفاصيل جميع الحركات (${timeline.length}):*\n`;
 
-      let runningBalance = 0; // رصيد متراكم
+      let runningBalance = 0;
 
       timeline.forEach((item, index) => {
         const num = index + 1;
@@ -1722,40 +1722,22 @@ window.sendClientStatementWA = async function(clientKey) {
           const inv = item.data;
           const gross = inv.gross || inv.total;
           const hasComm = (inv.commissionPct || 0) > 0;
-
           runningBalance += inv.total;
 
           text += `🧾 *[${num}] فاتورة بيع*\n`;
           text += `📅 التاريخ : ${inv.dateStr}\n`;
           text += `─────────────────────\n`;
-
-          // تفاصيل الأصناف
-          (inv.items || []).forEach(it => {
-            const unit     = it.unit || 'kg';
-            const uDef     = UNITS[unit] || UNITS.kg;
-            const qty      = it.qty !== undefined ? it.qty : it.kg;
-            const prc      = it.pricePerUnit !== undefined ? it.pricePerUnit : it.pricePerKg;
-            const decimals = unit === 'wqa' ? 2 : 0;
-            const kgNote   = unit !== 'kg'
-              ? ` ← ${(it.kg || 0).toFixed(decimals)} كيلو`
-              : '';
-            text += `   🐟 ${it.fish}\n`;
-            text += `       ${qty} ${uDef.label} × ${prc} ج.م = *${formatNum(it.subtotal || 0)} ج.م*${kgNote}\n`;
-          });
-
-          text += `─────────────────────\n`;
-          text += `   📦 إجمالي الفاتورة  : ${formatNum(gross)} ج.م\n`;
           if (hasComm) {
             const commAmt = inv.commissionAmt || (gross * inv.commissionPct / 100);
-            text += `   🤝 عمولة (${inv.commissionPct}%)      : - ${formatNum(commAmt)} ج.م\n`;
+            text += `   📦 مبلغ الفاتورة : ${formatNum(gross)} ج.م\n`;
+            text += `   🤝 عمولة (${inv.commissionPct}%) : - ${formatNum(commAmt)} ج.م\n`;
             text += `   💰 *صافي على التاجر : ${formatNum(inv.total)} ج.م*\n`;
           } else {
-            text += `   💰 *المبلغ على التاجر : ${formatNum(inv.total)} ج.م*\n`;
+            text += `   💰 *مبلغ الفاتورة : ${formatNum(inv.total)} ج.م*\n`;
           }
-          text += `   📊 الرصيد المتراكم  : *${formatNum(runningBalance)} ج.م*\n\n`;
+          text += `   📊 الرصيد المتراكم : *${formatNum(runningBalance)} ج.م*\n`;
 
         } else {
-          // دفعة
           const pay = item.data;
           runningBalance -= pay.amount || 0;
           if (runningBalance < 0) runningBalance = 0;
@@ -1774,7 +1756,7 @@ window.sendClientStatementWA = async function(clientKey) {
           if (pay.notes) {
             text += `   📝 ملاحظات      : ${pay.notes}\n`;
           }
-          text += `   📊 الرصيد بعدها : *${formatNum(runningBalance)} ج.م*\n\n`;
+          text += `   📊 الرصيد بعدها : *${formatNum(runningBalance)} ج.م*\n`;
         }
       });
     }
