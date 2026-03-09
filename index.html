@@ -822,7 +822,7 @@ const FISH_TYPES = [
 const UNITS = {
   kg:    { label: 'كيلو',            short: 'ك',   kgFactor: 1    },
   wqa:   { label: 'وقة',             short: 'وقة', kgFactor: 1.25 },
-  box20: { label: 'بوكشة 20 وقة (25 ك)', short: 'ب20', kgFactor: 25   },
+  box20: { label: 'بوكشة 20 وقة  (25 ك)', short: 'ب20', kgFactor: 25   },
   box25: { label: 'بوكشة 25 ك',      short: 'ب25', kgFactor: 25   },
 };
 
@@ -903,6 +903,15 @@ function isoToArabicDate(iso) {
   if (!iso) return '';
   const d = new Date(iso + 'T12:00:00');
   return d.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
+}
+
+// ============================================================
+// INVOICE NUMBER GENERATOR (defined early so all functions can use it)
+// ============================================================
+function generateInvoiceNumber(invoiceId) {
+  const year = new Date().getFullYear();
+  const shortId = invoiceId ? invoiceId.slice(-6).toUpperCase() : Math.random().toString(36).slice(-6).toUpperCase();
+  return `INV-${year}-${shortId}`;
 }
 
 // ============================================================
@@ -1412,7 +1421,8 @@ function buildInvoiceText(invoice) {
   const expTotal = invoice.expTotal || 0;
   const hasComm = invoice.commissionPct > 0;
   const hasExp = expTotal > 0;
-  let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n📋 رقم الفاتورة: *${invoice.invoiceNumber || generateInvoiceNumber(invoiceId || '')}*\n━━━━━━━━━━━━━━━━━━\n`;
+  const invNum = invoice.invoiceNumber || '—';
+  let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n📋 رقم الفاتورة: *${invNum}*\n━━━━━━━━━━━━━━━━━━\n`;
   text += `👤 العميل : ${invoice.clientName}\n`;
   if (invoice.shopName) text += `🏪 المؤسسة: ${invoice.shopName}\n`;
   text += `📅 التاريخ: ${invoice.dateStr}\n━━━━━━━━━━━━━━━━━━\n*📦 تفاصيل الأصناف:*\n`;
@@ -1444,16 +1454,6 @@ window.closeModal = function() {
   const m = document.querySelector('.modal-overlay');
   if (m) m.remove();
 };
-
-// ============================================================
-// INVOICE NUMBER GENERATOR
-// ============================================================
-function generateInvoiceNumber(invoiceId) {
-  // Use last 6 chars of Firebase key + year
-  const year = new Date().getFullYear();
-  const shortId = invoiceId ? invoiceId.slice(-6).toUpperCase() : Math.random().toString(36).slice(-6).toUpperCase();
-  return `INV-${year}-${shortId}`;
-}
 
 // ============================================================
 // BUILD ARABIC PDF HTML — INVOICE
@@ -1654,12 +1654,8 @@ window.exportInvoicePDF = function(invoiceId) {
 function printArabicPDF(html, fileName) {
   const win = window.open('', '_blank', 'width=850,height=1100');
   if (!win) { showToast('❌ السماح بالنوافذ المنبثقة مطلوب'); return; }
-  win.document.write(html + `<script>
-    window.onload = function() {
-      document.title = '${fileName}';
-      setTimeout(() => { window.print(); }, 600);
-    };
-  <\/script>`);
+  const scriptTag = '<scr' + 'ipt>window.onload=function(){document.title=' + JSON.stringify(fileName) + ';setTimeout(function(){window.print();},600);};</' + 'script>';
+  win.document.write(html + scriptTag);
   win.document.close();
   showToast('✅ ستظهر نافذة الطباعة — اختر "حفظ كـ PDF"');
 }
