@@ -10,8 +10,8 @@
 <link rel="manifest" href="manifest.json">
 <title>الحاج أحمد الحديدي - تجارة الأسماك</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<!-- jsPDF for PDF export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- html2pdf for Arabic-compatible PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root {
     --ocean-deep: #0a1628;
@@ -1263,6 +1263,9 @@ window.saveInvoice = async function() {
     };
 
     const invRef = push(ref(db, 'invoices'));
+    // Generate invoice number using the Firebase key
+    const invNum = generateInvoiceNumber(invRef.key);
+    invoice.invoiceNumber = invNum;
     await set(invRef, invoice);
 
     const clientKey = phone;
@@ -1340,6 +1343,11 @@ function showInvoicePreview(invoice, invoiceId) {
           <div class="invoice-shop">الحاج أحمد الحديدي</div>
           <div class="invoice-owner">تجارة الأسماك</div>
           <div class="invoice-date">📅 ${invoice.dateStr}</div>
+          <div style="margin-top:6px">
+            <span style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.35);color:#ffd700;padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700">
+              📋 ${invoice.invoiceNumber || generateInvoiceNumber(invoiceId)}
+            </span>
+          </div>
           <div style="margin-top:8px;font-size:13px"><span style="color:var(--text-secondary)">العميل: </span><strong>${invoice.clientName}</strong></div>
           ${invoice.shopName ? `<div style="font-size:12px;color:var(--text-secondary)">🏪 ${invoice.shopName}</div>` : ''}
           <div style="font-size:12px;color:var(--cyan-glow)">📱 ${invoice.phone}</div>
@@ -1404,7 +1412,7 @@ function buildInvoiceText(invoice) {
   const expTotal = invoice.expTotal || 0;
   const hasComm = invoice.commissionPct > 0;
   const hasExp = expTotal > 0;
-  let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n━━━━━━━━━━━━━━━━━━\n`;
+  let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n📋 رقم الفاتورة: *${invoice.invoiceNumber || generateInvoiceNumber(invoiceId || '')}*\n━━━━━━━━━━━━━━━━━━\n`;
   text += `👤 العميل : ${invoice.clientName}\n`;
   if (invoice.shopName) text += `🏪 المؤسسة: ${invoice.shopName}\n`;
   text += `📅 التاريخ: ${invoice.dateStr}\n━━━━━━━━━━━━━━━━━━\n*📦 تفاصيل الأصناف:*\n`;
@@ -1438,187 +1446,229 @@ window.closeModal = function() {
 };
 
 // ============================================================
-// PDF EXPORT — INVOICE
+// INVOICE NUMBER GENERATOR
+// ============================================================
+function generateInvoiceNumber(invoiceId) {
+  // Use last 6 chars of Firebase key + year
+  const year = new Date().getFullYear();
+  const shortId = invoiceId ? invoiceId.slice(-6).toUpperCase() : Math.random().toString(36).slice(-6).toUpperCase();
+  return `INV-${year}-${shortId}`;
+}
+
+// ============================================================
+// BUILD ARABIC PDF HTML — INVOICE
+// ============================================================
+function buildInvoicePDFHTML(inv, invoiceId) {
+  const invNum = generateInvoiceNumber(invoiceId);
+  const fishTotal = inv.fishTotal || (inv.gross || inv.total);
+  const expTotal = inv.expTotal || 0;
+  const gross = inv.gross || inv.total;
+  const hasComm = (inv.commissionPct || 0) > 0;
+  const hasExp = expTotal > 0;
+
+  const itemsRows = (inv.items || []).map((item, idx) => {
+    const unit = item.unit || 'kg';
+    const uDef = UNITS[unit] || UNITS.kg;
+    const qty = item.qty !== undefined ? item.qty : item.kg;
+    const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+    const bg = idx % 2 === 0 ? '#0d2240' : '#0a1a33';
+    return `<tr style="background:${bg}">
+      <td>${item.fish}</td>
+      <td>${qty} ${uDef.label}${unit !== 'kg' ? `<br><small style="color:#ffa502">${(item.kg||0).toFixed(unit==='wqa'?2:0)} كيلو</small>` : ''}</td>
+      <td>${prc} ج.م</td>
+      <td style="color:#ffd700;font-weight:700">${formatNum(item.subtotal)} ج.م</td>
+    </tr>`;
+  }).join('');
+
+  const expRows = (inv.expenses || []).filter(e => e.amount > 0).map(e => `
+    <tr style="background:#1a1200">
+      <td style="color:#ffa502">💸 ${e.desc}</td>
+      <td colspan="2" style="color:#ffa502">مصروف إضافي</td>
+      <td style="color:#ffa502;font-weight:700">${formatNum(e.amount)} ج.م</td>
+    </tr>
+  `).join('');
+
+  return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Cairo', Arial, sans-serif; background: #0a1628; color: #e8f4f8; direction: rtl; font-size: 13px; }
+  .page { width: 210mm; min-height: 297mm; margin: 0 auto; background: #0a1628; padding: 0; }
+  .header { background: linear-gradient(135deg, #0d3460, #1565c0); padding: 20px 24px 16px; border-bottom: 3px solid #ffd700; text-align: center; }
+  .shop-name { font-size: 22px; font-weight: 900; color: #ffd700; margin-bottom: 4px; }
+  .shop-sub { font-size: 12px; color: #00b4d8; margin-bottom: 8px; }
+  .inv-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .inv-num { font-size: 11px; background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700; padding: 4px 12px; border-radius: 20px; font-weight: 700; }
+  .inv-date { font-size: 11px; color: #90caf9; }
+  .client-box { background: rgba(21,101,192,0.2); border: 1px solid rgba(0,180,216,0.3); border-radius: 10px; margin: 16px 20px; padding: 12px 16px; }
+  .client-title { font-size: 11px; color: #00b4d8; font-weight: 700; margin-bottom: 8px; }
+  .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .client-field { font-size: 12px; }
+  .client-field span { color: #90caf9; margin-left: 4px; }
+  .section { margin: 0 20px 12px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #1565c0; color: white; padding: 8px 6px; text-align: center; font-size: 11px; font-weight: 700; }
+  td { padding: 7px 6px; text-align: center; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .totals-box { margin: 8px 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 16px; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .total-label { font-size: 12px; color: #90caf9; }
+  .total-val { font-size: 13px; font-weight: 700; color: #e8f4f8; }
+  .divider { height: 1px; background: rgba(255,215,0,0.3); margin: 8px 0; }
+  .grand-total-box { margin: 0 20px 16px; background: linear-gradient(135deg, rgba(0,200,150,0.15), rgba(0,180,216,0.1)); border: 2px solid #00c896; border-radius: 10px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .grand-label { font-size: 15px; font-weight: 900; color: #00c896; }
+  .grand-val { font-size: 24px; font-weight: 900; color: #ffd700; }
+  .footer { text-align: center; padding: 16px; border-top: 1px solid rgba(255,255,255,0.1); margin: 8px 20px 0; }
+  .footer-text { font-size: 11px; color: #90caf9; }
+  .stamp { display: inline-block; border: 2px solid rgba(0,200,150,0.4); border-radius: 50%; width: 60px; height: 60px; line-height: 56px; font-size: 22px; color: #00c896; margin-bottom: 6px; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { width: 100%; margin: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="shop-name">🐟 الحاج أحمد الحديدي</div>
+    <div class="shop-sub">تجارة الأسماك — الفاتورة الرسمية</div>
+    <div class="inv-meta">
+      <div class="inv-num">📋 ${invNum}</div>
+      <div class="inv-date">📅 ${inv.dateStr || ''}</div>
+    </div>
+  </div>
+
+  <div class="client-box">
+    <div class="client-title">👤 بيانات العميل</div>
+    <div class="client-grid">
+      <div class="client-field"><span>الاسم:</span> ${inv.clientName}</div>
+      <div class="client-field"><span>الهاتف:</span> ${inv.phone}</div>
+      ${inv.shopName ? `<div class="client-field"><span>المؤسسة:</span> ${inv.shopName}</div>` : ''}
+    </div>
+  </div>
+
+  <div class="section">
+    <table>
+      <thead>
+        <tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>
+      </thead>
+      <tbody>
+        ${itemsRows}
+        ${expRows}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="totals-box">
+    <div class="total-row">
+      <span class="total-label">📦 إجمالي الأصناف</span>
+      <span class="total-val">${formatNum(fishTotal)} ج.م</span>
+    </div>
+    ${hasExp ? `<div class="total-row">
+      <span class="total-label" style="color:#ffa502">💸 إجمالي المصاريف الإضافية</span>
+      <span class="total-val" style="color:#ffa502">${formatNum(expTotal)} ج.م</span>
+    </div>` : ''}
+    ${hasComm ? `
+    <div class="total-row">
+      <span class="total-label">📊 الإجمالي الكلي</span>
+      <span class="total-val">${formatNum(gross)} ج.م</span>
+    </div>
+    <div class="total-row">
+      <span class="total-label" style="color:#ffa502">🤝 عمولة التاجر (${inv.commissionPct}%)</span>
+      <span class="total-val" style="color:#ffa502">- ${formatNum(inv.commissionAmt||0)} ج.م</span>
+    </div>
+    <div class="divider"></div>` : ''}
+  </div>
+
+  <div class="grand-total-box">
+    <div class="grand-label">💰 المتبقى على التاجر</div>
+    <div class="grand-val">${formatNum(inv.total)} ج.م</div>
+  </div>
+
+  <div class="footer">
+    <div class="stamp">🐟</div>
+    <div class="footer-text">شكراً لتعاملكم معنا — الحاج أحمد الحديدي لتجارة الأسماك</div>
+    <div class="footer-text" style="margin-top:4px;color:#546e7a">رقم الفاتورة: ${invNum}</div>
+  </div>
+</div>
+</body>
+</html>`;
+}
+
+// ============================================================
+// PDF EXPORT — INVOICE (Arabic HTML print)
 // ============================================================
 window.exportInvoicePDF = function(invoiceId) {
-  const inv = invoiceId === '__current__'
-    ? window._currentInvoiceForPDF
-    : window.appState.invoices[invoiceId];
+  const inv = window.appState.invoices[invoiceId];
   if (!inv) return showToast('❌ الفاتورة غير موجودة');
 
-  showToast('⏳ جاري إنشاء PDF...');
-  setTimeout(() => {
-    try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const W = doc.internal.pageSize.getWidth();
-      const H = doc.internal.pageSize.getHeight();
-      let y = 0;
+  showToast('⏳ جاري تحضير الفاتورة...');
 
-      // Background
-      doc.setFillColor(10, 22, 40);
-      doc.rect(0, 0, W, H, 'F');
+  const invNum = generateInvoiceNumber(invoiceId);
+  const clientName = (inv.clientName || 'عميل').replace(/\s+/g, '_');
+  const dateStr = (inv.invDateISO || getTodayISO()).replace(/-/g, '');
+  const fileName = `فاتورة_${clientName}_${invNum}_${dateStr}`;
 
-      // Header band
-      doc.setFillColor(13, 52, 96);
-      doc.rect(0, 0, W, 40, 'F');
+  const html = buildInvoicePDFHTML(inv, invoiceId);
 
-      // Gold line
-      doc.setDrawColor(255, 215, 0);
-      doc.setLineWidth(0.8);
-      doc.line(0, 40, W, 40);
+  // Use html2pdf if available, fallback to print window
+  if (typeof html2pdf !== 'undefined') {
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    const bodyEl = container.querySelector('body') || container;
 
-      // Shop title
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.setTextColor(255, 215, 0);
-      doc.text('Al-Haj Ahmed Al-Hadeedi', W/2, 14, { align:'center' });
+    const opt = {
+      margin: 0,
+      filename: fileName + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#0a1628' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'avoid-all' }
+    };
 
-      doc.setFontSize(11);
-      doc.setTextColor(0, 180, 216);
-      doc.text('Fish Trading | تجارة الأسماك', W/2, 22, { align:'center' });
+    // Create off-screen iframe with Arabic content
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;';
+    document.body.appendChild(iframe);
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(html);
+    iframe.contentDocument.close();
 
-      doc.setFontSize(9);
-      doc.setTextColor(200, 220, 240);
-      doc.text('INVOICE', W/2, 30, { align:'center' });
-      doc.text(inv.dateStr || inv.date, W/2, 36, { align:'center' });
-
-      y = 50;
-
-      // Client info box
-      doc.setFillColor(20, 40, 70);
-      doc.setDrawColor(0, 100, 160);
-      doc.setLineWidth(0.3);
-      doc.roundedRect(10, y, W-20, 28, 3, 3, 'FD');
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(0, 180, 216);
-      doc.text('Client Details', 15, y+8);
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(230, 240, 250);
-      doc.text('Name: ' + inv.clientName, 15, y+16);
-      doc.text('Phone: ' + inv.phone, 15, y+23);
-      if (inv.shopName) doc.text('Shop: ' + inv.shopName, W/2, y+16);
-
-      y += 34;
-
-      // Items table header
-      doc.setFillColor(0, 100, 160);
-      doc.rect(10, y, W-20, 8, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(255, 255, 255);
-      const cols = [15, 65, 105, 140, 175];
-      const headers = ['Fish / الصنف', 'Qty / الكمية', 'Unit / الوحدة', 'Price / السعر', 'Total / الإجمالي'];
-      headers.forEach((h, i) => doc.text(h, cols[i], y+5.5));
-      y += 8;
-
-      // Items rows
-      (inv.items || []).forEach((item, idx) => {
-        const rowH = 9;
-        doc.setFillColor(idx % 2 === 0 ? 15 : 20, idx % 2 === 0 ? 30 : 35, idx % 2 === 0 ? 55 : 65);
-        doc.rect(10, y, W-20, rowH, 'F');
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(220, 235, 250);
-        const unit = item.unit || 'kg';
-        const uDef = UNITS[unit] || UNITS.kg;
-        const qty = item.qty !== undefined ? item.qty : item.kg;
-        const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
-        doc.text(String(item.fish).substring(0,22), cols[0], y+6);
-        doc.text(String(qty), cols[1], y+6);
-        doc.text(uDef.label, cols[2], y+6);
-        doc.text(prc + ' EGP', cols[3], y+6);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 215, 0);
-        doc.text(formatNum(item.subtotal) + ' EGP', cols[4], y+6);
-        y += rowH;
+    setTimeout(() => {
+      html2pdf().set(opt).from(iframe.contentDocument.body).save().then(() => {
+        document.body.removeChild(iframe);
+        showToast('✅ تم تحميل الفاتورة PDF!');
+      }).catch(e => {
+        document.body.removeChild(iframe);
+        printArabicPDF(html, fileName);
       });
-
-      // Expenses rows
-      if ((inv.expenses || []).length > 0) {
-        (inv.expenses || []).filter(e => e.amount > 0).forEach((exp, idx) => {
-          const rowH = 9;
-          doc.setFillColor(40, 25, 10);
-          doc.rect(10, y, W-20, rowH, 'F');
-          doc.setFont('helvetica', 'italic');
-          doc.setFontSize(8);
-          doc.setTextColor(255, 165, 0);
-          doc.text('Expense: ' + exp.desc, cols[0], y+6);
-          doc.text('—', cols[1], y+6);
-          doc.text('—', cols[2], y+6);
-          doc.text('—', cols[3], y+6);
-          doc.setFont('helvetica', 'bold');
-          doc.text(formatNum(exp.amount) + ' EGP', cols[4], y+6);
-          y += rowH;
-        });
-      }
-
-      // Totals
-      y += 4;
-      doc.setDrawColor(0, 180, 216);
-      doc.setLineWidth(0.5);
-      doc.line(10, y, W-10, y);
-      y += 6;
-
-      const totals = [];
-      const fishTot = inv.fishTotal || (inv.gross || inv.total);
-      const expTot = inv.expTotal || 0;
-      totals.push(['Fish Subtotal:', formatNum(fishTot) + ' EGP']);
-      if (expTot > 0) totals.push(['Extra Expenses:', formatNum(expTot) + ' EGP']);
-      if ((inv.commissionPct || 0) > 0) {
-        totals.push(['Gross Total:', formatNum(inv.gross || inv.total) + ' EGP']);
-        totals.push([`Commission (${inv.commissionPct}%):`, '- ' + formatNum(inv.commissionAmt||0) + ' EGP']);
-      }
-
-      doc.setFontSize(9);
-      totals.forEach(([label, val]) => {
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(180, 210, 240);
-        doc.text(label, W - 80, y);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(230, 230, 230);
-        doc.text(val, W - 12, y, { align:'right' });
-        y += 8;
-      });
-
-      // Grand total
-      doc.setFillColor(0, 60, 30);
-      doc.setDrawColor(0, 200, 150);
-      doc.setLineWidth(0.5);
-      doc.roundedRect(10, y, W-20, 14, 2, 2, 'FD');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.setTextColor(0, 200, 150);
-      doc.text('NET AMOUNT DUE:', 15, y+9);
-      doc.setFontSize(13);
-      doc.setTextColor(255, 215, 0);
-      doc.text(formatNum(inv.total) + ' EGP', W-12, y+9, { align:'right' });
-      y += 20;
-
-      // Footer
-      doc.setFontSize(8);
-      doc.setTextColor(100, 140, 180);
-      doc.text('Thank you for your business | شكراً لتعاملكم معنا 🙏', W/2, H-10, { align:'center' });
-
-      const fname = `invoice_${inv.clientName}_${inv.dateStr || 'date'}.pdf`.replace(/\s/g, '_');
-      doc.save(fname);
-      showToast('✅ تم تحميل PDF بنجاح!');
-    } catch(e) {
-      console.error(e);
-      showToast('❌ خطأ في إنشاء PDF: ' + e.message);
-    }
-  }, 300);
+    }, 800);
+  } else {
+    printArabicPDF(html, fileName);
+  }
 };
 
+// Fallback: open print window
+function printArabicPDF(html, fileName) {
+  const win = window.open('', '_blank', 'width=850,height=1100');
+  if (!win) { showToast('❌ السماح بالنوافذ المنبثقة مطلوب'); return; }
+  win.document.write(html + `<script>
+    window.onload = function() {
+      document.title = '${fileName}';
+      setTimeout(() => { window.print(); }, 600);
+    };
+  <\/script>`);
+  win.document.close();
+  showToast('✅ ستظهر نافذة الطباعة — اختر "حفظ كـ PDF"');
+}
+
 // ============================================================
-// PDF EXPORT — CLIENT STATEMENT
+// PDF EXPORT — CLIENT STATEMENT (Arabic HTML print)
 // ============================================================
 window.exportClientStatementPDF = async function(clientKey) {
-  showToast('⏳ جاري إنشاء كشف الحساب PDF...');
+  showToast('⏳ جاري تحضير كشف الحساب...');
   const c = window.appState.clients[clientKey];
   if (!c) return showToast('❌ العميل غير موجود');
 
@@ -1640,192 +1690,175 @@ window.exportClientStatementPDF = async function(clientKey) {
     ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts:new Date(pay.customDate?pay.customDate+'T12:00:00':pay.date).getTime() }))
   ].sort((a,b) => a.ts - b.ts);
 
-  setTimeout(() => {
-    try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const W = doc.internal.pageSize.getWidth();
-      const PH = doc.internal.pageSize.getHeight();
-      let y = 0;
+  const debt = c.totalDebt || 0;
+  const totalPaid = c.totalPaid || 0;
+  const totalPurchases = c.totalPurchases || 0;
+  const nowStr = new Date().toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
 
-      // BG
-      doc.setFillColor(10, 22, 40);
-      doc.rect(0, 0, W, PH, 'F');
-
-      // Header
-      doc.setFillColor(13, 52, 96);
-      doc.rect(0, 0, W, 45, 'F');
-      doc.setDrawColor(255, 215, 0);
-      doc.setLineWidth(0.8);
-      doc.line(0, 45, W, 45);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.setTextColor(255, 215, 0);
-      doc.text('Al-Haj Ahmed Al-Hadeedi', W/2, 13, { align:'center' });
-      doc.setFontSize(10);
-      doc.setTextColor(0, 180, 216);
-      doc.text('Fish Trading | تجارة الأسماك', W/2, 21, { align:'center' });
-      doc.setFontSize(12);
-      doc.setTextColor(255, 255, 255);
-      doc.text('ACCOUNT STATEMENT', W/2, 30, { align:'center' });
-      doc.setFontSize(8);
-      doc.setTextColor(180, 210, 240);
-      const nowStr = new Date().toLocaleDateString('en-GB');
-      doc.text('Date: ' + nowStr, W/2, 38, { align:'center' });
-
-      y = 52;
-
-      // Client info
-      doc.setFillColor(20, 40, 70);
-      doc.setDrawColor(0, 180, 216);
-      doc.setLineWidth(0.3);
-      doc.roundedRect(10, y, W-20, 22, 3, 3, 'FD');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(0, 180, 216);
-      doc.text('Client:', 15, y+8);
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(11);
-      doc.text(c.name, 35, y+8);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(180, 210, 240);
-      doc.text('Phone: ' + c.phone, 15, y+15);
-      if (c.shopName) doc.text('Shop: ' + c.shopName, 15, y+20);
-
-      // Summary badges
-      const debt = c.totalDebt || 0;
-      const paid = c.totalPaid || 0;
-      const total = c.totalPurchases || 0;
-      const bY = y + 28;
-      const bW = (W-30)/3;
-      const badges = [
-        { label:'Total Purchases', val:formatNum(total)+' EGP', color:[0,100,160], tcolor:[0,180,216] },
-        { label:'Total Paid', val:formatNum(paid)+' EGP', color:[0,80,50], tcolor:[0,200,150] },
-        { label:'Balance Due', val:formatNum(debt)+' EGP', color:[80,20,20], tcolor:[255,71,87] },
-      ];
-      badges.forEach((b,i) => {
-        doc.setFillColor(...b.color);
-        doc.setDrawColor(...b.tcolor);
-        doc.setLineWidth(0.4);
-        doc.roundedRect(10 + i*(bW+5), bY, bW, 16, 2, 2, 'FD');
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7);
-        doc.setTextColor(...b.tcolor);
-        doc.text(b.label, 10 + i*(bW+5) + bW/2, bY+5.5, { align:'center' });
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor(255, 255, 255);
-        doc.text(b.val, 10 + i*(bW+5) + bW/2, bY+12, { align:'center' });
-      });
-      y = bY + 22;
-
-      // Timeline header
-      doc.setFillColor(0, 80, 140);
-      doc.rect(10, y, W-20, 8, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(255,255,255);
-      doc.text('#', 14, y+5.5);
-      doc.text('Date', 22, y+5.5);
-      doc.text('Type', 55, y+5.5);
-      doc.text('Details', 90, y+5.5);
-      doc.text('Amount', W-12, y+5.5, { align:'right' });
-      y += 8;
-
-      let runBal = 0;
-      timeline.forEach((item, idx) => {
-        const rowH = 11;
-        if (y + rowH > PH - 25) {
-          doc.addPage();
-          doc.setFillColor(10, 22, 40);
-          doc.rect(0, 0, W, PH, 'F');
-          y = 15;
-        }
-        doc.setFillColor(idx%2===0 ? 15 : 20, idx%2===0 ? 28 : 35, idx%2===0 ? 50 : 60);
-        doc.rect(10, y, W-20, rowH, 'F');
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-
-        if (item.type === 'invoice') {
-          const inv = item.data;
-          runBal += inv.total;
-          const dateStr = inv.dateStr || inv.invDateISO || '';
-          doc.setTextColor(200, 220, 250);
-          doc.text(String(idx+1), 14, y+7);
-          doc.text(dateStr.substring(0,14), 22, y+7);
-          doc.setTextColor(255, 215, 0);
-          doc.text('Invoice', 55, y+7);
-          doc.setTextColor(200, 220, 250);
-          const items = (inv.items||[]).map(i=>i.fish).join(', ').substring(0,25);
-          doc.text(items, 90, y+7);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(255, 215, 0);
-          doc.text('+' + formatNum(inv.total) + ' EGP', W-12, y+7, { align:'right' });
-        } else {
-          const pay = item.data;
-          runBal -= pay.amount || 0;
-          if (runBal < 0) runBal = 0;
-          const payDate = pay.customDate
-            ? new Date(pay.customDate+'T12:00:00').toLocaleDateString('en-GB')
-            : (pay.dateStr || '');
-          doc.setTextColor(200, 220, 250);
-          doc.text(String(idx+1), 14, y+7);
-          doc.text(payDate.substring(0,14), 22, y+7);
-          doc.setTextColor(0, 200, 150);
-          doc.text('Payment', 55, y+7);
-          doc.setTextColor(200, 220, 250);
-          const details = (pay.notes ? pay.notes : (pay.from ? pay.from : '')).substring(0,25);
-          doc.text(details, 90, y+7);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(0, 200, 150);
-          doc.text('-' + formatNum(pay.amount) + ' EGP', W-12, y+7, { align:'right' });
-        }
-        y += rowH;
-      });
-
-      // Final balance
-      y += 5;
-      if (y + 20 > PH - 20) {
-        doc.addPage();
-        doc.setFillColor(10, 22, 40);
-        doc.rect(0, 0, W, PH, 'F');
-        y = 20;
-      }
-      doc.setDrawColor(255, 215, 0);
-      doc.setLineWidth(0.5);
-      doc.line(10, y, W-10, y);
-      y += 6;
-
-      const balColor = debt > 0 ? [80,20,20] : [0,60,30];
-      const balTxt = debt > 0 ? [255,71,87] : [0,200,150];
-      doc.setFillColor(...balColor);
-      doc.setDrawColor(...balTxt);
-      doc.setLineWidth(0.5);
-      doc.roundedRect(10, y, W-20, 14, 2, 2, 'FD');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(...balTxt);
-      doc.text(debt > 0 ? 'BALANCE DUE:' : 'ACCOUNT SETTLED:', 15, y+9);
-      doc.setFontSize(12);
-      doc.setTextColor(255, 215, 0);
-      doc.text(formatNum(debt) + ' EGP', W-12, y+9, { align:'right' });
-
-      // Footer
-      doc.setFontSize(8);
-      doc.setTextColor(100, 140, 180);
-      doc.text('Thank you | شكراً لتعاملكم معنا', W/2, PH-8, { align:'center' });
-
-      const fname = `statement_${c.name}.pdf`.replace(/\s/g, '_');
-      doc.save(fname);
-      showToast('✅ تم تحميل كشف الحساب PDF!');
-    } catch(e) {
-      console.error(e);
-      showToast('❌ خطأ في إنشاء PDF: ' + e.message);
+  let timelineRows = '';
+  let runBal = 0;
+  timeline.forEach((item, idx) => {
+    if (item.type === 'invoice') {
+      const inv = item.data;
+      runBal += inv.total;
+      const invNum = generateInvoiceNumber(item.id);
+      timelineRows += `<tr style="background:${idx%2===0?'#0d2240':'#0a1a33'}">
+        <td style="text-align:center">${idx+1}</td>
+        <td style="text-align:center">${inv.dateStr||''}</td>
+        <td><span style="background:rgba(255,215,0,0.15);color:#ffd700;padding:2px 8px;border-radius:12px;font-size:10px">🧾 فاتورة</span><br><small style="color:#546e7a;font-size:10px">${invNum}</small></td>
+        <td style="text-align:center">${(inv.items||[]).map(i=>i.fish).join('، ')}</td>
+        <td style="color:#ffd700;font-weight:700;text-align:center">+${formatNum(inv.total)} ج.م</td>
+        <td style="text-align:center;color:#90caf9">${formatNum(runBal)} ج.م</td>
+      </tr>`;
+    } else {
+      const pay = item.data;
+      runBal -= pay.amount || 0;
+      if (runBal < 0) runBal = 0;
+      const payDate = pay.customDate ? new Date(pay.customDate+'T12:00:00').toLocaleDateString('ar-EG') : (pay.dateStr||'');
+      timelineRows += `<tr style="background:${idx%2===0?'#071a0d':'#091510'}">
+        <td style="text-align:center">${idx+1}</td>
+        <td style="text-align:center">${payDate}</td>
+        <td><span style="background:rgba(0,200,150,0.15);color:#00c896;padding:2px 8px;border-radius:12px;font-size:10px">💳 دفعة</span></td>
+        <td style="text-align:center;font-size:11px">${pay.notes||pay.from||'—'}</td>
+        <td style="color:#00c896;font-weight:700;text-align:center">-${formatNum(pay.amount)} ج.م</td>
+        <td style="text-align:center;color:${runBal>0?'#ff4757':'#00c896'}">${formatNum(runBal)} ج.م</td>
+      </tr>`;
     }
-  }, 300);
+  });
+
+  const clientName = (c.name || 'عميل').replace(/\s+/g, '_');
+  const dateCode = getTodayISO().replace(/-/g, '');
+  const fileName = `كشف_حساب_${clientName}_${dateCode}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Cairo', Arial, sans-serif; background: #0a1628; color: #e8f4f8; direction: rtl; font-size: 12px; }
+  .page { width: 210mm; margin: 0 auto; background: #0a1628; padding: 0; }
+  .header { background: linear-gradient(135deg, #0d3460, #1565c0); padding: 18px 24px 14px; border-bottom: 3px solid #ffd700; text-align: center; }
+  .shop-name { font-size: 20px; font-weight: 900; color: #ffd700; margin-bottom: 3px; }
+  .shop-sub { font-size: 11px; color: #00b4d8; margin-bottom: 6px; }
+  .doc-title { font-size: 14px; font-weight: 700; color: white; background: rgba(0,0,0,0.3); display: inline-block; padding: 3px 16px; border-radius: 20px; margin-top: 6px; }
+  .doc-date { font-size: 10px; color: #90caf9; margin-top: 4px; }
+  .client-box { background: rgba(21,101,192,0.2); border: 1px solid rgba(0,180,216,0.3); border-radius: 8px; margin: 14px 16px; padding: 10px 14px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .client-field { font-size: 12px; }
+  .client-field span { color: #00b4d8; margin-left: 4px; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 0 16px 14px; }
+  .summary-card { border-radius: 8px; padding: 10px; text-align: center; }
+  .summary-card.debt { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); }
+  .summary-card.paid { background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.3); }
+  .summary-card.total { background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3); }
+  .summary-label { font-size: 10px; margin-bottom: 4px; font-weight: 700; }
+  .summary-label.debt { color: #ff4757; }
+  .summary-label.paid { color: #00c896; }
+  .summary-label.total { color: #00b4d8; }
+  .summary-val { font-size: 16px; font-weight: 900; }
+  .summary-val.debt { color: #ff4757; }
+  .summary-val.paid { color: #00c896; }
+  .summary-val.total { color: #00b4d8; }
+  .section-title { font-size: 12px; font-weight: 700; color: #90caf9; margin: 0 16px 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  table { width: calc(100% - 32px); margin: 0 16px; border-collapse: collapse; }
+  th { background: #1565c0; color: white; padding: 7px 5px; font-size: 10px; font-weight: 700; }
+  td { padding: 6px 5px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .balance-box { margin: 12px 16px; border-radius: 8px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .balance-box.has-debt { background: rgba(255,71,87,0.1); border: 2px solid #ff4757; }
+  .balance-box.no-debt { background: rgba(0,200,150,0.1); border: 2px solid #00c896; }
+  .balance-label { font-size: 14px; font-weight: 900; }
+  .balance-val { font-size: 22px; font-weight: 900; }
+  .footer { text-align: center; padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); margin: 8px 16px 0; }
+  .footer-text { font-size: 10px; color: #546e7a; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="shop-name">🐟 الحاج أحمد الحديدي</div>
+    <div class="shop-sub">تجارة الأسماك</div>
+    <div class="doc-title">📊 كشف حساب شامل</div>
+    <div class="doc-date">📅 تاريخ الإصدار: ${nowStr}</div>
+  </div>
+
+  <div class="client-box">
+    <div class="client-field"><span>👤 العميل:</span> <strong>${c.name}</strong></div>
+    <div class="client-field"><span>📱 الهاتف:</span> ${c.phone}</div>
+    ${c.shopName ? `<div class="client-field"><span>🏪 المؤسسة:</span> ${c.shopName}</div>` : ''}
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card debt">
+      <div class="summary-label debt">⚠️ المتبقي</div>
+      <div class="summary-val debt">${formatNum(debt)}</div>
+      <div style="font-size:9px;color:rgba(255,71,87,0.6)">ج.م</div>
+    </div>
+    <div class="summary-card paid">
+      <div class="summary-label paid">✅ المدفوع</div>
+      <div class="summary-val paid">${formatNum(totalPaid)}</div>
+      <div style="font-size:9px;color:rgba(0,200,150,0.6)">ج.م</div>
+    </div>
+    <div class="summary-card total">
+      <div class="summary-label total">💰 الإجمالي</div>
+      <div class="summary-val total">${formatNum(totalPurchases)}</div>
+      <div style="font-size:9px;color:rgba(0,180,216,0.6)">ج.م</div>
+    </div>
+  </div>
+
+  <div class="section-title">🕐 سجل الحركات (${timeline.length} حركة)</div>
+  <table>
+    <thead>
+      <tr><th>#</th><th>التاريخ</th><th>النوع</th><th>التفاصيل</th><th>المبلغ</th><th>الرصيد</th></tr>
+    </thead>
+    <tbody>${timelineRows || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#546e7a">لا توجد حركات مسجلة</td></tr>'}</tbody>
+  </table>
+
+  <div class="balance-box ${debt > 0 ? 'has-debt' : 'no-debt'}" style="margin-top:14px">
+    <div class="balance-label" style="color:${debt>0?'#ff4757':'#00c896'}">${debt>0?'⚠️ الرصيد المتبقي':'✅ الحساب مسوّي'}</div>
+    <div class="balance-val" style="color:${debt>0?'#ffd700':'#00c896'}">${formatNum(debt)} ج.م</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">شكراً لتعاملكم معنا — الحاج أحمد الحديدي لتجارة الأسماك 🙏</div>
+  </div>
+</div>
+</body>
+</html>`;
+
+  if (typeof html2pdf !== 'undefined') {
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;';
+    document.body.appendChild(iframe);
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(html);
+    iframe.contentDocument.close();
+
+    const opt = {
+      margin: 0,
+      filename: fileName + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#0a1628' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'css', before: '.page-break' }
+    };
+
+    setTimeout(() => {
+      html2pdf().set(opt).from(iframe.contentDocument.body).save().then(() => {
+        document.body.removeChild(iframe);
+        showToast('✅ تم تحميل كشف الحساب PDF!');
+      }).catch(() => {
+        document.body.removeChild(iframe);
+        printArabicPDF(html, fileName);
+      });
+    }, 800);
+  } else {
+    printArabicPDF(html, fileName);
+  }
 };
 
 // ============================================================
@@ -2228,6 +2261,7 @@ window.renderHistory = function() {
       <div class="history-meta" onclick="showInvoiceDetail('${id}')" style="cursor:pointer;margin-bottom:8px">
         📅 ${inv.dateStr} • 📦 ${(inv.items||[]).length} صنف
         ${inv.commissionPct>0?` • 🤝 عمولة ${inv.commissionPct}%`:''}
+        <br><span style="font-size:10px;color:#546e7a">📋 ${inv.invoiceNumber || generateInvoiceNumber(id)}</span>
       </div>
       <div style="display:flex;gap:6px">
         <button onclick="showInvoiceDetail('${id}')" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,180,216,0.1);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer">👁️ عرض</button>
