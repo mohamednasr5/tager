@@ -612,7 +612,7 @@ const FISH_TYPES = [
 const UNITS = {
   kg:    { label: 'كيلو',                short: 'ك',        kgFactor: 1    },
   wqa:   { label: 'وقة',                 short: 'وقة',      kgFactor: 1.25 },
-  box20: { label: 'بوكشة 20 وقة (25 ك)',     short: 'ب20',      kgFactor: 25   },
+  box20: { label: 'بوكشة 20 (25 ك)',     short: 'ب20',      kgFactor: 25   },
   box25: { label: 'بوكشة 25 ك',          short: 'ب25',      kgFactor: 25   },
 };
 
@@ -1661,19 +1661,138 @@ document.getElementById('inv-client').addEventListener('input', function() {
 window.sendClientStatementWA = async function(clientKey) {
   const c = window.appState.clients[clientKey];
   if (!c) return;
-  showToast('⏳ جاري تحضير الكشف...');
+  showToast('⏳ جاري تحضير الكشف الكامل...');
   try {
-    const debt = c.totalDebt||0;
-    let text = `🐟 *كشف حساب - الحاج أحمد الحديدي*\n━━━━━━━━━━━━━━━━━━\n`;
-    text += `👤 العميل : *${c.name}*\n`;
-    if (c.shopName) text += `🏪 المؤسسة: ${c.shopName}\n`;
-    if (c.phone) text += `📱 الهاتف  : ${c.phone}\n`;
-    text += `📦 عدد الفواتير      : ${c.invoiceCount||0}\n`;
-    text += `💰 إجمالي المشتريات : *${formatNum(c.totalPurchases||0)} ج.م*\n`;
-    text += `✅ إجمالي المدفوع   : *${formatNum(c.totalPaid||0)} ج.م*\n`;
-    text += `━━━━━━━━━━━━━━━━━━\n`;
-    text += debt > 0 ? `⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n` : `✅ *الحساب مسوّي بالكامل*\n`;
-    text += `━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
+    const debt = c.totalDebt || 0;
+    const now  = new Date().toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
+
+    // ── جلب الفواتير ──
+    const clientInvoices = Object.entries(window.appState.invoices)
+      .filter(([, i]) => i.phone === c.phone)
+      .sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0));
+
+    // ── جلب الدفعات ──
+    let clientPayments = [];
+    try {
+      const snap = await get(ref(db, 'payments'));
+      const all  = snap.val() || {};
+      clientPayments = Object.entries(all)
+        .filter(([, p]) => p.clientKey === clientKey)
+        .sort((a, b) => {
+          const da = new Date(a[1].customDate || a[1].date);
+          const db2 = new Date(b[1].customDate || b[1].date);
+          return da - db2;
+        });
+    } catch(e) {}
+
+    // ── دمج الفواتير والدفعات في timeline مرتب زمنياً ──
+    const timeline = [
+      ...clientInvoices.map(([id, inv]) => ({
+        type: 'invoice', id, data: inv,
+        ts: inv.createdAt || new Date(inv.date).getTime()
+      })),
+      ...clientPayments.map(([id, pay]) => ({
+        type: 'payment', id, data: pay,
+        ts: new Date((pay.customDate ? pay.customDate + 'T12:00:00' : pay.date)).getTime()
+      }))
+    ].sort((a, b) => a.ts - b.ts);
+
+    // ── بناء نص الكشف ──
+    let text = '';
+    text += `🐟 *كشف حساب كامل*\n`;
+    text += `🏪 الحاج أحمد الحديدي - تجارة الأسماك\n`;
+    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `👤 العميل  : *${c.name}*\n`;
+    if (c.shopName) text += `🏪 المؤسسة : ${c.shopName}\n`;
+    if (c.phone)    text += `📱 الهاتف   : ${c.phone}\n`;
+    text += `📅 تاريخ الكشف : ${now}\n`;
+    text += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    if (timeline.length === 0) {
+      text += `📭 لا توجد حركات مسجلة بعد\n`;
+    } else {
+      text += `📋 *تفاصيل جميع الحركات (${timeline.length}):*\n\n`;
+
+      let runningBalance = 0; // رصيد متراكم
+
+      timeline.forEach((item, index) => {
+        const num = index + 1;
+
+        if (item.type === 'invoice') {
+          const inv = item.data;
+          const gross = inv.gross || inv.total;
+          const hasComm = (inv.commissionPct || 0) > 0;
+
+          runningBalance += inv.total;
+
+          text += `🧾 *[${num}] فاتورة بيع*\n`;
+          text += `📅 التاريخ : ${inv.dateStr}\n`;
+          text += `─────────────────────\n`;
+
+          // تفاصيل الأصناف
+          (inv.items || []).forEach(it => {
+            const unit     = it.unit || 'kg';
+            const uDef     = UNITS[unit] || UNITS.kg;
+            const qty      = it.qty !== undefined ? it.qty : it.kg;
+            const prc      = it.pricePerUnit !== undefined ? it.pricePerUnit : it.pricePerKg;
+            const decimals = unit === 'wqa' ? 2 : 0;
+            const kgNote   = unit !== 'kg'
+              ? ` ← ${(it.kg || 0).toFixed(decimals)} كيلو`
+              : '';
+            text += `   🐟 ${it.fish}\n`;
+            text += `       ${qty} ${uDef.label} × ${prc} ج.م = *${formatNum(it.subtotal || 0)} ج.م*${kgNote}\n`;
+          });
+
+          text += `─────────────────────\n`;
+          text += `   📦 إجمالي الفاتورة  : ${formatNum(gross)} ج.م\n`;
+          if (hasComm) {
+            const commAmt = inv.commissionAmt || (gross * inv.commissionPct / 100);
+            text += `   🤝 عمولة (${inv.commissionPct}%)      : - ${formatNum(commAmt)} ج.م\n`;
+            text += `   💰 *صافي على التاجر : ${formatNum(inv.total)} ج.م*\n`;
+          } else {
+            text += `   💰 *المبلغ على التاجر : ${formatNum(inv.total)} ج.م*\n`;
+          }
+          text += `   📊 الرصيد المتراكم  : *${formatNum(runningBalance)} ج.م*\n\n`;
+
+        } else {
+          // دفعة
+          const pay = item.data;
+          runningBalance -= pay.amount || 0;
+          if (runningBalance < 0) runningBalance = 0;
+
+          const payDate = pay.customDate
+            ? new Date(pay.customDate + 'T12:00:00').toLocaleDateString('ar-EG')
+            : (pay.dateStr || '');
+
+          text += `💳 *[${num}] دفعة مالية*\n`;
+          text += `📅 التاريخ : ${payDate}\n`;
+          text += `─────────────────────\n`;
+          text += `   💵 المبلغ المدفوع : *${formatNum(pay.amount)} ج.م*\n`;
+          if (pay.from && pay.from !== c.name) {
+            text += `   👤 استُلم من    : ${pay.from}\n`;
+          }
+          if (pay.notes) {
+            text += `   📝 ملاحظات      : ${pay.notes}\n`;
+          }
+          text += `   📊 الرصيد بعدها : *${formatNum(runningBalance)} ج.م*\n\n`;
+        }
+      });
+    }
+
+    // ── ملخص نهائي ──
+    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `📊 *الملخص النهائي:*\n`;
+    text += `💰 إجمالي المشتريات : *${formatNum(c.totalPurchases || 0)} ج.م*\n`;
+    text += `✅ إجمالي المدفوع   : *${formatNum(c.totalPaid || 0)} ج.م*\n`;
+    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    if (debt > 0) {
+      text += `⚠️ *المتبقي على التاجر : ${formatNum(debt)} ج.م*\n`;
+    } else {
+      text += `✅ *الحساب مسوّي بالكامل* ✅\n`;
+    }
+    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `شكراً لتعاملكم معنا 🙏`;
+
     window.open(`https://wa.me/2${c.phone}?text=${encodeURIComponent(text)}`, '_blank');
   } catch(e) { showToast('❌ خطأ: ' + e.message); }
 };
