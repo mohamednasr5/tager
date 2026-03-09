@@ -236,7 +236,7 @@
     background: rgba(255,255,255,0.06);
     color: var(--text-primary);
     font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
-    outline: none; text-align: center; transition: all 0.25s;
+    outline: none; text-align: center; transition: all 0.25px;
     -webkit-appearance: none;
   }
   .fish-input-group input:focus {
@@ -274,8 +274,8 @@
 
   .expense-row {
     display: flex; gap: 8px; align-items: center;
-    background: rgba(255,165,0,0.05);
-    border: 1px solid rgba(255,165,0,0.2);
+    background: rgba(255,71,87,0.05);
+    border: 1px solid rgba(255,71,87,0.2);
     border-radius: 12px;
     padding: 10px;
     margin-bottom: 8px;
@@ -283,13 +283,13 @@
   }
   .expense-row input {
     padding: 9px 10px; border-radius: 9px;
-    border: 1px solid rgba(255,165,0,0.25);
-    background: rgba(255,165,0,0.06);
+    border: 1px solid rgba(255,71,87,0.25);
+    background: rgba(255,71,87,0.06);
     color: var(--text-primary); font-family: 'Cairo', sans-serif;
     font-size: 13px; outline: none; transition: all 0.2s;
     -webkit-appearance: none;
   }
-  .expense-row input:focus { border-color: var(--warning); }
+  .expense-row input:focus { border-color: var(--danger); }
   .expense-row .expense-desc { flex: 2; }
   .expense-row .expense-amt { flex: 1; text-align: center; font-weight: 700; }
   .expense-remove-btn {
@@ -639,12 +639,17 @@
         <div id="fish-items-container"></div>
       </div>
 
-      <!-- Extra Expenses -->
+      <!-- Extra Expenses — NOW DEDUCTED -->
       <div class="glass-card">
-        <div class="section-title">💸 مصاريف إضافية</div>
+        <div class="section-title">💸 مصاريف تُخصم من الفاتورة</div>
+        <!-- Hint banner -->
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(255,71,87,0.07);border:1px dashed rgba(255,71,87,0.3);margin-bottom:12px;font-size:12px;color:var(--danger)">
+          <span>⬇️</span>
+          <span>هذه المصاريف تُخصم من إجمالي الفاتورة وتظهر مفصّلة للعميل</span>
+        </div>
         <div id="expenses-container"></div>
-        <button onclick="addExpenseRow()" style="width:100%;padding:10px;border-radius:10px;border:1px dashed rgba(255,165,0,0.4);background:rgba(255,165,0,0.06);color:var(--warning);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px">
-          ➕ إضافة مصروف
+        <button onclick="addExpenseRow()" style="width:100%;padding:10px;border-radius:10px;border:1px dashed rgba(255,71,87,0.4);background:rgba(255,71,87,0.06);color:var(--danger);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px">
+          ➕ إضافة مصروف مخصوم
         </button>
       </div>
 
@@ -659,10 +664,11 @@
             <span class="summary-label">📦 إجمالي الأصناف</span>
             <span class="summary-value" id="inv-gross-display">0 ج.م</span>
           </div>
+          <!-- CHANGED: expenses now shown as deduction (red minus) -->
           <div id="expenses-summary-row" style="display:none">
             <div class="summary-row">
-              <span class="summary-label" style="color:var(--warning)">💸 إجمالي المصاريف</span>
-              <span class="summary-value" style="color:var(--warning)" id="expenses-total-display">0 ج.م</span>
+              <span class="summary-label" style="color:var(--danger)">💸 خصم المصاريف</span>
+              <span class="summary-value" style="color:var(--danger)" id="expenses-total-display">- 0 ج.م</span>
             </div>
           </div>
           <div id="commission-row" style="display:none">
@@ -1091,7 +1097,7 @@ function getTotalExpenses() {
 }
 
 // ============================================================
-// SUMMARY UPDATE
+// ★ SUMMARY UPDATE — expenses now DEDUCTED (like commission) ★
 // ============================================================
 function updateInvoiceSummary() {
   let fishGross = 0, count = 0;
@@ -1099,11 +1105,15 @@ function updateInvoiceSummary() {
     fishGross += item.subtotal || 0;
     if ((item.qty || 0) > 0) count++;
   });
+
+  // CHANGED: expenses are subtracted, not added
   const expTotal = getTotalExpenses();
-  const gross = fishGross + expTotal;
   const commPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
-  const commAmt = (gross * commPct) / 100;
-  const net = gross - commAmt;
+  // Commission is calculated on fish gross only (before expense deductions)
+  const commAmt = (fishGross * commPct) / 100;
+  // Net = fish total − expenses − commission
+  const net = fishGross - expTotal - commAmt;
+
   const grossEl = document.getElementById('inv-gross-display');
   const totalEl = document.getElementById('inv-grand-total');
   const countEl = document.getElementById('inv-items-count');
@@ -1112,14 +1122,19 @@ function updateInvoiceSummary() {
   const commAmtEl = document.getElementById('comm-amt-display');
   const expSumRow = document.getElementById('expenses-summary-row');
   const expTotalEl = document.getElementById('expenses-total-display');
+
   if (grossEl) grossEl.textContent = formatNum(fishGross) + ' ج.م';
-  if (totalEl) totalEl.textContent = formatNum(net) + ' ج.م';
+  if (totalEl) totalEl.textContent = formatNum(Math.max(net, 0)) + ' ج.م';
   if (countEl) countEl.textContent = window.appState.fishItems.length + ' صنف';
+
+  // Show expenses as deduction
   if (expSumRow) expSumRow.style.display = expTotal > 0 ? 'block' : 'none';
-  if (expTotalEl) expTotalEl.textContent = formatNum(expTotal) + ' ج.م';
-  if (commRow) commRow.style.display = commPct > 0 && gross > 0 ? 'block' : 'none';
+  if (expTotalEl) expTotalEl.textContent = '- ' + formatNum(expTotal) + ' ج.م';
+
+  if (commRow) commRow.style.display = commPct > 0 && fishGross > 0 ? 'block' : 'none';
   if (commPctLbl) commPctLbl.textContent = commPct;
   if (commAmtEl) commAmtEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
+
   const hasSomething = window.appState.fishItems.length > 0 || window.appState.expenses.length > 0;
   document.getElementById('invoice-summary').style.display = hasSomething ? 'block' : 'none';
 }
@@ -1136,7 +1151,7 @@ document.getElementById('inv-phone').addEventListener('input', function() {
 });
 
 // ============================================================
-// SAVE INVOICE
+// ★ SAVE INVOICE — expenses DEDUCTED from total ★
 // ============================================================
 window.saveInvoice = async function() {
   const clientName = document.getElementById('inv-client').value.trim();
@@ -1162,12 +1177,17 @@ window.saveInvoice = async function() {
     fishTotal += item.subtotal;
   }
   if (items.length === 0) return showToast('❌ يرجى إدخال كميات وأسعار');
-  const expensesList = window.appState.expenses.filter(e => e.amount > 0 || e.desc).map(e => ({ desc: e.desc || 'مصروف', amount: e.amount || 0 }));
+
+  const expensesList = window.appState.expenses
+    .filter(e => e.amount > 0 || e.desc)
+    .map(e => ({ desc: e.desc || 'مصروف', amount: e.amount || 0 }));
   const expTotal = expensesList.reduce((s, e) => s + e.amount, 0);
-  const gross = fishTotal + expTotal;
+
+  // CHANGED: commission on fish only; net = fish - expenses - commission
   const commissionPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
-  const commissionAmt = (gross * commissionPct) / 100;
-  const netTotal = gross - commissionAmt;
+  const commissionAmt = (fishTotal * commissionPct) / 100;
+  const netTotal = Math.max(fishTotal - expTotal - commissionAmt, 0);
+
   const btn = document.getElementById('save-invoice-btn');
   btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...'; btn.disabled = true;
   try {
@@ -1175,8 +1195,16 @@ window.saveInvoice = async function() {
     const dateStr = invDate.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
     const invoice = {
       clientName, phone, shopName, items, expenses: expensesList,
-      fishTotal, expTotal, gross, commissionPct, commissionAmt, total: netTotal,
-      paid: 0, remaining: netTotal, date: invDate.toISOString(), dateStr, invDateISO, createdAt: Date.now()
+      // fishTotal = raw fish sum
+      fishTotal,
+      // expTotal stored for reference / display
+      expTotal,
+      // gross = fish only (expenses not added to gross anymore)
+      gross: fishTotal,
+      commissionPct, commissionAmt,
+      total: netTotal,
+      paid: 0, remaining: netTotal,
+      date: invDate.toISOString(), dateStr, invDateISO, createdAt: Date.now()
     };
     const invRef = push(ref(db, 'invoices'));
     const invNum = generateInvoiceNumber(invRef.key);
@@ -1211,7 +1239,7 @@ window.saveInvoice = async function() {
 };
 
 // ============================================================
-// INVOICE PREVIEW MODAL
+// ★ INVOICE PREVIEW MODAL — expenses shown as deductions ★
 // ============================================================
 function showInvoicePreview(invoice, invoiceId) {
   const itemsHtml = (invoice.items || []).map(item => {
@@ -1228,14 +1256,16 @@ function showInvoicePreview(invoice, invoiceId) {
       <td style="color:var(--gold);font-weight:700">${(item.subtotal||0).toFixed(2)}</td>
     </tr>`;
   }).join('');
+
+  // CHANGED: expenses shown as deductions (red, minus sign)
   const expensesHtml = (invoice.expenses || []).filter(e => e.amount > 0).map(e => `
     <tr>
-      <td colspan="3" style="text-align:right;color:var(--warning)">💸 ${e.desc}</td>
-      <td style="color:var(--warning);font-weight:700">${formatNum(e.amount)}</td>
+      <td colspan="3" style="text-align:right;color:var(--danger)">⬇️ خصم: ${e.desc}</td>
+      <td style="color:var(--danger);font-weight:700">- ${formatNum(e.amount)}</td>
     </tr>
   `).join('');
-  const gross = invoice.gross || invoice.total;
-  const fishTotal = invoice.fishTotal || gross;
+
+  const fishTotal = invoice.fishTotal || invoice.gross || invoice.total;
   const expTotal = invoice.expTotal || 0;
   const hasComm = invoice.commissionPct > 0;
   const hasExpenses = expTotal > 0;
@@ -1270,8 +1300,17 @@ function showInvoicePreview(invoice, invoiceId) {
             <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الأصناف</span>
             <span style="font-weight:700">${formatNum(fishTotal)} ج.م</span>
           </div>
-          ${hasExpenses ? `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--warning)">💸 المصاريف الإضافية</span><span style="color:var(--warning);font-weight:700">${formatNum(expTotal)} ج.م</span></div>` : ''}
-          ${hasComm ? `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--warning)">🤝 عمولة (${invoice.commissionPct}%)</span><span style="color:var(--warning);font-weight:700">- ${formatNum(invoice.commissionAmt||0)} ج.م</span></div><div style="height:1px;background:rgba(255,215,0,0.3);margin:8px 0"></div>` : ''}
+          ${hasExpenses ? `
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--danger)">⬇️ إجمالي المصاريف المخصومة</span>
+            <span style="color:var(--danger);font-weight:700">- ${formatNum(expTotal)} ج.م</span>
+          </div>` : ''}
+          ${hasComm ? `
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--warning)">🤝 عمولة (${invoice.commissionPct}%)</span>
+            <span style="color:var(--warning);font-weight:700">- ${formatNum(invoice.commissionAmt||0)} ج.م</span>
+          </div>
+          <div style="height:1px;background:rgba(255,215,0,0.3);margin:8px 0"></div>` : ''}
           <div style="display:flex;justify-content:space-between">
             <span style="font-size:14px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span>
             <span style="font-size:20px;font-weight:900;color:var(--gold)">${formatNum(invoice.total)} ج.م</span>
@@ -1295,9 +1334,11 @@ function showInvoicePreview(invoice, invoiceId) {
   document.getElementById('modals-container').appendChild(modal);
 }
 
+// ============================================================
+// ★ WHATSAPP TEXT — expenses as deductions ★
+// ============================================================
 function buildInvoiceText(invoice) {
-  const gross = invoice.gross || invoice.total;
-  const fishTotal = invoice.fishTotal || gross;
+  const fishTotal = invoice.fishTotal || invoice.gross || invoice.total;
   const expTotal = invoice.expTotal || 0;
   const hasComm = invoice.commissionPct > 0;
   const hasExp = expTotal > 0;
@@ -1315,17 +1356,21 @@ function buildInvoiceText(invoice) {
     if (unit !== 'kg') text += `    📐 يساوي ${(item.kg||0).toFixed(unit==='wqa'?2:0)} كيلو\n`;
   });
   text += `─────────────────────\n📦 إجمالي الأصناف: *${formatNum(fishTotal)} ج.م*\n`;
+
+  // CHANGED: expenses shown as deductions
   if (hasExp) {
-    text += `\n💸 *المصاريف الإضافية:*\n`;
-    (invoice.expenses||[]).forEach(e => { text += `  • ${e.desc}: ${formatNum(e.amount)} ج.م\n`; });
-    text += `💸 إجمالي المصاريف: *${formatNum(expTotal)} ج.م*\n`;
+    text += `\n⬇️ *المصاريف المخصومة:*\n`;
+    (invoice.expenses||[]).filter(e=>e.amount>0).forEach(e => {
+      text += `  • ${e.desc}: *- ${formatNum(e.amount)} ج.م*\n`;
+    });
+    text += `⬇️ إجمالي المخصومات: *- ${formatNum(expTotal)} ج.م*\n`;
   }
-  text += `━━━━━━━━━━━━━━━━━━\n📦 الإجمالي الكلي: *${formatNum(gross)} ج.م*\n`;
+
   if (hasComm) {
     text += `🤝 عمولة (${invoice.commissionPct}%) : *- ${formatNum(invoice.commissionAmt||0)} ج.م*\n`;
-    text += `─────────────────────\n`;
   }
-  text += `💰 *المتبقى على التاجر : ${formatNum(invoice.total)} ج.م*\n`;
+
+  text += `━━━━━━━━━━━━━━━━━━\n💰 *المتبقى على التاجر : ${formatNum(invoice.total)} ج.م*\n`;
   text += `━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
   return text;
 }
@@ -1336,13 +1381,12 @@ window.closeModal = function() {
 };
 
 // ============================================================
-// PDF EXPORT — INVOICE
+// ★ PDF EXPORT — expenses as deductions ★
 // ============================================================
 function buildInvoicePDFHTML(inv, invoiceId) {
   const invNum = inv.invoiceNumber || generateInvoiceNumber(invoiceId);
   const fishTotal = inv.fishTotal || (inv.gross || inv.total);
   const expTotal = inv.expTotal || 0;
-  const gross = inv.gross || inv.total;
   const hasComm = (inv.commissionPct || 0) > 0;
   const hasExp = expTotal > 0;
   const itemsRows = (inv.items || []).map((item, idx) => {
@@ -1358,13 +1402,16 @@ function buildInvoicePDFHTML(inv, invoiceId) {
       <td style="text-align:center;padding:8px 6px;border-bottom:1px solid #e0e8f0;font-weight:700;color:#1a5276">${formatNum(item.subtotal)} ج.م</td>
     </tr>`;
   }).join('');
+
+  // CHANGED: expenses as deduction rows (red styling)
   const expRows = (inv.expenses || []).filter(e => e.amount > 0).map(e => `
-    <tr style="background:#fff8f0">
-      <td style="text-align:right;padding:8px 10px;border-bottom:1px solid #ffe0b2;color:#e67e00">💸 ${e.desc}</td>
-      <td colspan="2" style="text-align:center;padding:8px 6px;border-bottom:1px solid #ffe0b2;color:#e67e00;font-size:11px">مصروف إضافي</td>
-      <td style="text-align:center;padding:8px 6px;border-bottom:1px solid #ffe0b2;font-weight:700;color:#e67e00">${formatNum(e.amount)} ج.م</td>
+    <tr style="background:#fff0f0">
+      <td style="text-align:right;padding:8px 10px;border-bottom:1px solid #ffc0c0;color:#c0392b">⬇️ خصم: ${e.desc}</td>
+      <td colspan="2" style="text-align:center;padding:8px 6px;border-bottom:1px solid #ffc0c0;color:#c0392b;font-size:11px">مصروف مخصوم</td>
+      <td style="text-align:center;padding:8px 6px;border-bottom:1px solid #ffc0c0;font-weight:700;color:#c0392b">- ${formatNum(e.amount)} ج.م</td>
     </tr>
   `).join('');
+
   return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1395,7 +1442,7 @@ function buildInvoicePDFHTML(inv, invoiceId) {
   .totals-section { margin: 0 20px 16px; }
   .total-row { display: flex; justify-content: space-between; padding: 6px 12px; border-bottom: 1px solid #e8f0fe; }
   .total-label { font-size: 12px; color: #5d6d7e; }
-  .total-val { font-size: 13px; font-weight: 700; color: #1a3a6b; }
+  .total-val { font-size: 13px; font-weight: 700; color: #1a5276; }
   .grand-box { margin: 0 20px 20px; background: #1a3a6b; border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
   .grand-label { font-size: 15px; font-weight: 900; color: #fff; }
   .grand-val { font-size: 26px; font-weight: 900; color: #ffd700; }
@@ -1425,16 +1472,27 @@ function buildInvoicePDFHTML(inv, invoiceId) {
     </div>
   </div>
   <div class="table-section">
-    <div class="table-title">تفاصيل الأصناف</div>
+    <div class="table-title">تفاصيل الأصناف والمصاريف</div>
     <table>
-      <thead><tr><th>الصنف</th><th>الكمية</th><th>السعر / الوحدة</th><th>الإجمالي</th></tr></thead>
+      <thead><tr><th>البيان</th><th>الكمية</th><th>السعر / الوحدة</th><th>الإجمالي</th></tr></thead>
       <tbody>${itemsRows}${expRows}</tbody>
     </table>
   </div>
   <div class="totals-section">
-    <div class="total-row"><span class="total-label">📦 إجمالي الأصناف</span><span class="total-val">${formatNum(fishTotal)} ج.م</span></div>
-    ${hasExp ? `<div class="total-row"><span class="total-label" style="color:#e67e00">💸 إجمالي المصاريف</span><span class="total-val" style="color:#e67e00">${formatNum(expTotal)} ج.م</span></div>` : ''}
-    ${hasComm ? `<div class="total-row"><span class="total-label">📊 الإجمالي قبل العمولة</span><span class="total-val">${formatNum(gross)} ج.م</span></div><div class="total-row"><span class="total-label" style="color:#c0392b">🤝 عمولة (${inv.commissionPct}%)</span><span class="total-val" style="color:#c0392b">- ${formatNum(inv.commissionAmt||0)} ج.م</span></div>` : ''}
+    <div class="total-row">
+      <span class="total-label">📦 إجمالي الأصناف</span>
+      <span class="total-val">${formatNum(fishTotal)} ج.م</span>
+    </div>
+    ${hasExp ? `
+    <div class="total-row">
+      <span class="total-label" style="color:#c0392b">⬇️ إجمالي المصاريف المخصومة</span>
+      <span class="total-val" style="color:#c0392b">- ${formatNum(expTotal)} ج.م</span>
+    </div>` : ''}
+    ${hasComm ? `
+    <div class="total-row">
+      <span class="total-label" style="color:#c0392b">🤝 عمولة (${inv.commissionPct}%)</span>
+      <span class="total-val" style="color:#c0392b">- ${formatNum(inv.commissionAmt||0)} ج.م</span>
+    </div>` : ''}
   </div>
   <div class="grand-box">
     <div class="grand-label">💰 المتبقى على التاجر</div>
@@ -1998,19 +2056,22 @@ window.renderHistory = function() {
   if (search) invoices=invoices.filter(([,i])=>i.clientName?.toLowerCase().includes(search)||i.phone?.includes(search));
   if (invoices.length===0){container.innerHTML='<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير</div></div>';return;}
   container.innerHTML=invoices.map(([id,inv])=>{
-    const gross=inv.gross||inv.total;
+    const fishTotal=inv.fishTotal||inv.gross||inv.total;
+    const expTotal=inv.expTotal||0;
+    const hasDeductions = expTotal > 0 || (inv.commissionPct||0) > 0;
     return `
     <div class="history-item">
       <div class="history-header" onclick="showInvoiceDetail('${id}')" style="cursor:pointer">
         <span class="history-client">👤 ${inv.clientName}</span>
         <div style="text-align:left">
           <div class="history-amount">${formatNum(inv.total)} ج.م</div>
-          ${inv.commissionPct>0?`<div style="font-size:10px;color:var(--warning)">قبل العمولة: ${formatNum(gross)} ج.م</div>`:''}
+          ${hasDeductions?`<div style="font-size:10px;color:var(--danger)">قبل الخصم: ${formatNum(fishTotal)} ج.م</div>`:''}
         </div>
       </div>
       <div class="history-meta" onclick="showInvoiceDetail('${id}')" style="cursor:pointer;margin-bottom:8px">
         📅 ${inv.dateStr} • 📦 ${(inv.items||[]).length} صنف
-        ${inv.commissionPct>0?` • 🤝 عمولة ${inv.commissionPct}%`:''}
+        ${expTotal>0?` • ⬇️ خصم مصاريف`:''}
+        ${(inv.commissionPct||0)>0?` • 🤝 عمولة ${inv.commissionPct}%`:''}
         <br><span style="font-size:10px;color:#546e7a">📋 ${inv.invoiceNumber || generateInvoiceNumber(id)}</span>
       </div>
       <div style="display:flex;gap:6px">
@@ -2030,34 +2091,27 @@ window.showInvoiceDetail = function(id) {
 };
 
 // ============================================================
-// ★★★ PRICES PAGE — AI SMART GROUPING (التعديل الوحيد) ★★★
+// PRICES PAGE — AI SMART GROUPING
 // ============================================================
-
-// 1. تطبيع الأسماء محلياً (توحيد الهمزات، الياء، التاء المربوطة، التشكيل)
 function normalizeFishNameLocal(name) {
   if (!name) return '';
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[أإآاٱ]/g, 'ا')       // توحيد الهمزات وألف المد
-    .replace(/[يىئ]/g, 'ي')         // توحيد الياء
-    .replace(/[ؤ]/g, 'و')           // توحيد الواو
-    .replace(/ة/g, 'ه')             // تاء مربوطة = هاء
-    .replace(/[\u064B-\u065F\u0670]/g, '') // إزالة التشكيل
-    .replace(/ـ/g, '')              // إزالة التطويل
-    .replace(/\s+/g, ' ')
-    .trim();
+  return name.trim().toLowerCase()
+    .replace(/[أإآاٱ]/g, 'ا')
+    .replace(/[يىئ]/g, 'ي')
+    .replace(/[ؤ]/g, 'و')
+    .replace(/ة/g, 'ه')
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/ـ/g, '')
+    .replace(/\s+/g, ' ').trim();
 }
 
-// 2. دمج الأسماء المتشابهة محلياً
 function groupFishNamesLocally(fishData) {
-  const groups = {}; // key مُطبَّع → { displayName, entries }
+  const groups = {};
   Object.entries(fishData).forEach(([originalName, entries]) => {
     const key = normalizeFishNameLocal(originalName);
     if (!groups[key]) {
       groups[key] = { displayName: originalName, entries: [] };
     } else if (originalName.length < groups[key].displayName.length) {
-      // نفضل الاسم الأقصر كاسم عرض
       groups[key].displayName = originalName;
     }
     groups[key].entries.push(...entries);
@@ -2069,7 +2123,6 @@ function groupFishNamesLocally(fishData) {
   return merged;
 }
 
-// 3. استدعاء Claude AI لدمج أعمق للأسماء
 async function getAIFishGrouping(fishNames) {
   if (!fishNames || fishNames.length === 0) return {};
   try {
@@ -2090,12 +2143,8 @@ async function getAIFishGrouping(fishNames) {
 - تجاهل الفراغات الزائدة
 - الأسماء المختلفة فعلاً تبقى منفصلة (بوري ≠ طوبار ≠ بلطي ≠ قراميط)
 
-مثال: ["بلطي", "بلطى", "بِلطي"] → كلها "بلطي"
-مثال: ["قراميط", "قراميط"] → "قراميط"
-
 أرجع JSON فقط بدون أي نص إضافي أو backticks:
-{ "الاسم_الأصلي_1": "الاسم_الموحد", "الاسم_الأصلي_2": "الاسم_الموحد" }
-اختر الاسم الموحد من بين الأسماء الموجودة فقط (لا تخترع أسماء جديدة).`,
+{ "الاسم_الأصلي_1": "الاسم_الموحد", "الاسم_الأصلي_2": "الاسم_الموحد" }`,
         messages: [{
           role: "user",
           content: `هذه قائمة أسماء أصناف الأسماك، ادمج المتشابه منها:\n${JSON.stringify(fishNames)}`
@@ -2107,12 +2156,10 @@ async function getAIFishGrouping(fishNames) {
     const clean = text.replace(/```json|```/g, '').trim();
     return JSON.parse(clean);
   } catch (e) {
-    console.warn('AI grouping failed, using local only:', e.message);
     return {};
   }
 }
 
-// 4. تطبيق AI mapping على البيانات
 function applyAIMapping(fishData, aiMapping) {
   if (!aiMapping || Object.keys(aiMapping).length === 0) return fishData;
   const merged = {};
@@ -2124,7 +2171,6 @@ function applyAIMapping(fishData, aiMapping) {
   return merged;
 }
 
-// 5. دالة عرض الـ tabs والمحتوى
 function renderPricesUI(fishData) {
   const fishes = Object.keys(fishData);
   if (!fishes.length) return;
@@ -2137,67 +2183,42 @@ function renderPricesUI(fishData) {
   showFishPrices(fishes[0], tabBar.children[0]);
 }
 
-// 6. renderPricesPage الجديدة مع AI
 window.renderPricesPage = async function() {
   const invoices = Object.values(window.appState.invoices);
   if (!invoices.length) return;
-
-  // بناء fishData الخام
   const fishData = {};
   invoices.forEach(inv => {
     (inv.items || []).forEach(item => {
       if (!item.fish) return;
       if (!fishData[item.fish]) fishData[item.fish] = [];
       fishData[item.fish].push({
-        client: inv.clientName,
-        price: item.pricePerKg,
-        kg: item.kg,
-        date: inv.dateStr
+        client: inv.clientName, price: item.pricePerKg,
+        kg: item.kg, date: inv.dateStr
       });
     });
   });
-
   const rawNames = Object.keys(fishData);
   if (!rawNames.length) return;
-
-  // ── خطوة 1: دمج محلي فوري ──
   const localMerged = groupFishNamesLocally(fishData);
   renderPricesUI(localMerged);
-
-  // ── خطوة 2: دمج AI في الخلفية ──
   const mergedNames = Object.keys(localMerged);
   if (mergedNames.length > 1) {
-    // أظهر مؤشر AI
     const statusEl = document.getElementById('prices-ai-status');
     if (statusEl) {
-      statusEl.innerHTML = `
-        <div class="ai-grouping-badge">
-          <span class="ai-spin">⚡</span>
-          AI يتحقق من الأسماء المتشابهة...
-        </div>`;
+      statusEl.innerHTML = `<div class="ai-grouping-badge"><span class="ai-spin">⚡</span> AI يتحقق من الأسماء المتشابهة...</div>`;
     }
-
     try {
       const aiMapping = await getAIFishGrouping(mergedNames);
       const aiMerged = applyAIMapping(localMerged, aiMapping);
-
-      // أعد العرض فقط إذا دمج AI شيئاً جديداً
       if (Object.keys(aiMerged).length < mergedNames.length) {
         renderPricesUI(aiMerged);
         if (statusEl) {
-          statusEl.innerHTML = `
-            <div class="ai-grouping-badge" style="background:rgba(0,200,150,0.1);border-color:rgba(0,200,150,0.3);color:var(--emerald)">
-              ✅ AI دمج ${mergedNames.length - Object.keys(aiMerged).length} اسم متشابه
-            </div>`;
+          statusEl.innerHTML = `<div class="ai-grouping-badge" style="background:rgba(0,200,150,0.1);border-color:rgba(0,200,150,0.3);color:var(--emerald)">✅ AI دمج ${mergedNames.length - Object.keys(aiMerged).length} اسم متشابه</div>`;
           setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 4000);
         }
       } else {
-        // لا يوجد تكرار
         if (statusEl) {
-          statusEl.innerHTML = `
-            <div class="ai-grouping-badge" style="background:rgba(0,200,150,0.1);border-color:rgba(0,200,150,0.3);color:var(--emerald)">
-              ✅ لا توجد أسماء مكررة
-            </div>`;
+          statusEl.innerHTML = `<div class="ai-grouping-badge" style="background:rgba(0,200,150,0.1);border-color:rgba(0,200,150,0.3);color:var(--emerald)">✅ لا توجد أسماء مكررة</div>`;
           setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 3000);
         }
       }
@@ -2207,9 +2228,6 @@ window.renderPricesPage = async function() {
   }
 };
 
-// ============================================================
-// SHOW FISH PRICES (unchanged — reads from window._fishPriceData)
-// ============================================================
 window.showFishPrices = function(fishName, btn) {
   document.querySelectorAll('#prices-fish-tabs .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -2286,7 +2304,7 @@ window.sendClientStatementWA = async function(clientKey) {
           const inv = item.data; runBal += inv.total;
           text += `🧾 *[${index+1}] فاتورة بيع*\n📅 ${inv.dateStr}\n─────────────────────\n`;
           text += `   💰 *مبلغ الفاتورة : ${formatNum(inv.total)} ج.م*\n`;
-          if ((inv.expTotal||0) > 0) text += `   💸 مصاريف إضافية: ${formatNum(inv.expTotal)} ج.م\n`;
+          if ((inv.expTotal||0) > 0) text += `   ⬇️ مصاريف مخصومة: ${formatNum(inv.expTotal)} ج.م\n`;
           text += `   📊 الرصيد المتراكم : *${formatNum(runBal)} ج.م*\n─────────────────────\n`;
         } else {
           const pay = item.data; runBal -= pay.amount || 0; if (runBal < 0) runBal = 0;
@@ -2389,7 +2407,7 @@ async function deleteInvoice(invoiceId) {
 window.editInvoiceModal = function(invoiceId) {
   const inv = window.appState.invoices[invoiceId];
   if (!inv) return;
-  const gross = inv.gross || inv.total;
+  const fishTotal = inv.fishTotal || inv.gross || inv.total;
   window._editItems = inv.items || [];
   const currentDate = inv.invDateISO || getTodayISO();
   const modal = document.createElement('div');
@@ -2451,8 +2469,8 @@ window.editInvoiceModal = function(invoiceId) {
       </div>
       <div id="ei-preview" style="background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.25);border-radius:12px;padding:12px;margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-          <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الفاتورة</span>
-          <span id="ei-gross-label" style="font-size:13px;font-weight:700;color:var(--text-primary)">${formatNum(gross)} ج.م</span>
+          <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الأصناف</span>
+          <span id="ei-gross-label" style="font-size:13px;font-weight:700;color:var(--text-primary)">${formatNum(fishTotal)} ج.م</span>
         </div>
         <div id="ei-comm-row" style="display:${inv.commissionPct>0?'flex':'none'};justify-content:space-between;margin-bottom:6px">
           <span style="font-size:12px;color:var(--warning)">🤝 العمولة (<span id="ei-comm-pct">${inv.commissionPct||0}</span>%)</span>
@@ -2480,24 +2498,26 @@ window.closeEditInvoiceModal = function() {
 };
 
 window.calcEditInvoice = function() {
-  let newGross = 0;
+  let newFishGross = 0;
   (window._editItems || []).forEach((item, idx) => {
     const kg = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
     const price = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
-    newGross += kg * price;
+    newFishGross += kg * price;
   });
   const commPct = parseFloat(document.getElementById('ei-commission')?.value) || 0;
-  const commAmt = (newGross * commPct) / 100;
-  const net = newGross - commAmt;
+  const commAmt = (newFishGross * commPct) / 100;
+  // In edit, we keep existing expTotal
+  const expTotal = window._editItems._expTotal || 0;
+  const net = newFishGross - commAmt - expTotal;
   const grossEl = document.getElementById('ei-gross-label');
   const commRow = document.getElementById('ei-comm-row');
   const commPctEl = document.getElementById('ei-comm-pct');
   const commValEl = document.getElementById('ei-comm-val');
   const netEl = document.getElementById('ei-net-label');
-  if (grossEl) grossEl.textContent = formatNum(newGross) + ' ج.م';
+  if (grossEl) grossEl.textContent = formatNum(newFishGross) + ' ج.م';
   if (commPctEl) commPctEl.textContent = commPct;
   if (commValEl) commValEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
-  if (netEl) netEl.textContent = formatNum(net) + ' ج.م';
+  if (netEl) netEl.textContent = formatNum(Math.max(net, 0)) + ' ج.م';
   if (commRow) commRow.style.display = commPct > 0 ? 'flex' : 'none';
 };
 
@@ -2520,14 +2540,16 @@ window.saveEditInvoice = async function(invoiceId) {
     const kgEquiv = qty * uDef.kgFactor;
     return { ...item, unit, unitLabel: uDef.label, qty, kg: kgEquiv, pricePerUnit: priceRaw, pricePerKg: +(priceRaw/uDef.kgFactor).toFixed(4), subtotal: qty * priceRaw };
   });
-  const newGross = newItems.reduce((s, i) => s + i.subtotal, 0);
-  const newCommAmt = (newGross * newCommPct) / 100;
-  const newNet = newGross - newCommAmt;
+  const newFishGross = newItems.reduce((s, i) => s + i.subtotal, 0);
+  const expTotal = inv.expTotal || 0;
+  const newCommAmt = (newFishGross * newCommPct) / 100;
+  const newNet = Math.max(newFishGross - expTotal - newCommAmt, 0);
   const diff = newNet - inv.total;
   try {
     await update(ref(db, 'invoices/' + invoiceId), {
       clientName: newClientName, phone: newPhone, shopName: newShop, items: newItems,
-      gross: newGross, commissionPct: newCommPct, commissionAmt: newCommAmt, total: newNet,
+      fishTotal: newFishGross, gross: newFishGross,
+      commissionPct: newCommPct, commissionAmt: newCommAmt, total: newNet,
       remaining: newNet, invDateISO: newDateISO, dateStr: newDateStr
     });
     const clientRef = ref(db, 'clients/' + inv.phone);
