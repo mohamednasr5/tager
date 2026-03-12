@@ -435,6 +435,108 @@
     border-radius: 12px; margin-bottom: 8px;
   }
 
+  /* ── HOME SEARCH & FILTER BAR ── */
+  .home-filter-bar {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .home-filter-bar .hf-search {
+    flex: 1; min-width: 120px; padding: 9px 12px 9px 36px;
+    border-radius: 10px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06); color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; font-size: 13px; outline: none;
+    transition: all 0.3s;
+  }
+  .home-filter-bar .hf-search:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
+  .home-filter-bar .hf-search::placeholder { color: rgba(255,255,255,0.3); }
+  .hf-search-wrap { position: relative; flex: 1; min-width: 120px; }
+  .hf-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 15px; pointer-events: none; }
+  .hf-date {
+    padding: 9px 10px; border-radius: 10px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06); color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; font-size: 12px; outline: none;
+    color-scheme: dark; cursor: pointer; transition: all 0.3s; width: 135px;
+  }
+  .hf-date:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
+  .hf-clear-btn {
+    padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,71,87,0.3);
+    background: rgba(255,71,87,0.08); color: var(--danger);
+    font-family: 'Cairo', sans-serif; font-size: 11px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  }
+  .hf-clear-btn:active { background: rgba(255,71,87,0.2); }
+
+  .recent-count-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 10px; border-radius: 20px;
+    background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3);
+    color: var(--cyan-glow); font-size: 10px; font-weight: 700;
+    margin-right: 6px;
+  }
+
+  .show-all-btn {
+    width: 100%; padding: 10px; margin-top: 8px;
+    border-radius: 10px; border: 1px dashed rgba(0,180,216,0.3);
+    background: rgba(0,180,216,0.05); color: var(--cyan-glow);
+    font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .show-all-btn:active { background: rgba(0,180,216,0.12); }
+
+  /* ── PRICES DATE FILTER ── */
+  .prices-date-filter {
+    background: rgba(255,215,0,0.06);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 14px; padding: 14px; margin-bottom: 14px;
+  }
+  .prices-date-filter-title {
+    font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .prices-date-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .price-date-inp {
+    flex: 1; min-width: 130px; padding: 9px 10px;
+    border-radius: 10px; border: 1px solid rgba(255,215,0,0.3);
+    background: rgba(255,215,0,0.06); color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; font-size: 12px; outline: none;
+    color-scheme: dark; transition: all 0.2s;
+  }
+  .price-date-inp:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.12); }
+  .price-filter-apply {
+    padding: 9px 16px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, var(--gold), #e69500);
+    color: #1a1200; font-family: 'Cairo', sans-serif;
+    font-size: 12px; font-weight: 900; cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .price-filter-apply:active { transform: scale(0.96); }
+  .price-filter-reset {
+    padding: 9px 14px; border-radius: 10px;
+    border: 1px solid var(--glass-border); background: transparent;
+    color: var(--text-secondary); font-family: 'Cairo', sans-serif;
+    font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+
+  .price-date-summary {
+    margin-top: 10px; padding: 10px 12px; border-radius: 10px;
+    background: rgba(0,180,216,0.07); border: 1px solid rgba(0,180,216,0.2);
+    font-size: 12px; color: var(--cyan-glow); font-weight: 600;
+    display: none;
+  }
+  .price-top-day-card {
+    background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,140,0,0.06));
+    border: 1px solid rgba(255,215,0,0.35); border-radius: 14px;
+    padding: 14px; margin-bottom: 12px;
+  }
+  .price-top-day-fish {
+    font-size: 11px; color: var(--text-secondary); margin-bottom: 3px;
+  }
+  .price-top-day-val {
+    font-size: 26px; font-weight: 900; color: var(--gold); line-height: 1;
+  }
+  .price-top-day-client {
+    font-size: 12px; color: var(--cyan-glow); margin-top: 4px;
+  }
+
   /* ===================== LOGIN SCREEN ===================== */
   #login-screen {
     position: fixed; inset: 0; z-index: 9999;
@@ -592,9 +694,38 @@
         <div class="section-title">🏆 أعلى الأسعار لكل صنف</div>
         <div id="price-leaders-list"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div></div>
       </div>
+
+      <!-- ★ RECENT INVOICES WITH SEARCH + DATE FILTER ★ -->
       <div class="glass-card">
-        <div class="section-title">📅 آخر الفواتير</div>
-        <div id="recent-invoices-list"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div></div>
+        <div class="section-title">
+          📅 آخر الفواتير
+          <span class="recent-count-badge" id="recent-count-badge">0</span>
+        </div>
+
+        <!-- Search + Date Filter Bar -->
+        <div class="home-filter-bar">
+          <div class="hf-search-wrap">
+            <span class="hf-search-icon">🔍</span>
+            <input type="text" class="hf-search" id="recent-search"
+              placeholder="ابحث باسم العميل..."
+              oninput="renderRecentInvoices()">
+          </div>
+          <input type="date" class="hf-date" id="recent-date-filter"
+            title="فلتر بالتاريخ"
+            onchange="renderRecentInvoices()"
+            style="color-scheme:dark">
+          <button class="hf-clear-btn" onclick="clearRecentFilters()" title="مسح الفلتر">✕ مسح</button>
+        </div>
+
+        <div id="recent-invoices-list">
+          <div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div>
+        </div>
+        <!-- Show All Button -->
+        <div id="recent-show-all-wrap" style="display:none">
+          <button class="show-all-btn" id="recent-show-all-btn" onclick="toggleShowAllRecent()">
+            ▼ عرض جميع الفواتير
+          </button>
+        </div>
       </div>
     </div>
 
@@ -639,10 +770,9 @@
         <div id="fish-items-container"></div>
       </div>
 
-      <!-- Extra Expenses — NOW DEDUCTED -->
+      <!-- Extra Expenses -->
       <div class="glass-card">
         <div class="section-title">💸 مصاريف تُخصم من الفاتورة</div>
-        <!-- Hint banner -->
         <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(255,71,87,0.07);border:1px dashed rgba(255,71,87,0.3);margin-bottom:12px;font-size:12px;color:var(--danger)">
           <span>⬇️</span>
           <span>هذه المصاريف تُخصم من إجمالي الفاتورة وتظهر مفصّلة للعميل</span>
@@ -664,7 +794,6 @@
             <span class="summary-label">📦 إجمالي الأصناف</span>
             <span class="summary-value" id="inv-gross-display">0 ج.م</span>
           </div>
-          <!-- CHANGED: expenses now shown as deduction (red minus) -->
           <div id="expenses-summary-row" style="display:none">
             <div class="summary-row">
               <span class="summary-label" style="color:var(--danger)">💸 خصم المصاريف</span>
@@ -716,7 +845,30 @@
     <div class="page" id="page-prices">
       <div class="glass-card">
         <div class="section-title">📈 جدول الأسعار بالصنف</div>
+
         <div id="prices-ai-status"></div>
+
+        <!-- ★ DATE FILTER FOR PRICES ★ -->
+        <div class="prices-date-filter" id="prices-date-filter-box">
+          <div class="prices-date-filter-title">
+            📅 البحث عن أعلى سعر بتاريخ محدد
+          </div>
+          <div class="prices-date-row">
+            <input type="date" class="price-date-inp" id="price-date-from"
+              placeholder="من" style="color-scheme:dark"
+              onchange="applyPriceDateFilter()">
+            <input type="date" class="price-date-inp" id="price-date-to"
+              placeholder="إلى" style="color-scheme:dark"
+              onchange="applyPriceDateFilter()">
+            <button class="price-filter-apply" onclick="applyPriceDateFilter()">🔍 بحث</button>
+            <button class="price-filter-reset" onclick="resetPriceDateFilter()">✕ كل التواريخ</button>
+          </div>
+          <div class="price-date-summary" id="price-date-summary"></div>
+        </div>
+
+        <!-- Top price result for selected date range -->
+        <div id="price-date-result" style="display:none"></div>
+
         <div class="tab-bar" id="prices-fish-tabs"></div>
         <div id="prices-content"><div class="empty-state"><div class="empty-icon">💹</div><div class="empty-text">لا توجد بيانات بعد</div></div></div>
       </div>
@@ -788,6 +940,9 @@ window.appState = {
   expenses: [],
   nextItemId: 0,
   nextExpId: 0,
+  recentShowAll: false,       // ★ NEW: toggle for show all recent
+  priceDateFrom: '',          // ★ NEW: price date filter from
+  priceDateTo: '',            // ★ NEW: price date filter to
 };
 
 // ============================================================
@@ -1097,7 +1252,7 @@ function getTotalExpenses() {
 }
 
 // ============================================================
-// ★ SUMMARY UPDATE — expenses now DEDUCTED (like commission) ★
+// SUMMARY UPDATE
 // ============================================================
 function updateInvoiceSummary() {
   let fishGross = 0, count = 0;
@@ -1105,13 +1260,9 @@ function updateInvoiceSummary() {
     fishGross += item.subtotal || 0;
     if ((item.qty || 0) > 0) count++;
   });
-
-  // CHANGED: expenses are subtracted, not added
   const expTotal = getTotalExpenses();
   const commPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
-  // Commission is calculated on fish gross only (before expense deductions)
   const commAmt = (fishGross * commPct) / 100;
-  // Net = fish total − expenses − commission
   const net = fishGross - expTotal - commAmt;
 
   const grossEl = document.getElementById('inv-gross-display');
@@ -1126,11 +1277,8 @@ function updateInvoiceSummary() {
   if (grossEl) grossEl.textContent = formatNum(fishGross) + ' ج.م';
   if (totalEl) totalEl.textContent = formatNum(Math.max(net, 0)) + ' ج.م';
   if (countEl) countEl.textContent = window.appState.fishItems.length + ' صنف';
-
-  // Show expenses as deduction
   if (expSumRow) expSumRow.style.display = expTotal > 0 ? 'block' : 'none';
   if (expTotalEl) expTotalEl.textContent = '- ' + formatNum(expTotal) + ' ج.م';
-
   if (commRow) commRow.style.display = commPct > 0 && fishGross > 0 ? 'block' : 'none';
   if (commPctLbl) commPctLbl.textContent = commPct;
   if (commAmtEl) commAmtEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
@@ -1151,7 +1299,7 @@ document.getElementById('inv-phone').addEventListener('input', function() {
 });
 
 // ============================================================
-// ★ SAVE INVOICE — expenses DEDUCTED from total ★
+// SAVE INVOICE
 // ============================================================
 window.saveInvoice = async function() {
   const clientName = document.getElementById('inv-client').value.trim();
@@ -1183,7 +1331,6 @@ window.saveInvoice = async function() {
     .map(e => ({ desc: e.desc || 'مصروف', amount: e.amount || 0 }));
   const expTotal = expensesList.reduce((s, e) => s + e.amount, 0);
 
-  // CHANGED: commission on fish only; net = fish - expenses - commission
   const commissionPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
   const commissionAmt = (fishTotal * commissionPct) / 100;
   const netTotal = Math.max(fishTotal - expTotal - commissionAmt, 0);
@@ -1195,12 +1342,7 @@ window.saveInvoice = async function() {
     const dateStr = invDate.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
     const invoice = {
       clientName, phone, shopName, items, expenses: expensesList,
-      // fishTotal = raw fish sum
-      fishTotal,
-      // expTotal stored for reference / display
-      expTotal,
-      // gross = fish only (expenses not added to gross anymore)
-      gross: fishTotal,
+      fishTotal, expTotal, gross: fishTotal,
       commissionPct, commissionAmt,
       total: netTotal,
       paid: 0, remaining: netTotal,
@@ -1239,7 +1381,7 @@ window.saveInvoice = async function() {
 };
 
 // ============================================================
-// ★ INVOICE PREVIEW MODAL — expenses shown as deductions ★
+// INVOICE PREVIEW MODAL
 // ============================================================
 function showInvoicePreview(invoice, invoiceId) {
   const itemsHtml = (invoice.items || []).map(item => {
@@ -1257,7 +1399,6 @@ function showInvoicePreview(invoice, invoiceId) {
     </tr>`;
   }).join('');
 
-  // CHANGED: expenses shown as deductions (red, minus sign)
   const expensesHtml = (invoice.expenses || []).filter(e => e.amount > 0).map(e => `
     <tr>
       <td colspan="3" style="text-align:right;color:var(--danger)">⬇️ خصم: ${e.desc}</td>
@@ -1335,7 +1476,7 @@ function showInvoicePreview(invoice, invoiceId) {
 }
 
 // ============================================================
-// ★ WHATSAPP TEXT — expenses as deductions ★
+// WHATSAPP TEXT
 // ============================================================
 function buildInvoiceText(invoice) {
   const fishTotal = invoice.fishTotal || invoice.gross || invoice.total;
@@ -1356,8 +1497,6 @@ function buildInvoiceText(invoice) {
     if (unit !== 'kg') text += `    📐 يساوي ${(item.kg||0).toFixed(unit==='wqa'?2:0)} كيلو\n`;
   });
   text += `─────────────────────\n📦 إجمالي الأصناف: *${formatNum(fishTotal)} ج.م*\n`;
-
-  // CHANGED: expenses shown as deductions
   if (hasExp) {
     text += `\n⬇️ *المصاريف المخصومة:*\n`;
     (invoice.expenses||[]).filter(e=>e.amount>0).forEach(e => {
@@ -1365,11 +1504,9 @@ function buildInvoiceText(invoice) {
     });
     text += `⬇️ إجمالي المخصومات: *- ${formatNum(expTotal)} ج.م*\n`;
   }
-
   if (hasComm) {
     text += `🤝 عمولة (${invoice.commissionPct}%) : *- ${formatNum(invoice.commissionAmt||0)} ج.م*\n`;
   }
-
   text += `━━━━━━━━━━━━━━━━━━\n💰 *المتبقى على التاجر : ${formatNum(invoice.total)} ج.م*\n`;
   text += `━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
   return text;
@@ -1381,7 +1518,7 @@ window.closeModal = function() {
 };
 
 // ============================================================
-// ★ PDF EXPORT — expenses as deductions ★
+// PDF EXPORT
 // ============================================================
 function buildInvoicePDFHTML(inv, invoiceId) {
   const invNum = inv.invoiceNumber || generateInvoiceNumber(invoiceId);
@@ -1403,7 +1540,6 @@ function buildInvoicePDFHTML(inv, invoiceId) {
     </tr>`;
   }).join('');
 
-  // CHANGED: expenses as deduction rows (red styling)
   const expRows = (inv.expenses || []).filter(e => e.amount > 0).map(e => `
     <tr style="background:#fff0f0">
       <td style="text-align:right;padding:8px 10px;border-bottom:1px solid #ffc0c0;color:#c0392b">⬇️ خصم: ${e.desc}</td>
@@ -1741,24 +1877,115 @@ function renderPriceLeaders() {
   `).join('');
 }
 
-function renderRecentInvoices() {
-  const invoices = Object.entries(window.appState.invoices)
-    .sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0)).slice(0,5);
+// ============================================================
+// ★ RECENT INVOICES — UPDATED WITH SEARCH + DATE FILTER ★
+// ============================================================
+window.renderRecentInvoices = function() {
+  const searchVal = (document.getElementById('recent-search')?.value || '').toLowerCase().trim();
+  const dateFilter = document.getElementById('recent-date-filter')?.value || '';
+
+  // Get all invoices sorted by invDateISO (invoice date) then by createdAt for same-day ordering
+  let invoices = Object.entries(window.appState.invoices).sort((a, b) => {
+    const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
+    const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
+    if (dateB !== dateA) return dateB.localeCompare(dateA); // newest date first
+    return (b[1].createdAt || 0) - (a[1].createdAt || 0);  // then by creation time
+  });
+
+  // Apply search filter
+  if (searchVal) {
+    invoices = invoices.filter(([, i]) =>
+      (i.clientName || '').toLowerCase().includes(searchVal) ||
+      (i.shopName || '').toLowerCase().includes(searchVal) ||
+      (i.phone || '').includes(searchVal)
+    );
+  }
+
+  // Apply date filter (exact day)
+  if (dateFilter) {
+    invoices = invoices.filter(([, i]) => {
+      const d = i.invDateISO || i.date?.split('T')[0] || '';
+      return d === dateFilter;
+    });
+  }
+
+  const totalFound = invoices.length;
+  // Update count badge
+  const badge = document.getElementById('recent-count-badge');
+  if (badge) badge.textContent = totalFound + ' فاتورة';
+
   const container = document.getElementById('recent-invoices-list');
-  if (invoices.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div>';
+  const showAllWrap = document.getElementById('recent-show-all-wrap');
+  const showAllBtn = document.getElementById('recent-show-all-btn');
+
+  if (totalFound === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${dateFilter || searchVal ? '🔍' : '🧾'}</div>
+        <div class="empty-text">${dateFilter || searchVal ? 'لا توجد فواتير بهذه المعايير' : 'لا توجد فواتير بعد'}</div>
+      </div>`;
+    if (showAllWrap) showAllWrap.style.display = 'none';
     return;
   }
-  container.innerHTML = invoices.map(([id,inv]) => `
-    <div class="history-item" onclick="showInvoiceDetail('${id}')">
-      <div class="history-header">
-        <span class="history-client">👤 ${inv.clientName}</span>
-        <span class="history-amount">${formatNum(inv.total)} ج.م</span>
+
+  // Determine how many to show
+  const SHOW_LIMIT = 5;
+  const showAll = window.appState.recentShowAll || (searchVal !== '') || (dateFilter !== '');
+  const displayList = showAll ? invoices : invoices.slice(0, SHOW_LIMIT);
+  const hasMore = totalFound > SHOW_LIMIT && !searchVal && !dateFilter;
+
+  container.innerHTML = displayList.map(([id, inv]) => {
+    const fishTotal = inv.fishTotal || inv.gross || inv.total;
+    const expTotal = inv.expTotal || 0;
+    const hasDeductions = expTotal > 0 || (inv.commissionPct || 0) > 0;
+    const invNum = inv.invoiceNumber || generateInvoiceNumber(id);
+    // Highlight matching text
+    const clientDisplay = searchVal
+      ? (inv.clientName || '').replace(new RegExp(`(${searchVal})`, 'gi'), '<mark style="background:rgba(0,180,216,0.3);border-radius:3px;padding:0 2px">$1</mark>')
+      : (inv.clientName || '');
+    return `
+      <div class="history-item" onclick="showInvoiceDetail('${id}')">
+        <div class="history-header">
+          <span class="history-client">👤 ${clientDisplay}</span>
+          <div style="text-align:left">
+            <div class="history-amount">${formatNum(inv.total)} ج.م</div>
+            ${hasDeductions ? `<div style="font-size:10px;color:var(--danger)">قبل الخصم: ${formatNum(fishTotal)} ج.م</div>` : ''}
+          </div>
+        </div>
+        <div class="history-meta" style="display:flex;justify-content:space-between;align-items:center">
+          <span>📅 ${inv.dateStr} • 📦 ${(inv.items || []).length} صنف</span>
+          <span style="font-size:10px;color:rgba(0,180,216,0.6)">📋 ${invNum}</span>
+        </div>
       </div>
-      <div class="history-meta">📅 ${inv.dateStr} • ${(inv.items||[]).length} صنف</div>
-    </div>
-  `).join('');
-}
+    `;
+  }).join('');
+
+  // Show/hide "show all" button
+  if (showAllWrap) {
+    showAllWrap.style.display = hasMore ? 'block' : 'none';
+  }
+  if (showAllBtn && hasMore) {
+    if (window.appState.recentShowAll) {
+      showAllBtn.textContent = '▲ عرض أقل';
+    } else {
+      showAllBtn.textContent = `▼ عرض جميع الفواتير (${totalFound})`;
+    }
+  }
+};
+
+window.toggleShowAllRecent = function() {
+  window.appState.recentShowAll = !window.appState.recentShowAll;
+  renderRecentInvoices();
+};
+
+window.clearRecentFilters = function() {
+  const searchEl = document.getElementById('recent-search');
+  const dateEl = document.getElementById('recent-date-filter');
+  if (searchEl) searchEl.value = '';
+  if (dateEl) dateEl.value = '';
+  window.appState.recentShowAll = false;
+  renderRecentInvoices();
+};
 
 // ============================================================
 // CLIENTS
@@ -2052,7 +2279,12 @@ window.renderHistory = function() {
   const search=(document.getElementById('history-search')?.value||'').toLowerCase();
   const container=document.getElementById('history-list');
   if (!container) return;
-  let invoices=Object.entries(window.appState.invoices).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  let invoices=Object.entries(window.appState.invoices).sort((a,b) => {
+    const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
+    const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
+    if (dateB !== dateA) return dateB.localeCompare(dateA);
+    return (b[1].createdAt||0) - (a[1].createdAt||0);
+  });
   if (search) invoices=invoices.filter(([,i])=>i.clientName?.toLowerCase().includes(search)||i.phone?.includes(search));
   if (invoices.length===0){container.innerHTML='<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير</div></div>';return;}
   container.innerHTML=invoices.map(([id,inv])=>{
@@ -2091,7 +2323,7 @@ window.showInvoiceDetail = function(id) {
 };
 
 // ============================================================
-// PRICES PAGE — AI SMART GROUPING
+// ★ PRICES PAGE — AI SMART GROUPING + DATE FILTER ★
 // ============================================================
 function normalizeFishNameLocal(name) {
   if (!name) return '';
@@ -2180,6 +2412,12 @@ function renderPricesUI(fishData) {
     `<button class="tab-btn ${i === 0 ? 'active' : ''}" onclick="showFishPrices('${f.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}',this)">${f}</button>`
   ).join('');
   window._fishPriceData = fishData;
+  // Re-apply date filter if active
+  const from = window.appState.priceDateFrom;
+  const to = window.appState.priceDateTo;
+  if (from || to) {
+    applyPriceDateFilter();
+  }
   showFishPrices(fishes[0], tabBar.children[0]);
 }
 
@@ -2193,7 +2431,8 @@ window.renderPricesPage = async function() {
       if (!fishData[item.fish]) fishData[item.fish] = [];
       fishData[item.fish].push({
         client: inv.clientName, price: item.pricePerKg,
-        kg: item.kg, date: inv.dateStr
+        kg: item.kg, date: inv.dateStr,
+        dateISO: inv.invDateISO || inv.date?.split('T')[0] || ''
       });
     });
   });
@@ -2228,20 +2467,173 @@ window.renderPricesPage = async function() {
   }
 };
 
+// ============================================================
+// ★ PRICES DATE FILTER — NEW FUNCTIONS ★
+// ============================================================
+window.applyPriceDateFilter = function() {
+  const from = document.getElementById('price-date-from')?.value || '';
+  const to = document.getElementById('price-date-to')?.value || '';
+  window.appState.priceDateFrom = from;
+  window.appState.priceDateTo = to;
+
+  const summaryEl = document.getElementById('price-date-summary');
+  const resultEl = document.getElementById('price-date-result');
+
+  if (!from && !to) {
+    if (summaryEl) summaryEl.style.display = 'none';
+    if (resultEl) resultEl.style.display = 'none';
+    // Refresh current fish tab without filter
+    const activeFishBtn = document.querySelector('#prices-fish-tabs .tab-btn.active');
+    if (activeFishBtn && window._fishPriceData) {
+      const fishName = activeFishBtn.textContent;
+      showFishPrices(fishName, activeFishBtn);
+    }
+    return;
+  }
+
+  // Show summary text
+  if (summaryEl) {
+    summaryEl.style.display = 'block';
+    let txt = '🔍 عرض الأسعار';
+    if (from && to) {
+      txt += ` من ${isoToArabicDate(from)} إلى ${isoToArabicDate(to)}`;
+    } else if (from) {
+      txt += ` من ${isoToArabicDate(from)} فصاعداً`;
+    } else {
+      txt += ` حتى ${isoToArabicDate(to)}`;
+    }
+    summaryEl.textContent = txt;
+  }
+
+  // Build top prices per fish in date range
+  const fishData = window._fishPriceData || {};
+  const topResults = [];
+  Object.entries(fishData).forEach(([fishName, entries]) => {
+    const filtered = entries.filter(e => {
+      const d = e.dateISO || '';
+      if (!d) return false;
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    });
+    if (!filtered.length) return;
+    const best = filtered.reduce((max, e) => e.price > max.price ? e : max, filtered[0]);
+    topResults.push({ fishName, ...best, count: filtered.length });
+  });
+  topResults.sort((a, b) => b.price - a.price);
+
+  // Show date-range result cards
+  if (resultEl) {
+    if (topResults.length === 0) {
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = `
+        <div style="text-align:center;padding:20px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:12px;margin-bottom:12px">
+          <div style="font-size:32px;margin-bottom:8px">📭</div>
+          <div style="font-size:13px;color:var(--text-secondary)">لا توجد أسعار في هذه الفترة</div>
+        </div>`;
+    } else {
+      const medals = ['🥇','🥈','🥉'];
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = `
+        <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          🏆 أعلى الأسعار في الفترة المحددة
+          <span style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);padding:2px 8px;border-radius:20px;font-size:10px">${topResults.length} صنف</span>
+        </div>
+        ${topResults.map((r, i) => `
+          <div class="price-top-day-card" style="${i===0?'':'border-color:rgba(255,255,255,0.12);background:var(--glass);'}">
+            <div class="price-top-day-fish">${medals[i] || '🐟'} ${r.fishName} • ${r.count} صفقة في الفترة</div>
+            <div class="price-top-day-val">${r.price} <span style="font-size:14px;color:var(--text-secondary)">ج.م/ك</span></div>
+            <div class="price-top-day-client">👤 ${r.client} • 📅 ${r.date}</div>
+          </div>
+        `).join('')}
+        <div style="height:1px;background:var(--glass-border);margin:12px 0 14px"></div>
+      `;
+    }
+  }
+
+  // Also update current fish tab with filtered data
+  const activeFishBtn = document.querySelector('#prices-fish-tabs .tab-btn.active');
+  if (activeFishBtn && window._fishPriceData) {
+    const fishName = activeFishBtn.textContent;
+    showFishPricesFiltered(fishName, activeFishBtn, from, to);
+  }
+};
+
+window.resetPriceDateFilter = function() {
+  const fromEl = document.getElementById('price-date-from');
+  const toEl = document.getElementById('price-date-to');
+  if (fromEl) fromEl.value = '';
+  if (toEl) toEl.value = '';
+  window.appState.priceDateFrom = '';
+  window.appState.priceDateTo = '';
+  const summaryEl = document.getElementById('price-date-summary');
+  if (summaryEl) summaryEl.style.display = 'none';
+  const resultEl = document.getElementById('price-date-result');
+  if (resultEl) resultEl.style.display = 'none';
+  // Refresh tabs
+  const activeFishBtn = document.querySelector('#prices-fish-tabs .tab-btn.active');
+  if (activeFishBtn && window._fishPriceData) {
+    const fishName = activeFishBtn.textContent;
+    showFishPrices(fishName, activeFishBtn);
+  }
+};
+
+// Show fish prices — all dates (original behavior)
 window.showFishPrices = function(fishName, btn) {
   document.querySelectorAll('#prices-fish-tabs .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  const from = window.appState.priceDateFrom;
+  const to = window.appState.priceDateTo;
+  if (from || to) {
+    showFishPricesFiltered(fishName, btn, from, to);
+    return;
+  }
   const data = (window._fishPriceData || {})[fishName] || [];
-  const sorted = [...data].sort((a,b) => b.price - a.price);
+  renderFishPriceTable(data, fishName, false);
+};
+
+// Show fish prices — filtered by date range
+function showFishPricesFiltered(fishName, btn, from, to) {
+  const allData = (window._fishPriceData || {})[fishName] || [];
+  const filtered = allData.filter(e => {
+    const d = e.dateISO || '';
+    if (!d) return true; // include if no date info
+    if (from && d < from) return false;
+    if (to && d > to) return false;
+    return true;
+  });
+  renderFishPriceTable(filtered, fishName, true, from, to);
+}
+
+function renderFishPriceTable(data, fishName, isFiltered, from, to) {
+  const sorted = [...data].sort((a, b) => b.price - a.price);
   const maxPrice = sorted[0]?.price || 0;
+  const filterNote = isFiltered
+    ? `<div style="font-size:11px;color:var(--warning);margin-bottom:8px;display:flex;align-items:center;gap:5px">
+        <span>🔍</span>
+        <span>نتائج مفلترة${from && to ? ` (${isoToArabicDate(from)} ← ${isoToArabicDate(to)})` : from ? ` (من ${isoToArabicDate(from)})` : ` (حتى ${isoToArabicDate(to)})`}</span>
+        ${sorted.length===0?'':`<span style="background:rgba(255,165,0,0.15);border:1px solid rgba(255,165,0,0.3);padding:1px 7px;border-radius:20px;font-size:10px">${sorted.length} نتيجة</span>`}
+       </div>` : '';
+
+  if (sorted.length === 0) {
+    document.getElementById('prices-content').innerHTML = `
+      ${filterNote}
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">لا توجد بيانات ${isFiltered ? 'في هذه الفترة' : ''} لـ ${fishName}</div>
+      </div>`;
+    return;
+  }
+
   document.getElementById('prices-content').innerHTML = `
+    ${filterNote}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:12px;background:var(--glass);border-radius:10px">
-      <span style="color:var(--text-secondary);font-size:12px">أعلى سعر لـ${fishName}</span>
+      <span style="color:var(--text-secondary);font-size:12px">أعلى سعر لـ${fishName}${isFiltered?' (في الفترة)':''}</span>
       <span style="font-size:20px;font-weight:900;color:var(--gold)">${maxPrice} ج.م/ك</span>
     </div>
     <table class="price-table">
       <thead><tr><th>#</th><th>العميل</th><th>الكيلو</th><th>السعر</th><th>التاريخ</th></tr></thead>
-      <tbody>${sorted.map((d,i) => `
+      <tbody>${sorted.map((d, i) => `
         <tr>
           <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'•'}</td>
           <td style="font-weight:600">${d.client}</td>
@@ -2252,7 +2644,7 @@ window.showFishPrices = function(fishName, btn) {
       `).join('')}</tbody>
     </table>
   `;
-};
+}
 
 // ============================================================
 // CLIENT DATALIST
@@ -2506,7 +2898,6 @@ window.calcEditInvoice = function() {
   });
   const commPct = parseFloat(document.getElementById('ei-commission')?.value) || 0;
   const commAmt = (newFishGross * commPct) / 100;
-  // In edit, we keep existing expTotal
   const expTotal = window._editItems._expTotal || 0;
   const net = newFishGross - commAmt - expTotal;
   const grossEl = document.getElementById('ei-gross-label');
