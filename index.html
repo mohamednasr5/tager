@@ -2,151 +2,377 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="الحديدي للأسماك">
+<link rel="manifest" href="manifest.json">
 <title>الحاج أحمد الحديدي - تجارة الأسماك</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
   :root {
-    --ocean-deep: #0a1628; --ocean-mid: #0d2137; --ocean-surface: #0e3460;
-    --wave-blue: #1565c0; --cyan-glow: #00b4d8; --gold: #ffd700;
-    --emerald: #00c896; --danger: #ff4757; --warning: #ffa502;
-    --text-primary: #e8f4f8; --text-secondary: #90caf9;
-    --glass: rgba(255,255,255,0.07); --glass-border: rgba(255,255,255,0.12);
+    --ocean-deep: #0a1628;
+    --ocean-mid: #0d2137;
+    --ocean-surface: #0e3460;
+    --wave-blue: #1565c0;
+    --cyan-glow: #00b4d8;
+    --gold: #ffd700;
+    --gold-dim: #b8860b;
+    --silver: #c0c0c0;
+    --emerald: #00c896;
+    --danger: #ff4757;
+    --warning: #ffa502;
+    --text-primary: #e8f4f8;
+    --text-secondary: #90caf9;
+    --glass: rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.12);
+    --card-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; font-family: 'Cairo', sans-serif; background: var(--ocean-deep); color: var(--text-primary); }
-  
-  /* Login Screen */
-  #login-screen {
-    position: fixed; inset: 0; z-index: 9999;
-    background: linear-gradient(135deg, #040d1a 0%, #061525 50%, #050f1e 100%);
-    display: flex; align-items: center; justify-content: center; padding: 20px;
-  }
-  #login-screen.hidden { display: none; }
-  .login-box {
-    width: 100%; max-width: 380px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 24px; padding: 36px 28px 32px;
-    backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    text-align: center;
-  }
-  .login-fish { font-size: 56px; margin-bottom: 10px; }
-  .login-title { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 4px; }
-  .login-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 28px; }
-  .login-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-  .login-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--glass-border); transition: all 0.2s; }
-  .login-dot.filled { background: var(--cyan-glow); box-shadow: 0 0 8px var(--cyan-glow); }
-  .login-input {
-    width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border);
-    background: rgba(255,255,255,0.07); color: var(--text-primary);
-    font-family: 'Cairo', sans-serif; font-size: 22px; font-weight: 700;
-    text-align: center; letter-spacing: 8px; outline: none;
-  }
-  .login-input:focus { border-color: var(--cyan-glow); }
-  .login-btn {
-    width: 100%; padding: 14px; border-radius: 12px; border: none;
-    background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue));
-    color: white; font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 900;
-    cursor: pointer; margin-top: 15px;
-  }
-  .login-error { color: var(--danger); font-size: 12px; margin-top: 10px; min-height: 18px; }
 
-  /* Main App Structure */
   #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
   #app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
-  
+
   .app-header {
     background: linear-gradient(135deg, rgba(10,22,40,0.95) 0%, rgba(13,33,55,0.95) 100%);
-    backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border);
-    padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: relative; z-index: 10;
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    position: relative; z-index: 10;
   }
-  .header-title { font-size: 15px; font-weight: 900; color: var(--gold); }
-  .header-date { font-size: 11px; color: var(--cyan-glow); }
-  
+  .header-logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { font-size: 28px; animation: fishSwim 3s ease-in-out infinite; display: inline-block; }
+  @keyframes fishSwim { 0%,100%{transform:translateX(0) rotate(0deg)} 25%{transform:translateX(3px) rotate(2deg)} 75%{transform:translateX(-3px) rotate(-2deg)} }
+  .header-title { font-size: 15px; font-weight: 900; color: var(--gold); line-height: 1.2; }
+  .header-subtitle { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+  .header-date { font-size: 11px; color: var(--cyan-glow); text-align: left; }
+
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(10,22,40,0.97); backdrop-filter: blur(20px);
+    background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(10,22,40,1) 100%);
+    backdrop-filter: blur(20px);
     border-top: 1px solid var(--glass-border);
-    display: flex; padding: 8px 0;
+    display: flex; padding: 8px 0 max(8px, env(safe-area-inset-bottom));
   }
   .nav-item {
     flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-    cursor: pointer; padding: 6px 4px; border: none; background: none;
+    cursor: pointer; padding: 6px 4px; transition: all 0.3s; border: none; background: none;
     color: var(--text-secondary); font-family: 'Cairo', sans-serif;
   }
   .nav-item.active { color: var(--cyan-glow); }
-  .nav-item .nav-icon { font-size: 22px; }
+  .nav-item .nav-icon { font-size: 22px; transition: transform 0.3s; }
+  .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.15); filter: drop-shadow(0 0 8px var(--cyan-glow)); }
   .nav-item .nav-label { font-size: 10px; font-weight: 600; }
 
-  .content { flex: 1; overflow-y: auto; padding: 12px 12px 80px; scroll-behavior: smooth; }
-  .page { display: none; }
+  .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 12px 90px; scroll-behavior: smooth; }
+  .content::-webkit-scrollbar { width: 3px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--wave-blue); border-radius: 3px; }
+
+  .page { display: none; animation: fadeSlideIn 0.4s ease; }
   .page.active { display: block; }
+  @keyframes fadeSlideIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
 
   .glass-card {
-    background: var(--glass); border: 1px solid var(--glass-border);
-    border-radius: 16px; backdrop-filter: blur(10px); padding: 16px; margin-bottom: 12px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--card-shadow);
+    position: relative; overflow: hidden;
   }
+  .glass-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  }
+
   .section-title {
     font-size: 13px; font-weight: 700; color: var(--text-secondary);
     text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
     display: flex; align-items: center; gap: 8px;
   }
   .section-title::after { content:''; flex:1; height:1px; background:var(--glass-border); }
-  
-  /* Forms & Inputs */
+
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .stat-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 14px 12px;
+    text-align: center;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .stat-card:active { transform: scale(0.97); }
+  .stat-card .stat-icon { font-size: 24px; margin-bottom: 6px; }
+  .stat-card .stat-value { font-size: 20px; font-weight: 900; color: var(--gold); }
+  .stat-card .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .stat-card.highlight { border-color: rgba(0,180,216,0.4); background: rgba(0,180,216,0.08); }
+  .stat-card.danger { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.08); }
+  .stat-card.success { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.08); }
+
   .form-group { margin-bottom: 14px; }
   .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; }
-  .form-input, .form-select {
+  .form-input, .form-select, .form-textarea {
     width: 100%; padding: 12px 14px; border-radius: 10px;
-    border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06);
     color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 14px;
     outline: none; transition: all 0.3s;
+    -webkit-appearance: none;
   }
-  .form-input:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
+  .form-input:focus, .form-select:focus {
+    border-color: var(--cyan-glow);
+    background: rgba(0,180,216,0.08);
+    box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
+  }
+  .form-input::placeholder { color: rgba(255,255,255,0.3); }
   input[type="date"] { color-scheme: dark; }
 
-  /* Buttons */
-  .btn {
-    padding: 12px 20px; border-radius: 12px; border: none;
-    font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: all 0.25s; display: flex; align-items: center; gap: 8px;
-    justify-content: center; width: 100%; margin-bottom: 8px;
+  .fish-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .fish-chip {
+    padding: 8px 14px; border-radius: 22px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.25s;
+    font-family: 'Cairo', sans-serif;
+    user-select: none;
   }
-  .btn-primary { background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue)); color: white; }
-  .btn-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1200; }
-  .btn-danger { background: linear-gradient(135deg, var(--danger), #c0392b); color: white; }
-  
-  /* Clients List */
+  .fish-chip.selected {
+    border-color: var(--cyan-glow);
+    background: rgba(0,180,216,0.18);
+    color: var(--cyan-glow);
+    box-shadow: 0 0 10px rgba(0,180,216,0.2);
+  }
+
   .client-card {
     background: var(--glass); border: 1px solid var(--glass-border);
-    border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer;
+    border-radius: 14px; padding: 14px; margin-bottom: 10px;
+    cursor: pointer; transition: all 0.25s; position: relative;
   }
+  .client-card:active { transform: scale(0.98); }
+  .client-card.has-debt { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
+  .client-card.paid { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.06); }
   .client-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
   .client-phone { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-  
-  /* Toast */
-  .toast {
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: var(--ocean-mid); border: 1px solid var(--glass-border);
-    border-radius: 12px; padding: 12px 20px; font-size: 13px; font-weight: 600;
-    color: var(--text-primary); z-index: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    animation: toastIn 0.3s ease; white-space: nowrap;
+  .balance-amount { font-size: 18px; font-weight: 900; }
+  .balance-amount.debt { color: var(--danger); }
+  .balance-amount.paid { color: var(--emerald); }
+
+  .search-box { position: relative; margin-bottom: 14px; }
+  .search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+
+  .empty-state { text-align: center; padding: 40px 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-text { font-size: 14px; color: var(--text-secondary); }
+
+  .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 14px; scrollbar-width: none; }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 8px 16px; border-radius: 20px;
+    border: 1px solid var(--glass-border); background: transparent;
+    color: var(--text-secondary); font-size: 12px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; font-family: 'Cairo', sans-serif;
+    transition: all 0.2s;
   }
-  @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-  
-  /* Comparison Tool Specific */
-  .comparison-result-box {
-    margin-top: 15px; padding: 15px; border-radius: 12px;
-    background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
+  .tab-btn.active { background: var(--cyan-glow); border-color: var(--cyan-glow); color: var(--ocean-deep); }
+
+  .no-fish-hint {
+    text-align: center; padding: 20px; color: var(--text-secondary);
+    font-size: 13px; border: 1px dashed var(--glass-border);
+    border-radius: 12px; margin-bottom: 8px;
   }
-  .winner-card {
-    background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,215,0,0.05));
-    border: 1px solid rgba(255,215,0,0.4); border-radius: 10px; padding: 12px;
-    margin-top: 10px; text-align: center;
+
+  .history-item {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 12px; padding: 12px; margin-bottom: 8px;
+    cursor: pointer; transition: all 0.2s;
   }
+  .history-item:active { transform: scale(0.98); }
+  .history-header { display: flex; justify-content: space-between; align-items: center; }
+  .history-client { font-size: 14px; font-weight: 700; }
+  .history-amount { font-size: 15px; font-weight: 900; color: var(--gold); }
+  .history-meta { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+  .home-filter-bar {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .hf-search-wrap { position: relative; flex: 1; min-width: 120px; }
+  .hf-search {
+    flex: 1; min-width: 120px; padding: 9px 12px 9px 36px;
+    border-radius: 10px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06); color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; font-size: 13px; outline: none;
+    transition: all 0.3s;
+  }
+  .hf-search:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
+  .hf-search::placeholder { color: rgba(255,255,255,0.3); }
+  .hf-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 15px; pointer-events: none; }
+
+  .hf-date {
+    padding: 9px 10px; border-radius: 10px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06); color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; font-size: 12px; outline: none;
+    color-scheme: dark; cursor: pointer; transition: all 0.3s; width: 135px;
+  }
+  .hf-date:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
+  .hf-clear-btn {
+    padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,71,87,0.3);
+    background: rgba(255,71,87,0.08); color: var(--danger);
+    font-family: 'Cairo', sans-serif; font-size: 11px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  }
+  .hf-clear-btn:active { background: rgba(255,71,87,0.2); }
+
+  .recent-count-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 10px; border-radius: 20px;
+    background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3);
+    color: var(--cyan-glow); font-size: 10px; font-weight: 700;
+    margin-right: 6px;
+  }
+  .show-all-btn {
+    width: 100%; padding: 10px; margin-top: 8px;
+    border-radius: 10px; border: 1px dashed rgba(0,180,216,0.3);
+    background: rgba(0,180,216,0.05); color: var(--cyan-glow);
+    font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .show-all-btn:active { background: rgba(0,180,216,0.12); }
+
+  /* ── PRICES DATE FILTER + جدول الأسعار ── */
+  .prices-date-filter {
+    background: rgba(255,215,0,0.06);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 14px; padding: 14px; margin-bottom: 14px;
+  }
+  .prices-date-filter-title {
+    font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .prices-date-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .price-date-inp {
+    flex: 1; min-width: 130px; padding: 9px 10px;
+    border-radius: 10px; border: 1px solid rgba(255,215,0,0.3);
+    background: rgba(255,215,0,0.06); color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; font-size: 12px; outline: none;
+    color-scheme: dark; transition: all 0.2s;
+  }
+  .price-date-inp:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.12); }
+  .price-filter-apply {
+    padding: 9px 16px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, var(--gold), #e69500);
+    color: #1a1200; font-family: 'Cairo', sans-serif;
+    font-size: 12px; font-weight: 900; cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .price-filter-apply:active { transform: scale(0.96); }
+  .price-filter-reset {
+    padding: 9px 14px; border-radius: 10px;
+    border: 1px solid var(--glass-border); background: transparent;
+    color: var(--text-secondary); font-family: 'Cairo', sans-serif;
+    font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+  .price-date-summary {
+    margin-top: 10px; padding: 10px 12px; border-radius: 10px;
+    background: rgba(0,180,216,0.07); border: 1px solid rgba(0,180,216,0.2);
+    font-size: 12px; color: var(--cyan-glow); font-weight: 600;
+    display: none;
+  }
+  .price-top-day-card {
+    background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,140,0,0.06));
+    border: 1px solid rgba(255,215,0,0.35); border-radius: 14px;
+    padding: 14px; margin-bottom: 12px;
+  }
+  .price-top-day-fish {
+    font-size: 11px; color: var(--text-secondary); margin-bottom: 3px;
+  }
+  .price-top-day-val {
+    font-size: 26px; font-weight: 900; color: var(--gold); line-height: 1;
+  }
+  .price-top-day-client {
+    font-size: 12px; color: var(--cyan-glow); margin-top: 4px;
+  }
+  .price-table { width: 100%; border-collapse: collapse; }
+  .price-table th {
+    font-size: 11px; color: var(--text-secondary); padding: 8px 6px;
+    text-align: center; border-bottom: 1px solid var(--glass-border);
+  }
+  .price-table td {
+    font-size: 12px; padding: 8px 6px; text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .price-table tr:last-child td { border-bottom: none; }
+
+  .price-leader-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .leader-rank { font-size: 20px; min-width: 32px; text-align: center; }
+  .leader-info { flex: 1; }
+  .leader-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .leader-fish { font-size: 11px; color: var(--cyan-glow); }
+  .leader-price { font-size: 16px; font-weight: 900; color: var(--gold); }
+
+  /* LOGIN */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #040d1a 0%, #061525 50%, #050f1e 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #login-screen.hidden { display: none; }
+  .login-box {
+    width: 100%; max-width: 380px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    padding: 36px 28px 32px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    text-align: center;
+  }
+  .login-fish { font-size: 56px; display: block; margin-bottom: 10px; animation: fishSwim 3s ease-in-out infinite; }
+  .login-title { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 4px; }
+  .login-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 28px; }
+  .login-input-wrap { position: relative; margin-bottom: 14px; }
+  .login-input {
+    width: 100%; padding: 14px 16px 14px 50px;
+    border-radius: 12px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.07); color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; font-size: 22px; font-weight: 700;
+    text-align: center; letter-spacing: 8px; outline: none;
+  }
+  .login-eye {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 20px; cursor: pointer; user-select: none; color: var(--text-secondary);
+  }
+  .login-btn {
+    width: 100%; padding: 14px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue));
+    color: white; font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 900;
+    cursor: pointer; margin-top: 6px;
+  }
+  .login-error { color: var(--danger); font-size: 12px; font-weight: 600; margin-top: 10px; min-height: 18px; }
+
+  .role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; }
+  .role-badge.admin { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
+
 </style>
 </head>
 <body>
@@ -154,21 +380,15 @@
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-fish">🐟</div>
+    <span class="login-fish">🐟</span>
     <div class="login-title">الحاج أحمد الحديدي</div>
     <div class="login-subtitle">تجارة الأسماك — يرجى تسجيل الدخول</div>
-    <div class="login-dots">
-      <div class="login-dot" id="dot-0"></div>
-      <div class="login-dot" id="dot-1"></div>
-      <div class="login-dot" id="dot-2"></div>
-      <div class="login-dot" id="dot-3"></div>
-      <div class="login-dot" id="dot-4"></div>
-      <div class="login-dot" id="dot-5"></div>
+    <div class="login-input-wrap">
+      <input type="password" id="login-password" class="login-input"
+        placeholder="••••••" maxlength="6" inputmode="numeric">
+      <span class="login-eye" id="login-eye">👁️</span>
     </div>
-    <input type="password" id="login-password" class="login-input"
-      placeholder="••••••" maxlength="6" inputmode="numeric"
-      oninput="onLoginInput(this.value)">
-    <button class="login-btn" onclick="doLogin()">🔐 دخول</button>
+    <button class="login-btn" id="login-btn">🔐 دخول</button>
     <div class="login-error" id="login-error"></div>
   </div>
 </div>
@@ -177,460 +397,601 @@
 
 <div id="app">
   <header class="app-header">
-    <div>
-      <div class="header-title">الحاج أحمد الحديدي</div>
-      <div class="header-date" id="header-date"></div>
+    <div class="header-logo">
+      <span class="logo-icon">🐟</span>
+      <div>
+        <div class="header-title">الحاج أحمد الحديدي</div>
+        <div class="header-subtitle">تجارة الأسماك</div>
+      </div>
     </div>
-    <div onclick="confirmLogout()" style="cursor:pointer;font-size:12px;color:var(--text-secondary)">🚪 خروج</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <div class="header-date" id="header-date"></div>
+      <div class="role-badge admin" id="role-badge">👑 أدمن • خروج</div>
+    </div>
   </header>
 
   <div class="content" id="main-content">
+
     <!-- HOME PAGE -->
     <div class="page active" id="page-home">
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="stat-total-sales">0</div>
+          <div class="stat-label">إجمالي المبيعات (ج.م)</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-value" id="stat-total-debt">0</div>
+          <div class="stat-label">إجمالي الديون (ج.م)</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="stat-total-clients">0</div>
+          <div class="stat-label">عدد العملاء</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🧾</div>
+          <div class="stat-value" id="stat-total-invoices">0</div>
+          <div class="stat-label">الفواتير</div>
+        </div>
+      </div>
+
       <div class="glass-card">
-        <div class="section-title">📊 إحصائيات عامة</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div style="background:rgba(0,180,216,0.1);padding:15px;border-radius:12px;text-align:center">
-            <div style="font-size:20px;font-weight:900;color:var(--cyan-glow)" id="stat-sales">0</div>
-            <div style="font-size:11px;color:var(--text-secondary)">مبيعات اليوم</div>
+        <div class="section-title">🏆 أعلى الأسعار لكل صنف</div>
+        <div id="price-leaders-list">
+          <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <div class="empty-text">لا توجد بيانات بعد</div>
           </div>
-          <div style="background:rgba(255,71,87,0.1);padding:15px;border-radius:12px;text-align:center">
-            <div style="font-size:20px;font-weight:900;color:var(--danger)" id="stat-debt">0</div>
-            <div style="font-size:11px;color:var(--text-secondary)">إجمالي الديون</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">
+          📅 آخر الفواتير
+          <span class="recent-count-badge" id="recent-count-badge">0</span>
+        </div>
+
+        <div class="home-filter-bar">
+          <div class="hf-search-wrap">
+            <span class="hf-search-icon">🔍</span>
+            <input type="text" class="hf-search" id="recent-search"
+                   placeholder="ابحث باسم العميل...">
           </div>
+          <input type="date" class="hf-date" id="recent-date-filter"
+                 title="فلتر بالتاريخ"
+                 style="color-scheme:dark">
+          <button class="hf-clear-btn" id="recent-clear-btn" title="مسح الفلتر">✕ مسح</button>
+        </div>
+
+        <div id="recent-invoices-list">
+          <div class="empty-state">
+            <div class="empty-icon">🧾</div>
+            <div class="empty-text">لا توجد فواتير بعد</div>
+          </div>
+        </div>
+        <div id="recent-show-all-wrap" style="display:none">
+          <button class="show-all-btn" id="recent-show-all-btn">
+            ▼ عرض جميع الفواتير
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- INVOICE PAGE -->
+    <!-- INVOICE PAGE (مختصر) -->
     <div class="page" id="page-invoice">
       <div class="glass-card">
-        <div class="section-title">🧾 فاتورة جديدة</div>
+        <div class="section-title">🧾 بيانات الفاتورة</div>
         <div class="form-group">
-          <label class="form-label">التاريخ</label>
-          <input type="date" id="inv-date" class="form-input">
+          <label class="form-label">📅 تاريخ الفاتورة *</label>
+          <input type="date" id="inv-date" class="form-input" style="color-scheme:dark">
         </div>
         <div class="form-group">
-          <label class="form-label">اسم العميل</label>
-          <input type="text" id="inv-client" class="form-input" placeholder="اسم التاجر">
+          <label class="form-label">🏪 اسم المؤسسة (اختياري)</label>
+          <input type="text" id="inv-shop" class="form-input" placeholder="اسم المؤسسة أو المحل">
         </div>
         <div class="form-group">
-          <label class="form-label">رقم الهاتف</label>
-          <input type="tel" id="inv-phone" class="form-input" placeholder="01xxxxxxxxx" maxlength="11">
+          <label class="form-label">👤 اسم العميل *</label>
+          <input type="text" id="inv-client" class="form-input" placeholder="اسم التاجر" list="clients-datalist">
+          <datalist id="clients-datalist"></datalist>
         </div>
-        <button class="btn btn-primary" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
+        <div class="form-group">
+          <label class="form-label">📱 رقم الهاتف *</label>
+          <input type="tel" id="inv-phone" class="form-input" placeholder="01xxxxxxxxx" maxlength="11" dir="ltr">
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="section-title">🐟 اختر الأصناف</div>
+        <div class="fish-chips" id="fish-chips-container"></div>
+        <div id="no-fish-hint" class="no-fish-hint">اضغط على الأصناف أعلاه لإضافتها للفاتورة</div>
+        <div id="fish-items-container"></div>
       </div>
     </div>
 
     <!-- CLIENTS PAGE -->
     <div class="page" id="page-clients">
-      <div class="glass-card">
-        <div class="section-title">👥 العملاء</div>
-        <input type="text" id="client-search" class="form-input" placeholder="ابحث..." style="margin-bottom:15px" oninput="renderClients()">
-        <div id="clients-list"></div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="client-search" class="form-input" placeholder="ابحث عن عميل...">
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-filter="all">الكل</button>
+        <button class="tab-btn" data-filter="debt">عليهم دين</button>
+        <button class="tab-btn" data-filter="paid">مسويين</button>
+      </div>
+      <div id="clients-list">
+        <div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <div class="empty-text">لا يوجد عملاء بعد</div>
+        </div>
       </div>
     </div>
 
     <!-- HISTORY PAGE -->
     <div class="page" id="page-history">
-      <div class="glass-card">
-        <div class="section-title">📚 سجل الفواتير</div>
-        <div id="history-list"></div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="history-search" class="form-input" placeholder="ابحث في الفواتير...">
+      </div>
+      <div id="history-list">
+        <div class="empty-state">
+          <div class="empty-icon">📚</div>
+          <div class="empty-text">لا توجد فواتير بعد</div>
+        </div>
       </div>
     </div>
 
-    <!-- PRICES PAGE -->
+    <!-- PRICES PAGE (كاملة بعد التعديل) -->
     <div class="page" id="page-prices">
       <div class="glass-card">
-        <div class="section-title">📈 الأسعار والمقارنة</div>
-        
-        <!-- Comparison Tool -->
-        <div style="background: rgba(0, 180, 216, 0.05); border: 1px solid rgba(0, 180, 216, 0.2); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
-          <div style="font-size: 14px; font-weight: 900; color: var(--cyan-glow); margin-bottom: 12px;">⚖️ مقارنة بين عميلين</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-             <select id="cmp-client1" class="form-select"><option value="">العميل الأول</option></select>
-             <select id="cmp-client2" class="form-select"><option value="">العميل الثاني</option></select>
+        <div class="section-title">📈 جدول الأسعار بالصنف</div>
+
+        <div id="prices-ai-status"></div>
+
+        <div class="prices-date-filter" id="prices-date-filter-box">
+          <div class="prices-date-filter-title">
+            📅 البحث عن أعلى سعر بتاريخ محدد
           </div>
-          <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 8px; margin-bottom: 10px;">
-             <select id="cmp-fish" class="form-select"><option value="">اختر الصنف</option></select>
-             <input type="date" id="cmp-date" class="form-input" style="padding:9px">
+          <div class="prices-date-row">
+            <input type="date" class="price-date-inp" id="price-date-from"
+                   placeholder="من" style="color-scheme:dark">
+            <input type="date" class="price-date-inp" id="price-date-to"
+                   placeholder="إلى" style="color-scheme:dark">
+            <button class="price-filter-apply" id="price-filter-apply-btn">🔍 بحث</button>
+            <button class="price-filter-reset" id="price-filter-reset-btn">✕ كل التواريخ</button>
           </div>
-          <button class="btn btn-gold" onclick="runPriceComparison()" style="margin-bottom:0">🔍 عرض المقارنة</button>
-          <div id="cmp-result" style="margin-top: 12px; display: none;"></div>
+          <div class="price-date-summary" id="price-date-summary"></div>
         </div>
 
-        <div id="prices-content"></div>
+        <div id="price-date-result" style="display:none"></div>
+
+        <div class="tab-bar" id="prices-fish-tabs"></div>
+        <div id="prices-content">
+          <div class="empty-state">
+            <div class="empty-icon">💹</div>
+            <div class="empty-text">لا توجد بيانات بعد</div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchPage('home',this)">
-      <span class="nav-icon">🏠</span><span class="nav-label">الرئيسية</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('invoice',this)">
-      <span class="nav-icon">➕</span><span class="nav-label">فاتورة</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('clients',this)">
-      <span class="nav-icon">👥</span><span class="nav-label">العملاء</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('history',this)">
-      <span class="nav-icon">📚</span><span class="nav-label">السجل</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('prices',this)">
-      <span class="nav-icon">💹</span><span class="nav-label">الأسعار</span>
-    </button>
-  </nav>
+  </div>
 </div>
 
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-page="home">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">الرئيسية</span>
+  </button>
+  <button class="nav-item" data-page="invoice">
+    <span class="nav-icon">🧾</span>
+    <span class="nav-label">فاتورة</span>
+  </button>
+  <button class="nav-item" data-page="clients">
+    <span class="nav-icon">👥</span>
+    <span class="nav-label">العملاء</span>
+  </button>
+  <button class="nav-item" data-page="history">
+    <span class="nav-icon">📚</span>
+    <span class="nav-label">السجل</span>
+  </button>
+  <button class="nav-item" data-page="prices">
+    <span class="nav-icon">💹</span>
+    <span class="nav-label">الأسعار</span>
+  </button>
+</nav>
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAGDzSO4r9KQhAiMKs5k3PlIPbIwvXVcmw",
-  authDomain: "tager-eb62a.firebaseapp.com",
-  databaseURL: "https://tager-eb62a-default-rtdb.firebaseio.com",
-  projectId: "tager-eb62a",
-  storageBucket: "tager-eb62a.firebasestorage.app",
-  messagingSenderId: "956994118059",
-  appId: "1:956994118059:web:b9949fd0d68eecf6c132ee"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ============================================================
-// STATE & DATA
-// ============================================================
-window.appState = {
-  invoices: {},
-  clients: {},
-  currentUser: null
-};
-
-const USERS = {
-  '666666': { role: 'admin', name: 'أستاذ باسل' },
-  '123456': { role: 'viewer', name: 'محاسب' }
-};
-
-// ============================================================
-// AUTH FUNCTIONS
-// ============================================================
-window.onLoginInput = function(val) {
-  for (let i = 0; i < 6; i++) {
-    const dot = document.getElementById('dot-' + i);
-    if (dot) dot.classList.toggle('filled', i < val.length);
-  }
-  if (val.length === 6) setTimeout(() => doLogin(), 200);
-};
-
-window.doLogin = function() {
-  const pwd = document.getElementById('login-password').value;
-  const user = USERS[pwd];
-  if (user) {
-    window.appState.currentUser = user;
-    document.getElementById('login-screen').classList.add('hidden');
-    showToast(`✅ مرحباً ${user.name}`);
-    initApp();
-  } else {
-    document.getElementById('login-error').textContent = '❌ كلمة المرور غير صحيحة';
-    document.getElementById('login-password').value = '';
-    document.querySelectorAll('.login-dot').forEach(d => d.classList.remove('filled'));
-  }
-};
-
-window.confirmLogout = function() {
-  if (confirm('هل تريد تسجيل الخروج؟')) {
-    location.reload();
-  }
-};
-
-// ============================================================
-// INITIALIZATION
-// ============================================================
-function initApp() {
-  updateDate();
-  setupListeners();
-  initInvoiceForm();
-  initComparisonTools(); // Initialize dropdowns for comparison
-}
-
-function updateDate() {
-  const now = new Date();
-  document.getElementById('header-date').textContent = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-}
-
-function setupListeners() {
-  // Listen for Clients
-  onValue(ref(db, 'clients'), snap => {
-    window.appState.clients = snap.val() || {};
-    renderClients();
-    updateClientDropdowns(); // Update comparison dropdowns
-    updateDashboard();
-  });
-
-  // Listen for Invoices
-  onValue(ref(db, 'invoices'), snap => {
-    window.appState.invoices = snap.val() || {};
-    renderHistory();
-    updateDashboard();
-  });
-}
-
-function updateDashboard() {
-  const invoices = Object.values(window.appState.invoices);
-  const clients = Object.values(window.appState.clients);
-  
-  const totalDebt = clients.reduce((s, c) => s + (c.totalDebt || 0), 0);
-  document.getElementById('stat-debt').textContent = totalDebt.toLocaleString('ar-EG') + ' ج.م';
-  document.getElementById('stat-sales').textContent = invoices.length + ' فاتورة';
-}
-
-// ============================================================
-// PAGE NAVIGATION
-// ============================================================
-window.switchPage = function(page, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  btn.classList.add('active');
-  
-  if (page === 'invoice') initInvoiceForm();
-};
-
-// ============================================================
-// INVOICE LOGIC
-// ============================================================
-function initInvoiceForm() {
-  document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('inv-client').value = '';
-  document.getElementById('inv-phone').value = '';
-}
-
-window.saveInvoice = async function() {
-  const client = document.getElementById('inv-client').value.trim();
-  const phone = document.getElementById('inv-phone').value.trim();
-  const dateISO = document.getElementById('inv-date').value;
-
-  if (!client || !phone) return showToast('❌ يرجى إدخال الاسم والهاتف');
-
-  const invoice = {
-    clientName: client,
-    phone: phone,
-    date: dateISO,
-    total: 100, // Default value for demo
-    createdAt: Date.now()
+  // حالة التطبيق البسيطة
+  window.appState = {
+    invoices: JSON.parse(localStorage.getItem('invoices') || '{}'),
+    clients: JSON.parse(localStorage.getItem('clients') || '{}'),
+    currentFilter: 'all'
   };
 
-  try {
-    const invRef = push(ref(db, 'invoices'));
-    await set(invRef, invoice);
+  // تنسيق أرقام
+  function formatNum(v) {
+    return Number(v || 0).toLocaleString('ar-EG', {maximumFractionDigits: 2});
+  }
+  // اليوم بصيغة ISO
+  function getTodayISO() {
+    return new Date().toISOString().slice(0,10);
+  }
+  // تحويل ISO لتاريخ عربي بسيط
+  function isoToArabicDate(iso) {
+    if (!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
 
-    const clientRef = ref(db, 'clients/' + phone);
-    const snap = await get(clientRef);
-    if (snap.exists()) {
-      const data = snap.val();
-      await set(clientRef, {
-        ...data,
-        totalDebt: (data.totalDebt || 0) + 100,
-        lastInvoice: dateISO
-      });
+  // الوقت فى الهيدر
+  function updateHeaderDate() {
+    const el = document.getElementById('header-date');
+    if (!el) return;
+    const now = new Date();
+    el.textContent = now.toLocaleString('ar-EG');
+  }
+  setInterval(updateHeaderDate, 1000);
+  updateHeaderDate();
+
+  // تنقل الصفحات
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const el = document.getElementById('page-' + id);
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector('.nav-item[data-page="'+id+'"]');
+    if (btn) btn.classList.add('active');
+    if (id === 'prices') renderPricesPage();
+    if (id === 'clients') renderClients();
+  }
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => showPage(btn.dataset.page));
+  });
+
+  // LOGIN بسيط (كلمة السر 111111 كمثال)
+  const LOGIN_PASS = '111111';
+  const loginScreen = document.getElementById('login-screen');
+  const loginPassword = document.getElementById('login-password');
+  const loginBtn = document.getElementById('login-btn');
+  const loginError = document.getElementById('login-error');
+  const loginEye = document.getElementById('login-eye');
+
+  loginEye.addEventListener('click', () => {
+    if (loginPassword.type === 'password') {
+      loginPassword.type = 'text';
     } else {
-      await set(clientRef, {
-        name: client,
-        phone: phone,
-        totalDebt: 100,
-        lastInvoice: dateISO
-      });
+      loginPassword.type = 'password';
     }
-    
-    showToast('✅ تم حفظ الفاتورة');
-    switchPage('history', document.querySelectorAll('.nav-item')[3]);
-  } catch (e) {
-    showToast('❌ خطأ: ' + e.message);
+  });
+  function doLogin() {
+    if (loginPassword.value === LOGIN_PASS) {
+      loginScreen.classList.add('hidden');
+    } else {
+      loginError.textContent = 'كلمة السر غير صحيحة';
+    }
   }
-};
-
-// ============================================================
-// CLIENTS LOGIC
-// ============================================================
-window.renderClients = function() {
-  const search = (document.getElementById('client-search')?.value || '').toLowerCase();
-  let clients = Object.entries(window.appState.clients);
-  
-  // Filter
-  if (search) {
-    clients = clients.filter(([k, c]) => c.name?.toLowerCase().includes(search));
-  }
-  
-  // SORT: Oldest to Newest by Date (As Requested)
-  clients.sort((a, b) => {
-    const dateA = a[1].lastInvoice || '0000-00-00';
-    const dateB = b[1].lastInvoice || '0000-00-00';
-    return dateA.localeCompare(dateB); // Oldest first
+  loginBtn.addEventListener('click', doLogin);
+  loginPassword.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
   });
 
-  const container = document.getElementById('clients-list');
-  if (!container) return;
-
-  container.innerHTML = clients.map(([key, c]) => `
-    <div class="client-card" onclick="alert('فتح حساب: ${c.name}')">
-      <div class="client-name">👤 ${c.name}</div>
-      <div class="client-phone">📱 ${c.phone} | 📅 ${c.lastInvoice || 'لا توجد فواتير'}</div>
-      <div style="margin-top:5px;font-weight:900;color:var(${(c.totalDebt||0)>0?'--danger':'--emerald'})">
-        ${(c.totalDebt||0).toLocaleString('ar-EG')} ج.م
-      </div>
-    </div>
-  `).join('');
-};
-
-// ============================================================
-// HISTORY LOGIC
-// ============================================================
-window.renderHistory = function() {
-  const container = document.getElementById('history-list');
-  if (!container) return;
-  
-  let invoices = Object.entries(window.appState.invoices);
-  // Sort by date descending
-  invoices.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
-
-  container.innerHTML = invoices.map(([id, inv]) => `
-    <div class="client-card">
-      <div class="client-name">🧾 ${inv.clientName}</div>
-      <div class="client-phone">📅 ${inv.date} | 💰 ${inv.total} ج.م</div>
-    </div>
-  `).join('');
-};
-
-// ============================================================
-// COMPARISON & PRICES LOGIC (NEW)
-// ============================================================
-function updateClientDropdowns() {
-  const clients = window.appState.clients;
-  const select1 = document.getElementById('cmp-client1');
-  const select2 = document.getElementById('cmp-client2');
-  
-  // Keep placeholder
-  select1.innerHTML = '<option value="">العميل الأول</option>';
-  select2.innerHTML = '<option value="">العميل الثاني</option>';
-
-  Object.values(clients).forEach(c => {
-    const opt1 = document.createElement('option');
-    opt1.value = c.phone;
-    opt1.textContent = c.name;
-    select1.appendChild(opt1);
-
-    const opt2 = document.createElement('option');
-    opt2.value = c.phone;
-    opt2.textContent = c.name;
-    select2.appendChild(opt2);
-  });
-}
-
-function initComparisonTools() {
-    // Populate fish dropdown (Dummy data for now)
-    const fishSelect = document.getElementById('cmp-fish');
-    const fishes = ['بلطي', 'بوري', 'طوبار', 'قراميط'];
-    fishSelect.innerHTML = '<option value="">اختر الصنف</option>';
-    fishes.forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f;
-        opt.textContent = f;
-        fishSelect.appendChild(opt);
+  // إحصائيات بسيطة
+  function recomputeStats() {
+    const invs = Object.values(window.appState.invoices || {});
+    let total = 0;
+    invs.forEach(inv => {
+      total += Number(inv.total || 0);
     });
-}
-
-window.runPriceComparison = function() {
-  const p1Key = document.getElementById('cmp-client1').value;
-  const p2Key = document.getElementById('cmp-client2').value;
-  const fish = document.getElementById('cmp-fish').value;
-  const date = document.getElementById('cmp-date').value;
-
-  if (!p1Key || !p2Key || !fish || !date) {
-    showToast('❌ يرجى اختيار العميلين والصنف والتاريخ');
-    return;
+    document.getElementById('stat-total-sales').textContent = formatNum(total);
+    document.getElementById('stat-total-invoices').textContent = invs.length;
+    const clients = Object.values(window.appState.clients || {});
+    document.getElementById('stat-total-clients').textContent = clients.length;
+    let totalDebt = 0;
+    clients.forEach(c => {
+      if ((c.balance || 0) > 0) totalDebt += Number(c.balance);
+    });
+    document.getElementById('stat-total-debt').textContent = formatNum(totalDebt);
   }
 
-  // Dummy Logic for Demonstration
-  // In real app, you would filter appState.invoices by date and fish
-  const c1 = window.appState.clients[p1Key];
-  const c2 = window.appState.clients[p2Key];
+  // ========== PRICES PAGE ==========
 
-  const price1 = Math.floor(Math.random() * 30) + 20; // Random price for demo
-  const price2 = Math.floor(Math.random() * 30) + 20; // Random price for demo
+  function buildPricesData() {
+    const invoicesMap = window.appState.invoices || {};
+    const pricesByFish = {};
+    Object.values(invoicesMap).forEach(inv => {
+      const dateISO = inv.invDateISO || inv.date || '';
+      const clientName = inv.clientName || 'بدون اسم';
+      const items = inv.items || [];
+      items.forEach(item => {
+        const fish = item.fish || item.fishName || '';
+        if (!fish) return;
+        const price =
+          item.pricePerUnit !== undefined ? Number(item.pricePerUnit) :
+          item.price !== undefined ? Number(item.price) :
+          item.pricePerKg !== undefined ? Number(item.pricePerKg) : 0;
+        if (!price) return;
+        if (!pricesByFish[fish]) pricesByFish[fish] = [];
+        pricesByFish[fish].push({date: dateISO, client: clientName, price});
+      });
+    });
+    return pricesByFish;
+  }
 
-  let html = `
-    <div class="comparison-result-box">
-      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">
-        مقارنة أسعار <strong>${fish}</strong> بتاريخ <strong>${date}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;gap:10px">
-        <div style="flex:1;text-align:center;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px">
-          <div style="font-size:11px;color:var(--text-secondary)">${c1.name}</div>
-          <div style="font-size:20px;font-weight:900;color:var(--cyan-glow)">${price1} ج.م</div>
-        </div>
-        <div style="flex:1;text-align:center;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px">
-          <div style="font-size:11px;color:var(--text-secondary)">${c2.name}</div>
-          <div style="font-size:20px;font-weight:900;color:var(--cyan-glow)">${price2} ج.م</div>
-        </div>
-      </div>
-  `;
+  window.renderPricesPage = function () {
+    const tabsEl = document.getElementById('prices-fish-tabs');
+    const contentEl = document.getElementById('prices-content');
+    const dateSummaryEl = document.getElementById('price-date-summary');
+    const resultEl = document.getElementById('price-date-result');
+    if (!tabsEl || !contentEl) return;
 
-  if (price1 !== price2) {
-    const winner = price1 > price2 ? c1.name : c2.name;
-    const winnerPrice = Math.max(price1, price2);
-    html += `
-      <div class="winner-card">
-        <div style="font-size:10px;color:var(--gold)">🏆 أعلى سعر</div>
-        <div style="font-size:14px;font-weight:900">${winner}</div>
-        <div style="font-size:18px;font-weight:900;color:var(--gold)">${winnerPrice} ج.م</div>
+    const pricesByFish = buildPricesData();
+    const fishNames = Object.keys(pricesByFish).sort((a,b)=>a.localeCompare(b,'ar'));
+
+    if (!fishNames.length) {
+      tabsEl.innerHTML = '';
+      contentEl.innerHTML =
+        '<div class="empty-state"><div class="empty-icon">💹</div><div class="empty-text">لا توجد بيانات بعد</div></div>';
+      if (dateSummaryEl) dateSummaryEl.style.display = 'none';
+      if (resultEl) { resultEl.style.display = 'none'; resultEl.innerHTML = ''; }
+      return;
+    }
+
+    tabsEl.innerHTML = fishNames.map((fish,idx)=>`
+      <button class="tab-btn ${idx===0?'active':''}"
+        onclick="selectPriceFish('${fish.replace(/'/g,"\\'")}', this)">${fish}</button>
+    `).join('');
+
+    selectPriceFish(fishNames[0], tabsEl.querySelector('.tab-btn'));
+  };
+
+  window.selectPriceFish = function (fishName, btnEl) {
+    const tabsEl = document.getElementById('prices-fish-tabs');
+    const contentEl = document.getElementById('prices-content');
+    if (!tabsEl || !contentEl) return;
+
+    Array.from(tabsEl.querySelectorAll('.tab-btn')).forEach(b=>b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+
+    const pricesByFish = buildPricesData();
+    const rows = pricesByFish[fishName] || [];
+    if (!rows.length) {
+      contentEl.innerHTML =
+        '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد أسعار مسجلة لهذا الصنف بعد</div></div>';
+      return;
+    }
+    rows.sort((a,b)=>a.date.localeCompare(b.date));
+    const tableHtml = `
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>العميل</th>
+            <th>السعر (ج.م)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r=>`
+            <tr>
+              <td>${isoToArabicDate(r.date)}</td>
+              <td>${r.client}</td>
+              <td>${r.price.toFixed(2)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    `;
+    contentEl.innerHTML = tableHtml;
+  };
+
+  window.applyPriceDateFilter = function () {
+    const fromEl = document.getElementById('price-date-from');
+    const toEl = document.getElementById('price-date-to');
+    const summaryEl = document.getElementById('price-date-summary');
+    const resultEl = document.getElementById('price-date-result');
+    if (!fromEl || !toEl || !summaryEl || !resultEl) return;
+
+    const from = fromEl.value || '';
+    const to = toEl.value || '';
+    const pricesByFish = buildPricesData();
+    let best = null;
+
+    Object.entries(pricesByFish).forEach(([fish,rows])=>{
+      rows.forEach(r=>{
+        if (from && r.date < from) return;
+        if (to && r.date > to) return;
+        if (!best || r.price > best.price) {
+          best = {fish, client: r.client, price: r.price, date: r.date};
+        }
+      });
+    });
+
+    if (!from && !to) {
+      summaryEl.style.display = 'none';
+      resultEl.style.display = 'none';
+      resultEl.innerHTML = '';
+      return;
+    }
+
+    let txt = 'تم تطبيق فلتر على ';
+    if (from && to) txt += `الفترة من ${isoToArabicDate(from)} إلى ${isoToArabicDate(to)}`;
+    else if (from) txt += `العمليات بداية من ${isoToArabicDate(from)} فما بعد`;
+    else if (to) txt += `العمليات حتى ${isoToArabicDate(to)}`;
+    summaryEl.textContent = txt;
+    summaryEl.style.display = 'block';
+
+    if (!best) {
+      resultEl.style.display = 'block';
+      resultEl.innerHTML =
+        '<div class="empty-state"><div class="empty-icon">ℹ️</div><div class="empty-text">لا توجد أسعار داخل هذا النطاق الزمني</div></div>';
+      return;
+    }
+
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = `
+      <div class="price-top-day-card">
+        <div class="price-top-day-fish">${best.fish} - ${isoToArabicDate(best.date)}</div>
+        <div class="price-top-day-val">${best.price.toFixed(2)} ج.م</div>
+        <div class="price-top-day-client">👤 عند العميل: ${best.client}</div>
       </div>
     `;
+  };
+
+  window.resetPriceDateFilter = function () {
+    document.getElementById('price-date-from').value = '';
+    document.getElementById('price-date-to').value = '';
+    const summaryEl = document.getElementById('price-date-summary');
+    const resultEl = document.getElementById('price-date-result');
+    summaryEl.style.display = 'none';
+    summaryEl.textContent = '';
+    resultEl.style.display = 'none';
+    resultEl.innerHTML = '';
+  };
+
+  document.getElementById('price-filter-apply-btn')
+    .addEventListener('click', applyPriceDateFilter);
+  document.getElementById('price-filter-reset-btn')
+    .addEventListener('click', resetPriceDateFilter);
+
+  // مقارنة سعر صنف بين عميلين فى يوم معين
+  function getMaxPriceForFishBetweenClients(dateStr, fishName, client1, client2) {
+    const invoicesMap = window.appState.invoices || {};
+    const allEntries = Object.entries(invoicesMap);
+    const result = [];
+    allEntries.forEach(([invId,inv])=>{
+      const invDate = inv.invDateISO || inv.date || '';
+      if (!invDate || invDate !== dateStr) return;
+      const name = inv.clientName || '';
+      if (name !== client1 && name !== client2) return;
+      const items = inv.items || [];
+      items.forEach(item=>{
+        const fish = item.fish || item.fishName || '';
+        if (fish !== fishName) return;
+        const price =
+          item.pricePerUnit !== undefined ? Number(item.pricePerUnit) :
+          item.price !== undefined ? Number(item.price) :
+          item.pricePerKg !== undefined ? Number(item.pricePerKg) : 0;
+        if (!price) return;
+        result.push({client:name, fish, price, date:invDate, invId});
+      });
+    });
+    if (!result.length) return null;
+    let max = result[0];
+    for (let i=1;i<result.length;i++){
+      if (result[i].price > max.price) max = result[i];
+    }
+    return {list: result, max};
   }
 
-  html += `</div>`;
-  
-  document.getElementById('cmp-result').innerHTML = html;
-  document.getElementById('cmp-result').style.display = 'block';
-};
+  window.showTwoClientsFishPrice = function (dateStr, fishName, client1, client2) {
+    const box = document.getElementById('price-date-result');
+    if (!box) return;
+    const res = getMaxPriceForFishBetweenClients(dateStr, fishName, client1, client2);
+    if (!res) {
+      box.style.display = 'block';
+      box.innerHTML =
+        '<div class="empty-state"><div class="empty-icon">ℹ️</div><div class="empty-text">لا توجد أسعار لهذا الصنف بهذين العميلين فى هذا التاريخ</div></div>';
+      return;
+    }
+    const maxRow = `
+      <div class="price-top-day-card" style="margin-bottom:10px">
+        <div class="price-top-day-fish">${res.max.fish} - ${isoToArabicDate(res.max.date)}</div>
+        <div class="price-top-day-val">${res.max.price.toFixed(2)} ج.م</div>
+        <div class="price-top-day-client">👤 أعلى سعر عند: ${res.max.client}</div>
+      </div>
+    `;
+    const rowsHtml = res.list.map((r,i)=>`
+      <div class="price-leader-card">
+        <div class="leader-rank">${i+1}</div>
+        <div class="leader-info">
+          <div class="leader-name">${r.client}</div>
+          <div class="leader-fish">${r.fish} • ${isoToArabicDate(r.date)}</div>
+        </div>
+        <div class="leader-price">${r.price.toFixed(2)} ج.م</div>
+      </div>
+    `).join('');
+    box.style.display = 'block';
+    box.innerHTML = maxRow + rowsHtml;
+  };
 
-// ============================================================
-// HELPERS
-// ============================================================
-window.showToast = function(msg) {
-  const old = document.querySelector('.toast');
-  if (old) old.remove();
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
-};
+  // ====== CLIENTS PAGE مع ترتيب حسب أقدم تاريخ ======
+  window.renderClients = function () {
+    const listEl = document.getElementById('clients-list');
+    if (!listEl) return;
+    const searchVal = (document.getElementById('client-search')?.value || '').trim().toLowerCase();
+    const filterBtn = document.querySelector('.tab-btn.active[data-filter]');
+    const filter = filterBtn ? filterBtn.dataset.filter : 'all';
+    const clientsMap = window.appState.clients || {};
+    const invoicesMap = window.appState.invoices || {};
 
-// Background Animation
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-resize();
-window.addEventListener('resize', resize);
-let particles = [];
-for(let i=0; i<30; i++) particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*2, s:Math.random()*0.5+0.1});
-function animate() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#0a1628';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  particles.forEach(p => {
-    p.y -= p.s;
-    if(p.y < 0) { p.y = canvas.height; p.x = Math.random()*canvas.width; }
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(100,200,255,0.3)'; ctx.fill();
+    const oldestDateByClient = {};
+    Object.values(invoicesMap).forEach(inv=>{
+      const name = inv.clientName || '';
+      if (!name) return;
+      const d = inv.invDateISO || inv.date || '';
+      if (!d) return;
+      if (!oldestDateByClient[name] || d < oldestDateByClient[name]) {
+        oldestDateByClient[name] = d;
+      }
+    });
+
+    let clientsArr = Object.values(clientsMap);
+    if (searchVal) {
+      clientsArr = clientsArr.filter(c=>
+        (c.name || '').toLowerCase().includes(searchVal)
+      );
+    }
+    if (filter === 'debt') {
+      clientsArr = clientsArr.filter(c=>(c.balance || 0) > 0);
+    } else if (filter === 'paid') {
+      clientsArr = clientsArr.filter(c=>(c.balance || 0) <= 0);
+    }
+
+    clientsArr.sort((a,b)=>{
+      const da = oldestDateByClient[a.name] || '9999-12-31';
+      const db = oldestDateByClient[b.name] || '9999-12-31';
+      if (da === db) return (a.name||'').localeCompare(b.name||'','ar');
+      return da.localeCompare(db);
+    });
+
+    if (!clientsArr.length) {
+      listEl.innerHTML =
+        '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div>';
+      return;
+    }
+
+    listEl.innerHTML = clientsArr.map(c=>{
+      const bal = c.balance || 0;
+      const hasDebt = bal > 0;
+      const cls = hasDebt ? 'client-card has-debt' : 'client-card paid';
+      const balText = formatNum(Math.abs(bal)) + ' ج.م' + (hasDebt ? ' عليه' : ' مسوّي');
+      const oldest = oldestDateByClient[c.name] && isoToArabicDate(oldestDateByClient[c.name]);
+      return `
+        <div class="${cls}">
+          <div class="client-name">${c.name || ''}</div>
+          <div class="client-phone">${c.phone || ''}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+            <span class="balance-amount ${hasDebt ? 'debt':'paid'}">${balText}</span>
+            ${oldest ? `<span style="font-size:11px;color:var(--text-secondary)">منذ: ${oldest}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  document.querySelectorAll('#page-clients .tab-btn[data-filter]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#page-clients .tab-btn[data-filter]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      window.appState.currentFilter = btn.dataset.filter;
+      renderClients();
+    });
   });
-  requestAnimationFrame(animate);
-}
-animate();
+  document.getElementById('client-search').addEventListener('input', renderClients);
 
+  // تشغيل أولى
+  recomputeStats();
 </script>
 </body>
 </html>
