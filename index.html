@@ -837,17 +837,23 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
           <div>
             <label style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; display:block;">العميل الأول</label>
-            <input type="text" id="comp-client1" class="form-input" placeholder="اسم العميل..." list="clients-datalist">
+            <select id="comp-client1" class="form-select">
+              <option value="">اختر العميل...</option>
+            </select>
           </div>
           <div>
             <label style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; display:block;">العميل الثاني</label>
-            <input type="text" id="comp-client2" class="form-input" placeholder="اسم العميل..." list="clients-datalist">
+            <select id="comp-client2" class="form-select">
+              <option value="">اختر العميل...</option>
+            </select>
           </div>
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
           <div>
             <label style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; display:block;">الصنف</label>
-            <input type="text" id="comp-fish" class="form-input" placeholder="مثل: بلطي...">
+            <select id="comp-fish" class="form-select">
+              <option value="">اختر الصنف...</option>
+            </select>
           </div>
           <div>
             <label style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; display:block;">التاريخ</label>
@@ -953,9 +959,9 @@ window.appState = {
   expenses: [],
   nextItemId: 0,
   nextExpId: 0,
-  recentShowAll: false,       // ★ NEW: toggle for show all recent
-  priceDateFrom: '',          // ★ NEW: price date filter from
-  priceDateTo: '',            // ★ NEW: price date filter to
+  recentShowAll: false,
+  priceDateFrom: '',
+  priceDateTo: '',
 };
 
 // ============================================================
@@ -1866,12 +1872,20 @@ function renderPriceLeaders() {
   const priceMap = {};
   invoices.forEach(inv => {
     (inv.items||[]).forEach(item => {
+      const invDateISO = inv.invDateISO || inv.date?.split('T')[0] || '0000-00-00';
       if (!priceMap[item.fish] || item.pricePerKg > priceMap[item.fish].maxPrice) {
-        priceMap[item.fish] = { maxPrice: item.pricePerKg, clientName: inv.clientName };
+        priceMap[item.fish] = { maxPrice: item.pricePerKg, clientName: inv.clientName, dateISO: invDateISO, dateStr: inv.dateStr };
+      } else if (item.pricePerKg === priceMap[item.fish].maxPrice) {
+        if (invDateISO > priceMap[item.fish].dateISO) {
+          priceMap[item.fish] = { maxPrice: item.pricePerKg, clientName: inv.clientName, dateISO: invDateISO, dateStr: inv.dateStr };
+        }
       }
     });
   });
-  const entries = Object.entries(priceMap).sort((a,b) => b[1].maxPrice - a[1].maxPrice);
+  
+  // ترتيب حسب التاريخ (الأحدث أولاً)
+  const entries = Object.entries(priceMap).sort((a,b) => b[1].dateISO.localeCompare(a[1].dateISO));
+  
   const container = document.getElementById('price-leaders-list');
   if (entries.length === 0) {
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div>';
@@ -1880,10 +1894,10 @@ function renderPriceLeaders() {
   const medals = ['🥇','🥈','🥉'];
   container.innerHTML = entries.slice(0,6).map((e,i) => `
     <div class="price-leader-card">
-      <div class="leader-rank">${medals[i]||'🐟'}</div>
+      <div class="leader-rank">${i < 3 ? medals[i] : '🐟'}</div>
       <div class="leader-info">
         <div class="leader-name">${e[0]}</div>
-        <div class="leader-fish">أعلى سعر: ${e[1].clientName}</div>
+        <div class="leader-fish">👤 ${e[1].clientName} • 📅 ${e[1].dateStr}</div>
       </div>
       <div class="leader-price">${e[1].maxPrice} ج.م/ك</div>
     </div>
@@ -2421,6 +2435,15 @@ function applyAIMapping(fishData, aiMapping) {
 
 function renderPricesUI(fishData) {
   const fishes = Object.keys(fishData);
+  
+  // Update the fish dropdown in Compare section dynamically based on real data
+  const compFish = document.getElementById('comp-fish');
+  if (compFish) {
+    const currentVal = compFish.value;
+    compFish.innerHTML = '<option value="">اختر الصنف...</option>' + fishes.map(f => `<option value="${f}">${f}</option>`).join('');
+    compFish.value = currentVal;
+  }
+
   if (!fishes.length) return;
   const tabBar = document.getElementById('prices-fish-tabs');
   if (!tabBar) return;
@@ -2536,7 +2559,9 @@ window.applyPriceDateFilter = function() {
     const best = filtered.reduce((max, e) => e.price > max.price ? e : max, filtered[0]);
     topResults.push({ fishName, ...best, count: filtered.length });
   });
-  topResults.sort((a, b) => b.price - a.price);
+  
+  // ترتيب حسب التاريخ الأحدث أولاً
+  topResults.sort((a, b) => b.dateISO.localeCompare(a.dateISO));
 
   // Show date-range result cards
   if (resultEl) {
@@ -2557,7 +2582,7 @@ window.applyPriceDateFilter = function() {
         </div>
         ${topResults.map((r, i) => `
           <div class="price-top-day-card" style="${i===0?'':'border-color:rgba(255,255,255,0.12);background:var(--glass);'}">
-            <div class="price-top-day-fish">${medals[i] || '🐟'} ${r.fishName} • ${r.count} صفقة في الفترة</div>
+            <div class="price-top-day-fish">${i < 3 ? medals[i] : '🐟'} ${r.fishName} • ${r.count} صفقة في الفترة</div>
             <div class="price-top-day-val">${r.price} <span style="font-size:14px;color:var(--text-secondary)">ج.م/ك</span></div>
             <div class="price-top-day-client">👤 ${r.client} • 📅 ${r.date}</div>
           </div>
@@ -2622,8 +2647,14 @@ function showFishPricesFiltered(fishName, btn, from, to) {
 }
 
 function renderFishPriceTable(data, fishName, isFiltered, from, to) {
-  const sorted = [...data].sort((a, b) => b.price - a.price);
-  const maxPrice = sorted[0]?.price || 0;
+  // ترتيب القائمة حسب التاريخ (الأحدث أولاً)، ثم حسب السعر
+  const sorted = [...data].sort((a, b) => {
+    const dComp = (b.dateISO || '').localeCompare(a.dateISO || '');
+    if (dComp !== 0) return dComp;
+    return b.price - a.price;
+  });
+
+  const maxPrice = data.length > 0 ? Math.max(...data.map(d => d.price)) : 0;
   const filterNote = isFiltered
     ? `<div style="font-size:11px;color:var(--warning);margin-bottom:8px;display:flex;align-items:center;gap:5px">
         <span>🔍</span>
@@ -2651,10 +2682,10 @@ function renderFishPriceTable(data, fishName, isFiltered, from, to) {
       <thead><tr><th>#</th><th>العميل</th><th>الكيلو</th><th>السعر</th><th>التاريخ</th></tr></thead>
       <tbody>${sorted.map((d, i) => `
         <tr>
-          <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'•'}</td>
+          <td>${d.price === maxPrice ? '🥇' : '•'}</td>
           <td style="font-weight:600">${d.client}</td>
           <td>${d.kg}</td>
-          <td style="color:${i===0?'var(--gold)':'var(--text-primary)'};font-weight:${i===0?900:400}">${d.price} ج.م</td>
+          <td style="color:${d.price === maxPrice ? 'var(--gold)' : 'var(--text-primary)'};font-weight:${d.price === maxPrice ? 900 : 400}">${d.price} ج.م</td>
           <td style="font-size:10px;color:var(--text-secondary)">${d.date}</td>
         </tr>
       `).join('')}</tbody>
@@ -2667,8 +2698,20 @@ function renderFishPriceTable(data, fishName, isFiltered, from, to) {
 // ============================================================
 function updateClientDatalist() {
   const dl = document.getElementById('clients-datalist');
-  if (!dl) return;
-  dl.innerHTML = Object.values(window.appState.clients).map(c => `<option value="${c.name}" data-phone="${c.phone}">`).join('');
+  if (dl) {
+    dl.innerHTML = Object.values(window.appState.clients).map(c => `<option value="${c.name}" data-phone="${c.phone}">`).join('');
+  }
+  
+  // تحديث قوائم المقارنة
+  const c1 = document.getElementById('comp-client1');
+  const c2 = document.getElementById('comp-client2');
+  if (c1 && c2) {
+    const val1 = c1.value;
+    const val2 = c2.value;
+    const opts = '<option value="">اختر العميل...</option>' + Object.values(window.appState.clients).map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    c1.innerHTML = opts; c1.value = val1;
+    c2.innerHTML = opts; c2.value = val2;
+  }
 }
 document.getElementById('inv-client').addEventListener('input', function() {
   const match = Object.values(window.appState.clients).find(c => c.name === this.value);
@@ -3301,11 +3344,11 @@ window.compareClients = function() {
     const invDate = inv.invDateISO || (inv.date && inv.date.split('T')[0]);
     if (invDate === date) {
       if (inv.clientName === c1) {
-        const item = (inv.items || []).find(i => i.fish.includes(fish));
+        const item = (inv.items || []).find(i => i.fish === fish || i.fish.includes(fish));
         if (item) price1 = Math.max(price1, item.pricePerKg);
       }
       if (inv.clientName === c2) {
-        const item = (inv.items || []).find(i => i.fish.includes(fish));
+        const item = (inv.items || []).find(i => i.fish === fish || i.fish.includes(fish));
         if (item) price2 = Math.max(price2, item.pricePerKg);
       }
     }
