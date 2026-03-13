@@ -620,7 +620,6 @@
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-box">
     <span class="login-fish">🐟</span>
@@ -665,7 +664,6 @@
 
   <div class="content" id="main-content">
 
-    <!-- HOME PAGE -->
     <div class="page active" id="page-home">
       <div id="install-banner-container"></div>
       <div class="stats-grid">
@@ -695,14 +693,12 @@
         <div id="price-leaders-list"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div></div>
       </div>
 
-      <!-- ★ RECENT INVOICES WITH SEARCH + DATE FILTER ★ -->
       <div class="glass-card">
         <div class="section-title">
           📅 آخر الفواتير
           <span class="recent-count-badge" id="recent-count-badge">0</span>
         </div>
 
-        <!-- Search + Date Filter Bar -->
         <div class="home-filter-bar">
           <div class="hf-search-wrap">
             <span class="hf-search-icon">🔍</span>
@@ -720,7 +716,6 @@
         <div id="recent-invoices-list">
           <div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div>
         </div>
-        <!-- Show All Button -->
         <div id="recent-show-all-wrap" style="display:none">
           <button class="show-all-btn" id="recent-show-all-btn" onclick="toggleShowAllRecent()">
             ▼ عرض جميع الفواتير
@@ -729,7 +724,6 @@
       </div>
     </div>
 
-    <!-- INVOICE PAGE -->
     <div class="page" id="page-invoice">
       <div class="glass-card">
         <div class="section-title">🧾 بيانات الفاتورة</div>
@@ -762,7 +756,6 @@
         </div>
       </div>
 
-      <!-- Fish Selection -->
       <div class="glass-card">
         <div class="section-title">🐟 اختر الأصناف</div>
         <div class="fish-chips" id="fish-chips-container"></div>
@@ -770,7 +763,6 @@
         <div id="fish-items-container"></div>
       </div>
 
-      <!-- Extra Expenses -->
       <div class="glass-card">
         <div class="section-title">💸 مصاريف تُخصم من الفاتورة</div>
         <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(255,71,87,0.07);border:1px dashed rgba(255,71,87,0.3);margin-bottom:12px;font-size:12px;color:var(--danger)">
@@ -783,7 +775,6 @@
         </button>
       </div>
 
-      <!-- Summary -->
       <div id="invoice-summary" style="display:none">
         <div class="invoice-summary-card">
           <div class="summary-row">
@@ -818,11 +809,17 @@
       </div>
     </div>
 
-    <!-- CLIENTS PAGE -->
     <div class="page" id="page-clients">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="client-search" class="form-input" placeholder="ابحث عن عميل..." oninput="renderClients()" style="padding-right:40px">
+      <div class="search-box" style="display:flex;gap:8px;">
+        <div style="position:relative;flex:1;">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="client-search" class="form-input" placeholder="ابحث عن عميل..." oninput="renderClients()" style="padding-right:40px">
+        </div>
+        <select id="client-sort" class="form-select" style="width:auto;padding:8px 12px;font-size:12px;font-weight:600;" onchange="renderClients()">
+          <option value="debt">الأعلى ديناً</option>
+          <option value="newest">الأحدث تعاملاً</option>
+          <option value="oldest">الأقدم تعاملاً</option>
+        </select>
       </div>
       <div class="tab-bar">
         <button class="tab-btn active" onclick="filterClients('all',this)">الكل</button>
@@ -832,7 +829,6 @@
       <div id="clients-list"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div></div>
     </div>
 
-    <!-- HISTORY PAGE -->
     <div class="page" id="page-history">
       <div class="search-box">
         <span class="search-icon">🔍</span>
@@ -841,14 +837,39 @@
       <div id="history-list"><div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير بعد</div></div></div>
     </div>
 
-    <!-- PRICES PAGE -->
     <div class="page" id="page-prices">
+      
+      <div class="glass-card" style="margin-bottom:14px;background:rgba(0,180,216,0.05);border-color:rgba(0,180,216,0.3)">
+        <div class="section-title" style="color:var(--cyan-glow)">⚖️ مقارنة أسعار عميلين</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <label class="form-label" style="font-size:10px">📅 التاريخ</label>
+            <input type="date" id="comp-date" class="form-input" style="color-scheme:dark;padding:8px">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px">🐟 الصنف</label>
+            <select id="comp-fish" class="form-select" style="padding:8px"></select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <label class="form-label" style="font-size:10px">👤 العميل الأول</label>
+            <select id="comp-client1" class="form-select" style="padding:8px"></select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px">👤 العميل الثاني</label>
+            <select id="comp-client2" class="form-select" style="padding:8px"></select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="padding:8px;font-size:12px;margin-bottom:0" onclick="comparePrices()">🔍 قارن الآن</button>
+        <div id="comp-result" style="margin-top:10px;display:none;"></div>
+      </div>
+
       <div class="glass-card">
         <div class="section-title">📈 جدول الأسعار بالصنف</div>
 
         <div id="prices-ai-status"></div>
 
-        <!-- ★ DATE FILTER FOR PRICES ★ -->
         <div class="prices-date-filter" id="prices-date-filter-box">
           <div class="prices-date-filter-title">
             📅 البحث عن أعلى سعر بتاريخ محدد
@@ -866,7 +887,6 @@
           <div class="price-date-summary" id="price-date-summary"></div>
         </div>
 
-        <!-- Top price result for selected date range -->
         <div id="price-date-result" style="display:none"></div>
 
         <div class="tab-bar" id="prices-fish-tabs"></div>
@@ -1999,15 +2019,30 @@ window.filterClients = function(filter, btn) {
 
 window.renderClients = function() {
   const search = (document.getElementById('client-search')?.value||'').toLowerCase();
+  const sortMode = document.getElementById('client-sort')?.value || 'debt';
   const filter = window.appState.currentFilter;
   const container = document.getElementById('clients-list');
   if (!container) return;
+  
   let clients = Object.entries(window.appState.clients);
+  
   if (search) clients = clients.filter(([,c]) => c.name?.toLowerCase().includes(search)||c.phone?.includes(search));
   if (filter==='debt') clients = clients.filter(([,c]) => (c.totalDebt||0)>0);
   if (filter==='paid') clients = clients.filter(([,c]) => (c.totalDebt||0)<=0);
-  if (clients.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء</div></div>'; return; }
-  clients.sort((a,b) => (b[1].totalDebt||0)-(a[1].totalDebt||0));
+  
+  if (clients.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div>'; return; }
+  
+  // NEW SORTING LOGIC
+  clients.sort((a,b) => {
+    if (sortMode === 'newest') {
+      return new Date(b[1].lastInvoice||0) - new Date(a[1].lastInvoice||0);
+    } else if (sortMode === 'oldest') {
+      return new Date(a[1].lastInvoice||0) - new Date(b[1].lastInvoice||0);
+    } else {
+      return (b[1].totalDebt||0)-(a[1].totalDebt||0);
+    }
+  });
+
   container.innerHTML = clients.map(([key,c]) => {
     const debt=c.totalDebt||0, totalPurchases=c.totalPurchases||0, totalPaid=c.totalPaid||0;
     const hasDebt=debt>0;
@@ -2323,7 +2358,7 @@ window.showInvoiceDetail = function(id) {
 };
 
 // ============================================================
-// ★ PRICES PAGE — AI SMART GROUPING + DATE FILTER ★
+// ★ PRICES PAGE — AI SMART GROUPING + DATE FILTER + COMPARE ★
 // ============================================================
 function normalizeFishNameLocal(name) {
   if (!name) return '';
@@ -2419,6 +2454,7 @@ function renderPricesUI(fishData) {
     applyPriceDateFilter();
   }
   showFishPrices(fishes[0], tabBar.children[0]);
+  updateCompareDropdowns(); // Update new compare widget
 }
 
 window.renderPricesPage = async function() {
@@ -2465,6 +2501,86 @@ window.renderPricesPage = async function() {
       if (statusEl) statusEl.innerHTML = '';
     }
   }
+};
+
+// ============================================================
+// ★ COMPARE PRICES LOGIC ★
+// ============================================================
+window.updateCompareDropdowns = function() {
+  const fishSelect = document.getElementById('comp-fish');
+  const client1Select = document.getElementById('comp-client1');
+  const client2Select = document.getElementById('comp-client2');
+  const dateInp = document.getElementById('comp-date');
+  if (!fishSelect || !client1Select || !client2Select) return;
+
+  if (dateInp && !dateInp.value) dateInp.value = getTodayISO();
+
+  // Populate Fishes
+  const fishNames = Object.keys(window._fishPriceData || {});
+  fishSelect.innerHTML = '<option value="">اختر الصنف...</option>' + fishNames.map(f => `<option value="${f}">${f}</option>`).join('');
+
+  // Populate Clients
+  const clients = Object.values(window.appState.clients).map(c => c.name);
+  const clientOpts = '<option value="">اختر العميل...</option>' + clients.map(c => `<option value="${c}">${c}</option>`).join('');
+  client1Select.innerHTML = clientOpts;
+  client2Select.innerHTML = clientOpts;
+};
+
+window.comparePrices = function() {
+  const date = document.getElementById('comp-date')?.value;
+  const fish = document.getElementById('comp-fish')?.value;
+  const c1 = document.getElementById('comp-client1')?.value;
+  const c2 = document.getElementById('comp-client2')?.value;
+  const resEl = document.getElementById('comp-result');
+
+  if(!date || !fish || !c1 || !c2) {
+    showToast('❌ يرجى اختيار التاريخ والصنف والعميلين بالكامل');
+    return;
+  }
+  if(c1 === c2) {
+    showToast('❌ يرجى اختيار عميلين مختلفين للمقارنة');
+    return;
+  }
+
+  const allEntries = (window._fishPriceData || {})[fish] || [];
+  const dayEntries = allEntries.filter(e => {
+    const d = e.dateISO || '';
+    return d === date;
+  });
+
+  // Get max price for c1
+  const c1Entries = dayEntries.filter(e => e.client === c1);
+  const c1Price = c1Entries.length > 0 ? Math.max(...c1Entries.map(e => e.price)) : 0;
+
+  // Get max price for c2
+  const c2Entries = dayEntries.filter(e => e.client === c2);
+  const c2Price = c2Entries.length > 0 ? Math.max(...c2Entries.map(e => e.price)) : 0;
+
+  resEl.style.display = 'block';
+  if(c1Price === 0 && c2Price === 0) {
+    resEl.innerHTML = `<div style="text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:10px;font-size:12px;color:var(--text-secondary)">لا توجد أسعار مسجلة لأي من العميلين في هذا اليوم لهذا الصنف.</div>`;
+    return;
+  }
+
+  const buildClientCard = (name, price, isWinner) => `
+    <div style="flex:1;text-align:center;padding:12px 6px;border-radius:10px;background:${isWinner ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.03)'};border:1px solid ${isWinner ? 'rgba(255,215,0,0.4)' : 'transparent'};">
+      <div style="font-size:12px;color:var(--text-primary);margin-bottom:6px;font-weight:600">${name}</div>
+      ${price > 0 ? `<div style="font-size:20px;font-weight:900;color:${isWinner ? 'var(--gold)' : 'var(--cyan-glow)'}">${price} <span style="font-size:10px;color:var(--text-secondary)">ج.م</span></div>` : `<div style="font-size:13px;color:var(--danger);margin-top:6px">لم يشتري اليوم</div>`}
+      ${isWinner ? `<div style="font-size:10px;color:var(--gold);margin-top:6px;font-weight:700">🏆 أعلى سعر</div>` : ''}
+    </div>
+  `;
+
+  const c1Wins = c1Price > c2Price;
+  const c2Wins = c2Price > c1Price;
+  const tie = c1Price === c2Price && c1Price > 0;
+
+  let html = `<div style="display:flex;gap:12px;align-items:center;background:var(--glass);padding:12px;border-radius:12px;border:1px solid var(--glass-border);">`;
+  html += buildClientCard(c1, c1Price, c1Wins || tie);
+  html += `<div style="font-size:16px;font-weight:900;color:var(--text-secondary)">VS</div>`;
+  html += buildClientCard(c2, c2Price, c2Wins || tie);
+  html += `</div>`;
+  
+  resEl.innerHTML = html;
 };
 
 // ============================================================
