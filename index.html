@@ -1713,23 +1713,31 @@ window.exportClientStatementPDF = async function(clientKey) {
   try {
     const snap = await get(ref(db, 'payments'));
     const all = snap.val() || {};
-    clientPayments = Object.entries(all)
-      .filter(([,p]) => p.clientKey === clientKey)
-      .sort((a,b) => new Date(a[1].customDate||a[1].date) - new Date(b[1].customDate||b[1].date));
+    clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey);
   } catch(e) {}
-  const clientInvoices = Object.entries(window.appState.invoices)
-    .filter(([,i]) => i.phone === c.phone)
-    .sort((a,b) => (a[1].createdAt||0) - (b[1].createdAt||0));
+  const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone === c.phone);
+  
+  // دمج الفواتير والدفعات وترتيبها من الأقدم للأحدث
   const timeline = [
-    ...clientInvoices.map(([id,inv]) => ({ type:'invoice', id, data:inv, ts:inv.createdAt||0 })),
-    ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts:new Date(pay.customDate?pay.customDate+'T12:00:00':pay.date).getTime() }))
-  ].sort((a,b) => a.ts-b.ts);
+    ...clientInvoices.map(([id,inv]) => {
+      const d = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
+      const ts = d ? new Date(d+'T12:00:00').getTime() : (inv.createdAt||0);
+      return {type:'invoice', id, data:inv, ts, realTs: inv.createdAt||0};
+    }),
+    ...clientPayments.map(([id,pay]) => {
+      const d = pay.customDate || (pay.date ? pay.date.split('T')[0] : '');
+      const ts = d ? new Date(d+'T12:00:00').getTime() : (pay.savedAt||0);
+      return {type:'payment', id, data:pay, ts, realTs: pay.savedAt||0};
+    })
+  ].sort((a,b) => a.ts - b.ts || a.realTs - b.realTs || (a.type === 'invoice' ? -1 : 1));
+
   const debt = c.totalDebt || 0;
   const totalPaid = c.totalPaid || 0;
   const totalPurchases = c.totalPurchases || 0;
   const nowStr = new Date().toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
   let timelineRows = '';
   let runBal = 0;
+  
   timeline.forEach((item, idx) => {
     if (item.type === 'invoice') {
       const inv = item.data; runBal += inv.total;
@@ -1755,6 +1763,7 @@ window.exportClientStatementPDF = async function(clientKey) {
       </tr>`;
     }
   });
+  
   const clientName = (c.name || 'عميل').replace(/\s+/g, '_');
   const dateCode = getTodayISO().replace(/-/g, '');
   const fileName = `كشف_حساب_${clientName}_${dateCode}`;
@@ -2089,20 +2098,28 @@ window.showClientAccount = async function(clientKey) {
   try {
     const snap = await get(ref(db, 'payments'));
     const all = snap.val() || {};
-    clientPayments = Object.entries(all)
-      .filter(([,p]) => p.clientKey === clientKey)
-      .sort((a,b) => new Date(b[1].date)-new Date(a[1].date));
+    clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey);
   } catch(e) {}
+  
+  const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone===c.phone);
+  
+  // دمج الفواتير والدفعات وترتيبها من الأقدم للأحدث بشكل قاطع
+  const timeline = [
+    ...clientInvoices.map(([id,inv]) => {
+      const d = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
+      const ts = d ? new Date(d+'T12:00:00').getTime() : (inv.createdAt||0);
+      return {type:'invoice', id, data:inv, ts, realTs: inv.createdAt||0};
+    }),
+    ...clientPayments.map(([id,pay]) => {
+      const d = pay.customDate || (pay.date ? pay.date.split('T')[0] : '');
+      const ts = d ? new Date(d+'T12:00:00').getTime() : (pay.savedAt||0);
+      return {type:'payment', id, data:pay, ts, realTs: pay.savedAt||0};
+    })
+  ].sort((a,b) => a.ts - b.ts || a.realTs - b.realTs || (a.type === 'invoice' ? -1 : 1));
+
   const debt=c.totalDebt||0, totalPurchases=c.totalPurchases||0, totalPaid=c.totalPaid||0;
   const hasDebt=debt>0;
   const paidPct=totalPurchases>0?Math.min(100,Math.round((totalPaid/totalPurchases)*100)):0;
-  const clientInvoices = Object.entries(window.appState.invoices)
-    .filter(([,i]) => i.phone===c.phone)
-    .sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0));
-  const timeline = [
-    ...clientInvoices.map(([id,inv]) => ({type:'invoice',id,data:inv,ts:inv.createdAt||0})),
-    ...clientPayments.map(([id,pay]) => ({type:'payment',id,data:pay,ts:new Date(pay.date).getTime()}))
-  ].sort((a,b) => b.ts-a.ts);
   const todayISO = getTodayISO();
   const modal = document.createElement('div');
   modal.className = 'modal-overlay'; modal.id = 'client-account-modal';
@@ -2200,7 +2217,7 @@ window.showClientAccount = async function(clientKey) {
       `}
       <div style="margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px">
-          🕐 سجل الحركات
+          🕐 سجل الحركات (من الأقدم للأحدث)
           <span style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:2px 8px;border-radius:20px;font-size:10px;color:var(--cyan-glow)">${timeline.length} حركة</span>
         </div>
         ${timeline.length===0?'<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات</div>':
@@ -2251,9 +2268,13 @@ window.showClientAccount = async function(clientKey) {
   const existing = document.getElementById('client-account-modal');
   if (existing) existing.remove();
   document.getElementById('modals-container').appendChild(modal);
+  
+  // لعمل سكرول تلقائي لأسفل القائمة لرؤية آخر العمليات بعد الفتح
   setTimeout(() => {
     const bar = document.getElementById('pay-progress-bar');
     if (bar) bar.style.width = paidPct + '%';
+    const sheet = document.querySelector('.modal-sheet');
+    if (sheet) sheet.scrollTop = sheet.scrollHeight;
   }, 120);
 };
 
@@ -2729,19 +2750,28 @@ window.sendClientStatementWA = async function(clientKey) {
     const debt = c.totalDebt || 0;
     const now = new Date().toLocaleDateString('ar-EG', {year:'numeric',month:'long',day:'numeric'});
     const clientInvoices = Object.entries(window.appState.invoices)
-      .filter(([,i]) => i.phone === c.phone)
-      .sort((a,b) => (a[1].createdAt||0)-(b[1].createdAt||0));
+      .filter(([,i]) => i.phone === c.phone);
     let clientPayments = [];
     try {
       const snap = await get(ref(db, 'payments'));
       const all = snap.val() || {};
-      clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey)
-        .sort((a,b) => new Date(a[1].customDate||a[1].date)-new Date(b[1].customDate||b[1].date));
+      clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey);
     } catch(e) {}
+    
+    // الترتيب من الأقدم للأحدث
     const timeline = [
-      ...clientInvoices.map(([id,inv]) => ({type:'invoice',id,data:inv,ts:inv.createdAt||new Date(inv.date).getTime()})),
-      ...clientPayments.map(([id,pay]) => ({type:'payment',id,data:pay,ts:new Date(pay.customDate?pay.customDate+'T12:00:00':pay.date).getTime()}))
-    ].sort((a,b) => a.ts-b.ts);
+      ...clientInvoices.map(([id,inv]) => {
+        const d = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
+        const ts = d ? new Date(d+'T12:00:00').getTime() : (inv.createdAt||0);
+        return {type:'invoice', id, data:inv, ts, realTs: inv.createdAt||0};
+      }),
+      ...clientPayments.map(([id,pay]) => {
+        const d = pay.customDate || (pay.date ? pay.date.split('T')[0] : '');
+        const ts = d ? new Date(d+'T12:00:00').getTime() : (pay.savedAt||0);
+        return {type:'payment', id, data:pay, ts, realTs: pay.savedAt||0};
+      })
+    ].sort((a,b) => a.ts - b.ts || a.realTs - b.realTs || (a.type === 'invoice' ? -1 : 1));
+
     let text = `🐟 *كشف حساب كامل*\n🏪 الحاج أحمد الحديدي - تجارة الأسماك\n━━━━━━━━━━━━━━━━━━━━━━\n`;
     text += `👤 العميل  : *${c.name}*\n`;
     if (c.shopName) text += `🏪 المؤسسة : ${c.shopName}\n`;
@@ -3206,185 +3236,6 @@ const USERS = {
 };
 
 window.currentUser = null;
-
-window.onLoginInput = function(val) {
-  for (let i = 0; i < 6; i++) {
-    const dot = document.getElementById('dot-' + i);
-    if (dot) dot.classList.toggle('filled', i < val.length);
-  }
-  document.getElementById('login-error').textContent = '';
-  if (val.length === 6) setTimeout(() => doLogin(), 150);
-};
-
-window.toggleLoginEye = function() {
-  const inp = document.getElementById('login-password');
-  const eye = document.getElementById('login-eye');
-  if (!inp) return;
-  if (inp.type === 'password') {
-    inp.type = 'text'; eye.textContent = '🙈'; inp.style.letterSpacing = '4px';
-  } else {
-    inp.type = 'password'; eye.textContent = '👁️'; inp.style.letterSpacing = '8px';
-  }
-};
-
-window.doLogin = function() {
-  const pwd = document.getElementById('login-password').value.trim();
-  const user = USERS[pwd];
-  if (!user) {
-    document.getElementById('login-error').textContent = '❌ كلمة المرور غير صحيحة، حاول مرة أخرى';
-    document.getElementById('login-password').value = '';
-    for (let i = 0; i < 6; i++) { const dot = document.getElementById('dot-' + i); if (dot) dot.classList.remove('filled'); }
-    const inp = document.getElementById('login-password');
-    const eye = document.getElementById('login-eye');
-    if (inp.type === 'text') { inp.type = 'password'; eye.textContent = '👁️'; inp.style.letterSpacing = '8px'; }
-    const box = document.querySelector('.login-box');
-    box.style.animation = 'none'; box.style.transform = 'translateX(-8px)';
-    setTimeout(() => { box.style.transition = 'transform 0.4s cubic-bezier(0.25,0.8,0.25,1)'; box.style.transform = 'translateX(0)'; }, 50);
-    return;
-  }
-  window.currentUser = user;
-  const screen = document.getElementById('login-screen');
-  screen.style.opacity = '0'; screen.style.transition = 'opacity 0.4s ease';
-  setTimeout(() => screen.classList.add('hidden'), 400);
-  const badge = document.getElementById('role-badge');
-  badge.textContent = user.badge; badge.className = 'role-badge ' + user.badgeClass;
-  showWelcomeBanner(user);
-  applyPermissions(user.role);
-};
-
-function showWelcomeBanner(user) {
-  const existing = document.getElementById('welcome-banner');
-  if (existing) existing.remove();
-  const banner = document.createElement('div');
-  banner.id = 'welcome-banner'; banner.className = 'welcome-toast';
-  banner.innerHTML = `
-    <div class="welcome-icon">${user.icon}</div>
-    <div class="welcome-text">
-      <div class="welcome-greeting">أهلاً وسهلاً</div>
-      <div class="welcome-name">${user.greeting}</div>
-      <div class="welcome-role">${user.subtext}</div>
-    </div>
-  `;
-  document.body.appendChild(banner);
-  setTimeout(() => { banner.classList.add('hiding'); setTimeout(() => banner.remove(), 400); }, 3500);
-}
-
-function applyPermissions(role) {
-  const isAdmin = role === 'admin';
-  const invoiceNav = document.querySelectorAll('.nav-item')[1];
-  if (invoiceNav) invoiceNav.style.display = isAdmin ? '' : 'none';
-  window.appState.userRole = role;
-}
-
-const _guardedFns = ['saveInvoice','confirmDeleteInvoice','confirmDeleteClient','confirmDeletePayment',
-  'editInvoiceModal','editClientModal','editPaymentModal','saveEditInvoice','saveEditClient','saveEditPayment','processPayment'];
-_guardedFns.forEach(fnName => {
-  const original = window[fnName];
-  window[fnName] = function(...args) {
-    if (window.currentUser?.role !== 'admin') { showToast('🔒 ليس لديك صلاحية لهذا الإجراء'); return; }
-    return original?.apply(this, args);
-  };
-});
-
-window.confirmLogout = function() {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay'; modal.id = 'logout-modal';
-  modal.innerHTML = `
-    <div class="modal-sheet" style="max-height:40vh;text-align:center">
-      <div class="modal-handle"></div>
-      <div style="font-size:44px;margin:8px 0">🔐</div>
-      <div style="font-size:17px;font-weight:900;color:var(--text-primary);margin-bottom:8px">تسجيل الخروج</div>
-      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px">هل تريد الخروج من الحساب الحالي؟</div>
-      <div style="display:flex;gap:10px">
-        <button onclick="document.getElementById('logout-modal').remove()"
-          style="flex:1;padding:13px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
-        <button onclick="doLogout()"
-          style="flex:2;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--danger),#c0392b);color:white;font-family:'Cairo',sans-serif;font-size:14px;font-weight:900;cursor:pointer">🚪 خروج</button>
-      </div>
-    </div>
-  `;
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-  document.getElementById('modals-container').appendChild(modal);
-};
-
-window.doLogout = function() {
-  window.currentUser = null; window.appState.userRole = null;
-  document.getElementById('logout-modal')?.remove();
-  const inp = document.getElementById('login-password');
-  inp.value = ''; inp.type = 'password'; inp.style.letterSpacing = '8px';
-  const eye = document.getElementById('login-eye');
-  if (eye) eye.textContent = '👁️';
-  for (let i = 0; i < 6; i++) { const dot = document.getElementById('dot-' + i); if (dot) dot.classList.remove('filled'); }
-  document.getElementById('login-error').textContent = '';
-  const screen = document.getElementById('login-screen');
-  screen.classList.remove('hidden'); screen.style.opacity = '0';
-  setTimeout(() => { screen.style.transition = 'opacity 0.4s ease'; screen.style.opacity = '1'; }, 10);
-  const invoiceNav = document.querySelectorAll('.nav-item')[1];
-  if (invoiceNav) invoiceNav.style.display = '';
-};
-
-// ============================================================
-// COMPARE CLIENTS PRICES
-// ============================================================
-window.compareClients = function() {
-  const c1 = document.getElementById('comp-client1').value.trim();
-  const c2 = document.getElementById('comp-client2').value.trim();
-  const fish = document.getElementById('comp-fish').value.trim();
-  const date = document.getElementById('comp-date').value;
-
-  if (!c1 || !c2 || !fish || !date) {
-    return showToast('❌ يرجى تعبئة جميع الحقول للمقارنة');
-  }
-
-  let price1 = 0;
-  let price2 = 0;
-
-  // البحث في الفواتير عن أسعار العميلين في هذا اليوم لنفس الصنف
-  Object.values(window.appState.invoices).forEach(inv => {
-    const invDate = inv.invDateISO || (inv.date && inv.date.split('T')[0]);
-    if (invDate === date) {
-      if (inv.clientName === c1) {
-        const item = (inv.items || []).find(i => i.fish === fish || i.fish.includes(fish));
-        if (item) price1 = Math.max(price1, item.pricePerKg);
-      }
-      if (inv.clientName === c2) {
-        const item = (inv.items || []).find(i => i.fish === fish || i.fish.includes(fish));
-        if (item) price2 = Math.max(price2, item.pricePerKg);
-      }
-    }
-  });
-
-  const resDiv = document.getElementById('comp-result');
-  resDiv.style.display = 'block';
-
-  if (price1 === 0 && price2 === 0) {
-    resDiv.innerHTML = `<div style="text-align:center; padding:10px; color:var(--text-secondary); font-size:12px;">لا توجد أسعار مسجلة للعميلين لهذا الصنف في هذا اليوم.</div>`;
-    return;
-  }
-
-  let winnerHtml = '';
-  if (price1 > price2) {
-    winnerHtml = `<div style="text-align:center; margin-top:12px; color:var(--emerald); font-weight:900; font-size:14px;">🏆 أعلى سعر: ${c1} (${price1} ج.م)</div>`;
-  } else if (price2 > price1) {
-    winnerHtml = `<div style="text-align:center; margin-top:12px; color:var(--emerald); font-weight:900; font-size:14px;">🏆 أعلى سعر: ${c2} (${price2} ج.م)</div>`;
-  } else {
-    winnerHtml = `<div style="text-align:center; margin-top:12px; color:var(--warning); font-weight:900; font-size:14px;">🤝 تعادل في السعر (${price1} ج.م)</div>`;
-  }
-
-  resDiv.innerHTML = `
-    <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.2); padding:12px; border-radius:12px;">
-      <div style="text-align:center; flex:1; border-left:1px solid var(--glass-border);">
-        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">${c1}</div>
-        <div style="font-size:18px; font-weight:900; color:${price1 >= price2 && price1 > 0 ? 'var(--gold)' : 'var(--text-primary)'};">${price1 > 0 ? price1 + ' ج.م' : 'لا يوجد'}</div>
-      </div>
-      <div style="text-align:center; flex:1;">
-        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">${c2}</div>
-        <div style="font-size:18px; font-weight:900; color:${price2 >= price1 && price2 > 0 ? 'var(--gold)' : 'var(--text-primary)'};">${price2 > 0 ? price2 + ' ج.م' : 'لا يوجد'}</div>
-      </div>
-    </div>
-    ${winnerHtml}
-  `;
-};
 
 // ============================================================
 // INIT
