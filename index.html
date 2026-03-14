@@ -964,10 +964,37 @@ window.appState = {
   expenses: [],
   nextItemId: 0,
   nextExpId: 0,
-  recentShowAll: false,       // ★ NEW: toggle for show all recent
-  priceDateFrom: '',          // ★ NEW: price date filter from
-  priceDateTo: '',            // ★ NEW: price date filter to
+  recentShowAll: false,
+  priceDateFrom: '',
+  priceDateTo: '',
 };
+
+// ============================================================
+// DATE FORMATTER (NEW: DD/MM/YYYY)
+// ============================================================
+function getDisplayDate(isoOrDateStr, fallback) {
+  if (!isoOrDateStr) return fallback || '';
+  try {
+    const d = new Date(isoOrDateStr.includes('T') ? isoOrDateStr : isoOrDateStr + 'T12:00:00');
+    if (isNaN(d)) return fallback || '';
+    return d.toLocaleDateString('en-GB'); // Outputs DD/MM/YYYY
+  } catch(e) {
+    return fallback || '';
+  }
+}
+
+function updateDate() {
+  const now = new Date();
+  document.getElementById('header-date').textContent = now.toLocaleDateString('en-GB');
+}
+function getTodayISO() {
+  return new Date().toISOString().split('T')[0];
+}
+function isoToArabicDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('en-GB');
+}
 
 // ============================================================
 // BACKGROUND ANIMATION
@@ -1016,22 +1043,6 @@ function init3DBackground() {
     t+=0.01; requestAnimationFrame(animate);
   }
   animate();
-}
-
-// ============================================================
-// DATE
-// ============================================================
-function updateDate() {
-  const now = new Date();
-  document.getElementById('header-date').textContent = now.toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
-}
-function getTodayISO() {
-  return new Date().toISOString().split('T')[0];
-}
-function isoToArabicDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + 'T12:00:00');
-  return d.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
 }
 
 // ============================================================
@@ -1363,7 +1374,7 @@ window.saveInvoice = async function() {
   btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...'; btn.disabled = true;
   try {
     const invDate = new Date(invDateISO + 'T12:00:00');
-    const dateStr = invDate.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
+    const dateStr = invDate.toLocaleDateString('en-GB'); // Changed to DD/MM/YYYY
     const invoice = {
       clientName, phone, shopName, items, expenses: expensesList,
       fishTotal, expTotal, gross: fishTotal,
@@ -1446,7 +1457,7 @@ function showInvoicePreview(invoice, invoiceId) {
         <div class="invoice-header">
           <div class="invoice-shop">الحاج أحمد الحديدي</div>
           <div class="invoice-owner">تجارة الأسماك</div>
-          <div class="invoice-date">📅 ${invoice.dateStr}</div>
+          <div class="invoice-date">📅 ${getDisplayDate(invoice.invDateISO || invoice.date, invoice.dateStr)}</div>
           <div style="margin-top:6px">
             <span style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.35);color:#ffd700;padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700">
               📋 ${invoice.invoiceNumber || generateInvoiceNumber(invoiceId)}
@@ -1511,7 +1522,7 @@ function buildInvoiceText(invoice) {
   let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n📋 رقم الفاتورة: *${invNum}*\n━━━━━━━━━━━━━━━━━━\n`;
   text += `👤 العميل : ${invoice.clientName}\n`;
   if (invoice.shopName) text += `🏪 المؤسسة: ${invoice.shopName}\n`;
-  text += `📅 التاريخ: ${invoice.dateStr}\n━━━━━━━━━━━━━━━━━━\n*📦 تفاصيل الأصناف:*\n`;
+  text += `📅 التاريخ: ${getDisplayDate(invoice.invDateISO || invoice.date, invoice.dateStr)}\n━━━━━━━━━━━━━━━━━━\n*📦 تفاصيل الأصناف:*\n`;
   (invoice.items || []).forEach((item, idx) => {
     const unit = item.unit || 'kg';
     const uDef = UNITS[unit] || UNITS.kg;
@@ -1620,7 +1631,7 @@ function buildInvoicePDFHTML(inv, invoiceId) {
     <div class="shop-sub">تجارة الأسماك — فاتورة رسمية</div>
     <div class="inv-meta">
       <div class="inv-num">📋 ${invNum}</div>
-      <div class="inv-date">📅 ${inv.dateStr || ''}</div>
+      <div class="inv-date">📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}</div>
     </div>
   </div>
   <div class="client-section">
@@ -1714,55 +1725,79 @@ window.exportClientStatementPDF = async function(clientKey) {
   showToast('⏳ جاري تحضير كشف الحساب...');
   const c = window.appState.clients[clientKey];
   if (!c) return showToast('❌ العميل غير موجود');
+  
   let clientPayments = [];
   try {
     const snap = await get(ref(db, 'payments'));
     const all = snap.val() || {};
-    clientPayments = Object.entries(all)
-      .filter(([,p]) => p.clientKey === clientKey)
-      .sort((a,b) => new Date(a[1].customDate||a[1].date) - new Date(b[1].customDate||b[1].date));
+    clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey);
   } catch(e) {}
-  const clientInvoices = Object.entries(window.appState.invoices)
-    .filter(([,i]) => i.phone === c.phone)
-    .sort((a,b) => (a[1].createdAt||0) - (b[1].createdAt||0));
+  
+  const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone === c.phone);
+  
+  // Create unified timeline and sort OLDEST first to calculate running balance correctly
   const timeline = [
-    ...clientInvoices.map(([id,inv]) => ({ type:'invoice', id, data:inv, ts:inv.createdAt||0 })),
-    ...clientPayments.map(([id,pay]) => ({ type:'payment', id, data:pay, ts:new Date(pay.customDate?pay.customDate+'T12:00:00':pay.date).getTime() }))
-  ].sort((a,b) => a.ts-b.ts);
-  const debt = c.totalDebt || 0;
-  const totalPaid = c.totalPaid || 0;
-  const totalPurchases = c.totalPurchases || 0;
-  const nowStr = new Date().toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
-  let timelineRows = '';
+    ...clientInvoices.map(([id,inv]) => {
+      const d = inv.invDateISO || inv.date?.split('T')[0] || getTodayISO();
+      return { type:'invoice', id, data:inv, ts: new Date(d+'T12:00:00').getTime() };
+    }),
+    ...clientPayments.map(([id,pay]) => {
+      const d = pay.customDate || pay.date?.split('T')[0] || getTodayISO();
+      return { type:'payment', id, data:pay, ts: new Date(d+'T12:00:00').getTime() };
+    })
+  ].sort((a,b) => a.ts - b.ts);
+
+  // Calculate Running Balance
   let runBal = 0;
-  timeline.forEach((item, idx) => {
+  timeline.forEach(item => {
     if (item.type === 'invoice') {
-      const inv = item.data; runBal += inv.total;
+      runBal += item.data.total;
+    } else {
+      runBal -= item.data.amount || 0;
+      if (runBal < 0) runBal = 0;
+    }
+    item.runBal = runBal;
+  });
+
+  // Reverse timeline to show NEWEST first for display
+  timeline.reverse();
+
+  const nowStr = new Date().toLocaleDateString('en-GB');
+  let timelineRows = '';
+  
+  timeline.forEach((item, idx) => {
+    const displayNum = timeline.length - idx; // numbering: highest number is oldest, #1 is newest
+    if (item.type === 'invoice') {
+      const inv = item.data;
       const invNum = generateInvoiceNumber(item.id);
       timelineRows += `<tr style="background:${idx%2===0?'#f0f7ff':'#ffffff'}">
-        <td style="text-align:center;color:#7f8c8d">${idx+1}</td>
-        <td style="text-align:center">${inv.dateStr||''}</td>
+        <td style="text-align:center;color:#7f8c8d">${displayNum}</td>
+        <td style="text-align:center">${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}</td>
         <td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">🧾 فاتورة</span><br><small style="color:#aaa;font-size:9px">${invNum}</small></td>
         <td style="font-size:11px">${(inv.items||[]).map(i=>i.fish).join('، ')}</td>
         <td style="color:#1a5276;font-weight:700;text-align:center">+${formatNum(inv.total)} ج.م</td>
-        <td style="text-align:center;color:#2c3e50;font-weight:600">${formatNum(runBal)} ج.م</td>
+        <td style="text-align:center;color:#2c3e50;font-weight:600">${formatNum(item.runBal)} ج.م</td>
       </tr>`;
     } else {
-      const pay = item.data; runBal -= pay.amount || 0; if (runBal < 0) runBal = 0;
-      const payDate = pay.customDate ? new Date(pay.customDate+'T12:00:00').toLocaleDateString('ar-EG') : (pay.dateStr||'');
+      const pay = item.data;
       timelineRows += `<tr style="background:${idx%2===0?'#f0fff8':'#ffffff'}">
-        <td style="text-align:center;color:#7f8c8d">${idx+1}</td>
-        <td style="text-align:center">${payDate}</td>
+        <td style="text-align:center;color:#7f8c8d">${displayNum}</td>
+        <td style="text-align:center">${getDisplayDate(pay.customDate || pay.date, pay.dateStr)}</td>
         <td><span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">💳 دفعة</span></td>
         <td style="text-align:center;font-size:11px">${pay.notes||pay.from||'—'}</td>
         <td style="color:#27ae60;font-weight:700;text-align:center">-${formatNum(pay.amount)} ج.م</td>
-        <td style="text-align:center;color:${runBal>0?'#c0392b':'#27ae60'};font-weight:600">${formatNum(runBal)} ج.م</td>
+        <td style="text-align:center;color:${item.runBal>0?'#c0392b':'#27ae60'};font-weight:600">${formatNum(item.runBal)} ج.م</td>
       </tr>`;
     }
   });
+
+  const debt = c.totalDebt || 0;
+  const totalPaid = c.totalPaid || 0;
+  const totalPurchases = c.totalPurchases || 0;
   const clientName = (c.name || 'عميل').replace(/\s+/g, '_');
   const dateCode = getTodayISO().replace(/-/g, '');
   const fileName = `كشف_حساب_${clientName}_${dateCode}`;
+  
   const html = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1825,7 +1860,7 @@ window.exportClientStatementPDF = async function(clientKey) {
     <div class="summary-card paid"><div class="s-label paid">✅ المدفوع</div><div class="s-val paid">${formatNum(totalPaid)}</div><div class="s-unit">جنيه مصري</div></div>
     <div class="summary-card total"><div class="s-label total">💰 إجمالي المشتريات</div><div class="s-val total">${formatNum(totalPurchases)}</div><div class="s-unit">جنيه مصري</div></div>
   </div>
-  <div class="section-title">🕐 سجل الحركات — ${timeline.length} حركة</div>
+  <div class="section-title">🕐 سجل الحركات — الأحدث أولاً</div>
   <table>
     <thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>التفاصيل</th><th>المبلغ</th><th>الرصيد</th></tr></thead>
     <tbody>${timelineRows || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa">لا توجد حركات مسجلة</td></tr>'}</tbody>
@@ -1977,7 +2012,7 @@ window.renderRecentInvoices = function() {
           </div>
         </div>
         <div class="history-meta" style="display:flex;justify-content:space-between;align-items:center">
-          <span>📅 ${inv.dateStr} • 📦 ${(inv.items || []).length} صنف</span>
+          <span>📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)} • 📦 ${(inv.items || []).length} صنف</span>
           <span style="font-size:10px;color:rgba(0,180,216,0.6)">📋 ${invNum}</span>
         </div>
       </div>
@@ -2099,19 +2134,27 @@ window.showClientAccount = async function(clientKey) {
     const snap = await get(ref(db, 'payments'));
     const all = snap.val() || {};
     clientPayments = Object.entries(all)
-      .filter(([,p]) => p.clientKey === clientKey)
-      .sort((a,b) => new Date(b[1].date)-new Date(a[1].date));
+      .filter(([,p]) => p.clientKey === clientKey);
   } catch(e) {}
+  
   const debt=c.totalDebt||0, totalPurchases=c.totalPurchases||0, totalPaid=c.totalPaid||0;
   const hasDebt=debt>0;
   const paidPct=totalPurchases>0?Math.min(100,Math.round((totalPaid/totalPurchases)*100)):0;
-  const clientInvoices = Object.entries(window.appState.invoices)
-    .filter(([,i]) => i.phone===c.phone)
-    .sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0));
+  
+  const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone===c.phone);
+
+  // Map to unified format and sort NEWEST FIRST
   const timeline = [
-    ...clientInvoices.map(([id,inv]) => ({type:'invoice',id,data:inv,ts:inv.createdAt||0})),
-    ...clientPayments.map(([id,pay]) => ({type:'payment',id,data:pay,ts:new Date(pay.date).getTime()}))
-  ].sort((a,b) => b.ts-a.ts);
+    ...clientInvoices.map(([id,inv]) => {
+      const d = inv.invDateISO || inv.date?.split('T')[0] || getTodayISO();
+      return {type:'invoice', id, data:inv, ts: new Date(d+'T12:00:00').getTime()};
+    }),
+    ...clientPayments.map(([id,pay]) => {
+      const d = pay.customDate || pay.date?.split('T')[0] || getTodayISO();
+      return {type:'payment', id, data:pay, ts: new Date(d+'T12:00:00').getTime()};
+    })
+  ].sort((a,b) => b.ts - a.ts); // Newest First
+
   const todayISO = getTodayISO();
   const modal = document.createElement('div');
   modal.className = 'modal-overlay'; modal.id = 'client-account-modal';
@@ -2209,7 +2252,7 @@ window.showClientAccount = async function(clientKey) {
       `}
       <div style="margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px">
-          🕐 سجل الحركات
+          🕐 سجل الحركات — الأحدث أولاً
           <span style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:2px 8px;border-radius:20px;font-size:10px;color:var(--cyan-glow)">${timeline.length} حركة</span>
         </div>
         ${timeline.length===0?'<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات</div>':
@@ -2222,7 +2265,7 @@ window.showClientAccount = async function(clientKey) {
                 <div style="flex:1;min-width:0">
                   <div style="font-size:12px;font-weight:700;color:var(--gold)">فاتورة بيع</div>
                   <div style="font-size:10px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(inv.items||[]).map(i=>i.fish).join(' • ')}</div>
-                  <div style="font-size:10px;color:var(--text-secondary)">📅 ${inv.dateStr}</div>
+                  <div style="font-size:10px;color:var(--text-secondary)">📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}</div>
                 </div>
                 <div style="text-align:left;flex-shrink:0">
                   <div style="font-size:14px;font-weight:900;color:var(--gold)">+${formatNum(inv.total)}</div>
@@ -2231,14 +2274,13 @@ window.showClientAccount = async function(clientKey) {
               </div>`;
             } else {
               const pay=item.data;
-              const payDate=pay.customDate?new Date(pay.customDate+'T12:00:00').toLocaleDateString('ar-EG'):(pay.dateStr||'');
               return `<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:12px;margin-bottom:7px">
                 <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">💳</div>
                 <div style="flex:1;min-width:0">
                   <div style="font-size:12px;font-weight:700;color:var(--emerald)">دفعة مالية</div>
                   ${pay.from?`<div style="font-size:10px;color:var(--text-secondary)">👤 ${pay.from}</div>`:''}
                   ${pay.notes?`<div style="font-size:10px;color:var(--text-secondary)">📝 ${pay.notes}</div>`:''}
-                  <div style="font-size:10px;color:var(--text-secondary)">📅 ${payDate}</div>
+                  <div style="font-size:10px;color:var(--text-secondary)">📅 ${getDisplayDate(pay.customDate || pay.date, pay.dateStr)}</div>
                 </div>
                 <div style="text-align:left;flex-shrink:0">
                   <div style="font-size:14px;font-weight:900;color:var(--emerald)">-${formatNum(pay.amount)}</div>
@@ -2296,7 +2338,7 @@ window.processPayment = async function(clientKey, currentDebt) {
     const snap=await get(clientRef);
     const existing=snap.val()||{};
     await update(clientRef,{totalDebt:newDebt,totalPaid:(existing.totalPaid||0)+actualPaid});
-    const customDateStr=new Date(dateVal+'T12:00:00').toLocaleDateString('ar-EG');
+    const customDateStr=new Date(dateVal+'T12:00:00').toLocaleDateString('en-GB'); // Changed
     await push(ref(db,'payments'),{
       clientKey,clientName:c?.name||existing.name,clientPhone:c?.phone||existing.phone,
       amount:actualPaid,remainingAfter:newDebt,
@@ -2321,8 +2363,8 @@ window.renderHistory = function() {
   let invoices=Object.entries(window.appState.invoices).sort((a,b) => {
     const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
     const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
-    if (dateB !== dateA) return dateB.localeCompare(dateA);
-    return (b[1].createdAt||0) - (a[1].createdAt||0);
+    if (dateB !== dateA) return dateB.localeCompare(dateA); // Newest First
+    return (b[1].createdAt||0) - (a[1].createdAt||0); // Time fallback
   });
   if (search) invoices=invoices.filter(([,i])=>i.clientName?.toLowerCase().includes(search)||i.phone?.includes(search));
   if (invoices.length===0){container.innerHTML='<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير</div></div>';return;}
@@ -2340,7 +2382,7 @@ window.renderHistory = function() {
         </div>
       </div>
       <div class="history-meta" onclick="showInvoiceDetail('${id}')" style="cursor:pointer;margin-bottom:8px">
-        📅 ${inv.dateStr} • 📦 ${(inv.items||[]).length} صنف
+        📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)} • 📦 ${(inv.items||[]).length} صنف
         ${expTotal>0?` • ⬇️ خصم مصاريف`:''}
         ${(inv.commissionPct||0)>0?` • 🤝 عمولة ${inv.commissionPct}%`:''}
         <br><span style="font-size:10px;color:#546e7a">📋 ${inv.invoiceNumber || generateInvoiceNumber(id)}</span>
@@ -2471,7 +2513,7 @@ window.renderPricesPage = async function() {
       if (!fishData[item.fish]) fishData[item.fish] = [];
       fishData[item.fish].push({
         client: inv.clientName, price: item.pricePerKg,
-        kg: item.kg, date: inv.dateStr,
+        kg: item.kg, date: getDisplayDate(inv.invDateISO || inv.date, inv.dateStr), // Updated formatting
         dateISO: inv.invDateISO || inv.date?.split('T')[0] || ''
       });
     });
@@ -2791,43 +2833,61 @@ window.sendClientStatementWA = async function(clientKey) {
   showToast('⏳ جاري تحضير الكشف الكامل...');
   try {
     const debt = c.totalDebt || 0;
-    const now = new Date().toLocaleDateString('ar-EG', {year:'numeric',month:'long',day:'numeric'});
-    const clientInvoices = Object.entries(window.appState.invoices)
-      .filter(([,i]) => i.phone === c.phone)
-      .sort((a,b) => (a[1].createdAt||0)-(b[1].createdAt||0));
+    const now = new Date().toLocaleDateString('en-GB'); // Changed
+    const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone === c.phone);
     let clientPayments = [];
     try {
       const snap = await get(ref(db, 'payments'));
       const all = snap.val() || {};
-      clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey)
-        .sort((a,b) => new Date(a[1].customDate||a[1].date)-new Date(b[1].customDate||b[1].date));
+      clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey);
     } catch(e) {}
+    
+    // Sort oldest first to calculate running balance correctly
     const timeline = [
-      ...clientInvoices.map(([id,inv]) => ({type:'invoice',id,data:inv,ts:inv.createdAt||new Date(inv.date).getTime()})),
-      ...clientPayments.map(([id,pay]) => ({type:'payment',id,data:pay,ts:new Date(pay.customDate?pay.customDate+'T12:00:00':pay.date).getTime()}))
+      ...clientInvoices.map(([id,inv]) => {
+        const d = inv.invDateISO || inv.date?.split('T')[0] || getTodayISO();
+        return {type:'invoice',id,data:inv,ts:new Date(d+'T12:00:00').getTime()};
+      }),
+      ...clientPayments.map(([id,pay]) => {
+        const d = pay.customDate || pay.date?.split('T')[0] || getTodayISO();
+        return {type:'payment',id,data:pay,ts:new Date(d+'T12:00:00').getTime()};
+      })
     ].sort((a,b) => a.ts-b.ts);
+
+    let runBal = 0;
+    timeline.forEach(item => {
+      if (item.type === 'invoice') {
+        runBal += item.data.total;
+      } else {
+        runBal -= item.data.amount || 0;
+        if (runBal < 0) runBal = 0;
+      }
+      item.runBal = runBal;
+    });
+
+    timeline.reverse(); // Display newest first
+
     let text = `🐟 *كشف حساب كامل*\n🏪 الحاج أحمد الحديدي - تجارة الأسماك\n━━━━━━━━━━━━━━━━━━━━━━\n`;
     text += `👤 العميل  : *${c.name}*\n`;
     if (c.shopName) text += `🏪 المؤسسة : ${c.shopName}\n`;
     text += `📅 تاريخ الكشف : ${now}\n━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     if (timeline.length === 0) { text += `📭 لا توجد حركات مسجلة بعد\n`; }
     else {
-      text += `📋 *تفاصيل جميع الحركات (${timeline.length}):*\n`;
-      let runBal = 0;
+      text += `📋 *تفاصيل جميع الحركات (${timeline.length}) (الأحدث أولاً):*\n`;
       timeline.forEach((item, index) => {
+        const displayNum = timeline.length - index;
         if (item.type === 'invoice') {
-          const inv = item.data; runBal += inv.total;
-          text += `🧾 *[${index+1}] فاتورة بيع*\n📅 ${inv.dateStr}\n─────────────────────\n`;
+          const inv = item.data;
+          text += `🧾 *[${displayNum}] فاتورة بيع*\n📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}\n─────────────────────\n`;
           text += `   💰 *مبلغ الفاتورة : ${formatNum(inv.total)} ج.م*\n`;
           if ((inv.expTotal||0) > 0) text += `   ⬇️ مصاريف مخصومة: ${formatNum(inv.expTotal)} ج.م\n`;
-          text += `   📊 الرصيد المتراكم : *${formatNum(runBal)} ج.م*\n─────────────────────\n`;
+          text += `   📊 الرصيد المتراكم : *${formatNum(item.runBal)} ج.م*\n─────────────────────\n`;
         } else {
-          const pay = item.data; runBal -= pay.amount || 0; if (runBal < 0) runBal = 0;
-          const payDate = pay.customDate ? new Date(pay.customDate+'T12:00:00').toLocaleDateString('ar-EG') : (pay.dateStr||'');
-          text += `💳 *[${index+1}] دفعة مالية*\n📅 ${payDate}\n─────────────────────\n`;
+          const pay = item.data;
+          text += `💳 *[${displayNum}] دفعة مالية*\n📅 ${getDisplayDate(pay.customDate || pay.date, pay.dateStr)}\n─────────────────────\n`;
           text += `   💵 المبلغ المدفوع : *${formatNum(pay.amount)} ج.م*\n`;
           if (pay.notes) text += `   📝 ملاحظات : ${pay.notes}\n`;
-          text += `   📊 الرصيد بعدها : *${formatNum(runBal)} ج.م*\n─────────────────────\n`;
+          text += `   📊 الرصيد بعدها : *${formatNum(item.runBal)} ج.م*\n─────────────────────\n`;
         }
       });
     }
@@ -3045,7 +3105,7 @@ window.saveEditInvoice = async function(invoiceId) {
   const newDateISO = document.getElementById('ei-date')?.value || getTodayISO();
   if (!newClientName) return showToast('❌ اسم العميل مطلوب');
   if (!validatePhone(newPhone)) return showToast('❌ رقم الهاتف غير صحيح');
-  const newDateStr = new Date(newDateISO + 'T12:00:00').toLocaleDateString('ar-EG', {year:'numeric',month:'long',day:'numeric'});
+  const newDateStr = new Date(newDateISO + 'T12:00:00').toLocaleDateString('en-GB'); // Changed
   const newItems = (window._editItems || []).map((item, idx) => {
     const unit = document.getElementById('ei-unit-' + idx)?.value || item.unit || 'kg';
     const qty = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
@@ -3163,7 +3223,7 @@ window.saveEditPayment = async function(paymentId, clientKey, oldAmount) {
   const newNotes = (document.getElementById('ep-notes')?.value || '').trim();
   if (newAmount <= 0) return showToast('❌ المبلغ يجب أن يكون أكبر من صفر');
   const diff = newAmount - oldAmount;
-  const dateStr = newDate ? new Date(newDate + 'T12:00:00').toLocaleDateString('ar-EG') : '';
+  const dateStr = newDate ? new Date(newDate + 'T12:00:00').toLocaleDateString('en-GB') : ''; // Changed
   try {
     await update(ref(db, 'payments/' + paymentId), { amount: newAmount, from: newFrom, customDate: newDate, dateStr, notes: newNotes });
     const clientRef = ref(db, 'clients/' + clientKey);
@@ -3356,48 +3416,4 @@ window.confirmLogout = function() {
   modal.innerHTML = `
     <div class="modal-sheet" style="max-height:40vh;text-align:center">
       <div class="modal-handle"></div>
-      <div style="font-size:44px;margin:8px 0">🔐</div>
-      <div style="font-size:17px;font-weight:900;color:var(--text-primary);margin-bottom:8px">تسجيل الخروج</div>
-      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px">هل تريد الخروج من الحساب الحالي؟</div>
-      <div style="display:flex;gap:10px">
-        <button onclick="document.getElementById('logout-modal').remove()"
-          style="flex:1;padding:13px;border-radius:12px;border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer">إلغاء</button>
-        <button onclick="doLogout()"
-          style="flex:2;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--danger),#c0392b);color:white;font-family:'Cairo',sans-serif;font-size:14px;font-weight:900;cursor:pointer">🚪 خروج</button>
-      </div>
-    </div>
-  `;
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-  document.getElementById('modals-container').appendChild(modal);
-};
-
-window.doLogout = function() {
-  window.currentUser = null; window.appState.userRole = null;
-  document.getElementById('logout-modal')?.remove();
-  const inp = document.getElementById('login-password');
-  inp.value = ''; inp.type = 'password'; inp.style.letterSpacing = '8px';
-  const eye = document.getElementById('login-eye');
-  if (eye) eye.textContent = '👁️';
-  for (let i = 0; i < 6; i++) { const dot = document.getElementById('dot-' + i); if (dot) dot.classList.remove('filled'); }
-  document.getElementById('login-error').textContent = '';
-  const screen = document.getElementById('login-screen');
-  screen.classList.remove('hidden'); screen.style.opacity = '0';
-  setTimeout(() => { screen.style.transition = 'opacity 0.4s ease'; screen.style.opacity = '1'; }, 10);
-  const invoiceNav = document.querySelectorAll('.nav-item')[1];
-  if (invoiceNav) invoiceNav.style.display = '';
-};
-
-// ============================================================
-// INIT
-// ============================================================
-init3DBackground();
-updateDate();
-setupListeners();
-initInvoiceForm();
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(e => console.log('SW:', e));
-}
-</script>
-</body>
-</html>
+      <div style="font-size:44px;margin:
