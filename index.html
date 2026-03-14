@@ -1759,14 +1759,11 @@ window.exportClientStatementPDF = async function(clientKey) {
     item.runBal = runBal;
   });
 
-  // Reverse timeline to show NEWEST first for display
-  timeline.reverse();
-
   const nowStr = new Date().toLocaleDateString('en-GB');
   let timelineRows = '';
   
   timeline.forEach((item, idx) => {
-    const displayNum = timeline.length - idx; // numbering: highest number is oldest, #1 is newest
+    const displayNum = idx + 1;
     if (item.type === 'invoice') {
       const inv = item.data;
       const invNum = generateInvoiceNumber(item.id);
@@ -1860,7 +1857,7 @@ window.exportClientStatementPDF = async function(clientKey) {
     <div class="summary-card paid"><div class="s-label paid">✅ المدفوع</div><div class="s-val paid">${formatNum(totalPaid)}</div><div class="s-unit">جنيه مصري</div></div>
     <div class="summary-card total"><div class="s-label total">💰 إجمالي المشتريات</div><div class="s-val total">${formatNum(totalPurchases)}</div><div class="s-unit">جنيه مصري</div></div>
   </div>
-  <div class="section-title">🕐 سجل الحركات — الأحدث أولاً</div>
+  <div class="section-title">🕐 سجل الحركات — الأقدم أولاً</div>
   <table>
     <thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>التفاصيل</th><th>المبلغ</th><th>الرصيد</th></tr></thead>
     <tbody>${timelineRows || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa">لا توجد حركات مسجلة</td></tr>'}</tbody>
@@ -2143,7 +2140,7 @@ window.showClientAccount = async function(clientKey) {
   
   const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone===c.phone);
 
-  // Map to unified format and sort NEWEST FIRST
+  // Map to unified format and sort OLDEST FIRST
   const timeline = [
     ...clientInvoices.map(([id,inv]) => {
       const d = inv.invDateISO || inv.date?.split('T')[0] || getTodayISO();
@@ -2153,7 +2150,7 @@ window.showClientAccount = async function(clientKey) {
       const d = pay.customDate || pay.date?.split('T')[0] || getTodayISO();
       return {type:'payment', id, data:pay, ts: new Date(d+'T12:00:00').getTime()};
     })
-  ].sort((a,b) => b.ts - a.ts); // Newest First
+  ].sort((a,b) => a.ts - b.ts); // Oldest First
 
   const todayISO = getTodayISO();
   const modal = document.createElement('div');
@@ -2252,7 +2249,7 @@ window.showClientAccount = async function(clientKey) {
       `}
       <div style="margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px">
-          🕐 سجل الحركات — الأحدث أولاً
+          🕐 سجل الحركات — الأقدم أولاً
           <span style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.3);padding:2px 8px;border-radius:20px;font-size:10px;color:var(--cyan-glow)">${timeline.length} حركة</span>
         </div>
         ${timeline.length===0?'<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات</div>':
@@ -2865,7 +2862,7 @@ window.sendClientStatementWA = async function(clientKey) {
       item.runBal = runBal;
     });
 
-    timeline.reverse(); // Display newest first
+    // Removed reverse to display oldest first
 
     let text = `🐟 *كشف حساب كامل*\n🏪 الحاج أحمد الحديدي - تجارة الأسماك\n━━━━━━━━━━━━━━━━━━━━━━\n`;
     text += `👤 العميل  : *${c.name}*\n`;
@@ -2873,9 +2870,9 @@ window.sendClientStatementWA = async function(clientKey) {
     text += `📅 تاريخ الكشف : ${now}\n━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     if (timeline.length === 0) { text += `📭 لا توجد حركات مسجلة بعد\n`; }
     else {
-      text += `📋 *تفاصيل جميع الحركات (${timeline.length}) (الأحدث أولاً):*\n`;
+      text += `📋 *تفاصيل جميع الحركات (${timeline.length}) (الأقدم أولاً):*\n`;
       timeline.forEach((item, index) => {
-        const displayNum = timeline.length - index;
+        const displayNum = index + 1;
         if (item.type === 'invoice') {
           const inv = item.data;
           text += `🧾 *[${displayNum}] فاتورة بيع*\n📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}\n─────────────────────\n`;
