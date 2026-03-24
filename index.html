@@ -746,6 +746,17 @@
           <div id="phone-error" style="color:var(--danger);font-size:11px;margin-top:4px;display:none">❌ رقم الهاتف غير صحيح</div>
         </div>
         <div class="form-group">
+          <label class="form-label">🏢 القطاع / المكان *</label>
+          <select id="inv-sector" class="form-select">
+            <option value="">-- اختر القطاع --</option>
+            <option value="القطاع الأول">القطاع الأول</option>
+            <option value="القطاع الثاني">القطاع الثاني</option>
+            <option value="القطاع الثالث">القطاع الثالث</option>
+            <option value="الصرف">الصرف</option>
+            <option value="المغزي">المغزي</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label class="form-label">🤝 عمولة التاجر % (اختياري)</label>
           <div style="position:relative;display:flex;align-items:center">
             <input type="number" id="inv-commission" class="form-input" placeholder="0" min="0" max="100" step="0.5"
@@ -837,7 +848,27 @@
       <div id="history-list"><div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير بعد</div></div></div>
     </div>
 
-    <div class="page" id="page-prices">
+    <div class="page" id="page-sectors">
+      <div class="glass-card">
+        <div class="section-title">🏢 أرباح وفواتير كل قطاع</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+          <div>
+            <label class="form-label" style="font-size:10px">📅 من تاريخ</label>
+            <input type="date" id="sector-date-from" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderSectors()">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px">📅 إلى تاريخ</label>
+            <input type="date" id="sector-date-to" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderSectors()">
+          </div>
+        </div>
+        <div id="sectors-summary-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"></div>
+      </div>
+      <div class="glass-card">
+        <div class="section-title">📋 فواتير القطاع المختار</div>
+        <div class="tab-bar" id="sectors-tab-bar" style="margin-bottom:10px"></div>
+        <div id="sectors-invoices-list"></div>
+      </div>
+    </div>
       
       <div class="glass-card" style="margin-bottom:14px;background:rgba(0,180,216,0.05);border-color:rgba(0,180,216,0.3)">
         <div class="section-title" style="color:var(--cyan-glow)">⚖️ مقارنة أسعار عميلين</div>
@@ -911,6 +942,9 @@
     </button>
     <button class="nav-item" onclick="switchPage('history',this)">
       <span class="nav-icon">📚</span><span class="nav-label">السجل</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('sectors',this)">
+      <span class="nav-icon">🏢</span><span class="nav-label">القطاعات</span>
     </button>
     <button class="nav-item" onclick="switchPage('prices',this)">
       <span class="nav-icon">💹</span><span class="nav-label">الأسعار</span>
@@ -1065,7 +1099,7 @@ window.switchPage = function(page, btn) {
   if (page === 'invoice') initInvoiceForm();
   if (page === 'clients') renderClients();
   if (page === 'history') renderHistory();
-  if (page === 'prices') renderPricesPage();
+  if (page === 'sectors') renderSectors();
 };
 
 // ============================================================
@@ -1081,6 +1115,7 @@ function initInvoiceForm() {
   document.getElementById('inv-phone').value = '';
   document.getElementById('inv-shop').value = '';
   document.getElementById('inv-commission').value = '';
+  document.getElementById('inv-sector').value = '';
   document.getElementById('phone-error').style.display = 'none';
   renderFishChips();
   document.getElementById('fish-items-container').innerHTML = '';
@@ -1340,9 +1375,11 @@ window.saveInvoice = async function() {
   const clientName = document.getElementById('inv-client').value.trim();
   const phone = document.getElementById('inv-phone').value.trim();
   const shopName = document.getElementById('inv-shop').value.trim();
+  const sector = document.getElementById('inv-sector').value.trim();
   const invDateISO = document.getElementById('inv-date').value || getTodayISO();
   if (!clientName) return showToast('❌ يرجى إدخال اسم العميل');
   if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
+  if (!sector) return showToast('❌ يرجى اختيار القطاع / المكان');
   if (window.appState.fishItems.length === 0) return showToast('❌ يرجى اختيار صنف واحد على الأقل');
   const items = [];
   let fishTotal = 0;
@@ -1376,7 +1413,7 @@ window.saveInvoice = async function() {
     const invDate = new Date(invDateISO + 'T12:00:00');
     const dateStr = invDate.toLocaleDateString('en-GB'); // Changed to DD/MM/YYYY
     const invoice = {
-      clientName, phone, shopName, items, expenses: expensesList,
+      clientName, phone, shopName, sector, items, expenses: expensesList,
       fishTotal, expTotal, gross: fishTotal,
       commissionPct, commissionAmt,
       total: netTotal,
@@ -1465,6 +1502,7 @@ function showInvoicePreview(invoice, invoiceId) {
           </div>
           <div style="margin-top:8px;font-size:13px"><span style="color:var(--text-secondary)">العميل: </span><strong>${invoice.clientName}</strong></div>
           ${invoice.shopName ? `<div style="font-size:12px;color:var(--text-secondary)">🏪 ${invoice.shopName}</div>` : ''}
+          ${invoice.sector ? `<div style="font-size:12px;color:var(--emerald)">🏢 ${invoice.sector}</div>` : ''}
           <div style="font-size:12px;color:var(--cyan-glow)">📱 ${invoice.phone}</div>
         </div>
         <table class="invoice-table">
@@ -1522,6 +1560,7 @@ function buildInvoiceText(invoice) {
   let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n📋 رقم الفاتورة: *${invNum}*\n━━━━━━━━━━━━━━━━━━\n`;
   text += `👤 العميل : ${invoice.clientName}\n`;
   if (invoice.shopName) text += `🏪 المؤسسة: ${invoice.shopName}\n`;
+  if (invoice.sector)   text += `🏢 القطاع: ${invoice.sector}\n`;
   text += `📅 التاريخ: ${getDisplayDate(invoice.invDateISO || invoice.date, invoice.dateStr)}\n━━━━━━━━━━━━━━━━━━\n*📦 تفاصيل الأصناف:*\n`;
   (invoice.items || []).forEach((item, idx) => {
     const unit = item.unit || 'kg';
@@ -3443,6 +3482,133 @@ window.doLogout = function() {
   const invoiceNav = document.querySelectorAll('.nav-item')[1];
   if (invoiceNav) invoiceNav.style.display = '';
 };
+
+// ============================================================
+// SECTORS REPORT
+// ============================================================
+const SECTORS = ['القطاع الأول','القطاع الثاني','القطاع الثالث','الصرف','المغزي'];
+window.appState.selectedSector = SECTORS[0];
+
+window.renderSectors = function() {
+  const fromVal = document.getElementById('sector-date-from')?.value || '';
+  const toVal   = document.getElementById('sector-date-to')?.value   || '';
+
+  let allInvoices = Object.entries(window.appState.invoices);
+
+  if (fromVal) allInvoices = allInvoices.filter(([,i]) => (i.invDateISO||'') >= fromVal);
+  if (toVal)   allInvoices = allInvoices.filter(([,i]) => (i.invDateISO||'') <= toVal);
+
+  // Build summary per sector
+  const summaryGrid = document.getElementById('sectors-summary-grid');
+  const sectorColors = {
+    'القطاع الأول':  { bg:'rgba(0,180,216,0.12)',  border:'rgba(0,180,216,0.4)',  icon:'🔵' },
+    'القطاع الثاني': { bg:'rgba(0,200,150,0.12)',  border:'rgba(0,200,150,0.4)',  icon:'🟢' },
+    'القطاع الثالث': { bg:'rgba(255,165,0,0.12)',   border:'rgba(255,165,0,0.4)',   icon:'🟠' },
+    'الصرف':         { bg:'rgba(255,71,87,0.12)',   border:'rgba(255,71,87,0.4)',   icon:'🔴' },
+    'المغزي':        { bg:'rgba(192,132,252,0.12)', border:'rgba(192,132,252,0.4)', icon:'🟣' },
+  };
+
+  summaryGrid.innerHTML = SECTORS.map(sec => {
+    const secInvoices = allInvoices.filter(([,i]) => (i.sector||'') === sec);
+    const total  = secInvoices.reduce((s,[,i]) => s + (i.total||0), 0);
+    const fishTotal = secInvoices.reduce((s,[,i]) => s + (i.fishTotal||i.gross||i.total||0), 0);
+    const expTotal  = secInvoices.reduce((s,[,i]) => s + (i.expTotal||0), 0);
+    const commTotal = secInvoices.reduce((s,[,i]) => s + (i.commissionAmt||0), 0);
+    const profit = fishTotal - expTotal - commTotal;
+    const c = sectorColors[sec] || { bg:'rgba(255,255,255,0.07)', border:'rgba(255,255,255,0.15)', icon:'🏢' };
+    const isSelected = window.appState.selectedSector === sec;
+    return `
+      <div onclick="selectSector('${sec}')" style="
+        background:${c.bg}; border:2px solid ${isSelected ? c.border.replace('0.4','0.9') : c.border};
+        border-radius:14px; padding:12px; text-align:center; cursor:pointer;
+        transition:all 0.25s; ${isSelected ? 'transform:scale(1.03);box-shadow:0 0 16px '+c.border+';' : ''}
+      ">
+        <div style="font-size:22px;margin-bottom:4px">${c.icon}</div>
+        <div style="font-size:12px;font-weight:800;color:var(--text-primary);margin-bottom:6px">${sec}</div>
+        <div style="font-size:10px;color:var(--text-secondary)">${secInvoices.length} فاتورة</div>
+        <div style="font-size:14px;font-weight:900;color:var(--gold);margin-top:4px">${formatNum(total)}</div>
+        <div style="font-size:9px;color:var(--emerald)">ربح: ${formatNum(profit)} ج.م</div>
+      </div>
+    `;
+  }).join('');
+
+  // Render tabs
+  const tabBar = document.getElementById('sectors-tab-bar');
+  tabBar.innerHTML = SECTORS.map(sec => {
+    const count = allInvoices.filter(([,i]) => (i.sector||'') === sec).length;
+    return `<button class="tab-btn ${window.appState.selectedSector===sec?'active':''}"
+      onclick="selectSector('${sec}')">${sec} <span style="font-size:10px;opacity:0.7">(${count})</span></button>`;
+  }).join('');
+
+  renderSectorInvoices(allInvoices);
+};
+
+window.selectSector = function(sec) {
+  window.appState.selectedSector = sec;
+  renderSectors();
+};
+
+function renderSectorInvoices(allInvoices) {
+  const sec = window.appState.selectedSector;
+  const container = document.getElementById('sectors-invoices-list');
+  const filtered = allInvoices
+    .filter(([,i]) => (i.sector||'') === sec)
+    .sort((a,b) => {
+      const da = a[1].invDateISO||'', db = b[1].invDateISO||'';
+      return db.localeCompare(da) || (b[1].createdAt||0)-(a[1].createdAt||0);
+    });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير لـ ${sec}</div></div>`;
+    return;
+  }
+
+  const sectorTotal = filtered.reduce((s,[,i]) => s + (i.total||0), 0);
+  const sectorFishTotal = filtered.reduce((s,[,i]) => s + (i.fishTotal||i.gross||i.total||0), 0);
+  const sectorExpTotal  = filtered.reduce((s,[,i]) => s + (i.expTotal||0), 0);
+  const sectorCommTotal = filtered.reduce((s,[,i]) => s + (i.commissionAmt||0), 0);
+  const sectorProfit    = sectorFishTotal - sectorExpTotal - sectorCommTotal;
+
+  container.innerHTML = `
+    <div style="background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:12px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+      <div>
+        <div style="font-size:10px;color:var(--text-secondary)">إجمالي المبيعات</div>
+        <div style="font-size:15px;font-weight:900;color:var(--gold)">${formatNum(sectorTotal)}</div>
+        <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text-secondary)">عدد الفواتير</div>
+        <div style="font-size:15px;font-weight:900;color:var(--cyan-glow)">${filtered.length}</div>
+        <div style="font-size:9px;color:var(--text-secondary)">فاتورة</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text-secondary)">صافي الربح</div>
+        <div style="font-size:15px;font-weight:900;color:var(--emerald)">${formatNum(sectorProfit)}</div>
+        <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
+      </div>
+    </div>
+    ${filtered.map(([id, inv]) => {
+      const fishT = inv.fishTotal||inv.gross||inv.total;
+      const hasDeductions = (inv.expTotal||0) > 0 || (inv.commissionPct||0) > 0;
+      const invNum = inv.invoiceNumber || generateInvoiceNumber(id);
+      return `
+        <div class="history-item" onclick="showInvoiceDetail('${id}')">
+          <div class="history-header">
+            <span class="history-client">👤 ${inv.clientName}</span>
+            <div style="text-align:left">
+              <div class="history-amount">${formatNum(inv.total)} ج.م</div>
+              ${hasDeductions?`<div style="font-size:10px;color:var(--danger)">قبل الخصم: ${formatNum(fishT)} ج.م</div>`:''}
+            </div>
+          </div>
+          <div class="history-meta" style="display:flex;justify-content:space-between;align-items:center">
+            <span>📅 ${getDisplayDate(inv.invDateISO||inv.date, inv.dateStr)} • 📦 ${(inv.items||[]).length} صنف</span>
+            <span style="font-size:10px;color:rgba(0,180,216,0.6)">📋 ${invNum}</span>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
 
 // ============================================================
 // INIT
