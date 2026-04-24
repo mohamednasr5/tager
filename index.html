@@ -32,84 +32,34 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; font-family: 'Cairo', sans-serif; background: var(--ocean-deep); color: var(--text-primary); }
-
   #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
   #app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
-
-  .app-header {
-    background: linear-gradient(135deg, rgba(10,22,40,0.95) 0%, rgba(13,33,55,0.95) 100%);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--glass-border);
-    padding: 12px 16px;
-    display: flex; align-items: center; justify-content: space-between;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    position: relative; z-index: 10;
-  }
+  .app-header { background: linear-gradient(135deg, rgba(10,22,40,0.95) 0%, rgba(13,33,55,0.95) 100%); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: relative; z-index: 10; }
   .header-logo { display: flex; align-items: center; gap: 10px; }
   .logo-icon { font-size: 28px; animation: fishSwim 3s ease-in-out infinite; display: inline-block; }
   @keyframes fishSwim { 0%,100%{transform:translateX(0) rotate(0deg)} 25%{transform:translateX(3px) rotate(2deg)} 75%{transform:translateX(-3px) rotate(-2deg)} }
   .header-title { font-size: 15px; font-weight: 900; color: var(--gold); line-height: 1.2; }
   .header-subtitle { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
   .header-date { font-size: 11px; color: var(--cyan-glow); text-align: left; }
-
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-    background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(10,22,40,1) 100%);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid var(--glass-border);
-    display: flex; padding: 8px 0 max(8px, env(safe-area-inset-bottom));
-  }
-  .nav-item {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-    cursor: pointer; padding: 6px 4px; transition: all 0.3s; border: none; background: none;
-    color: var(--text-secondary); font-family: 'Cairo', sans-serif;
-  }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(10,22,40,1) 100%); backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border); display: flex; padding: 8px 0 max(8px, env(safe-area-inset-bottom)); }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 6px 4px; transition: all 0.3s; border: none; background: none; color: var(--text-secondary); font-family: 'Cairo', sans-serif; }
   .nav-item.active { color: var(--cyan-glow); }
   .nav-item .nav-icon { font-size: 22px; transition: transform 0.3s; }
   .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.15); filter: drop-shadow(0 0 8px var(--cyan-glow)); }
   .nav-item .nav-label { font-size: 10px; font-weight: 600; }
-
   .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 12px 90px; scroll-behavior: smooth; }
   .content::-webkit-scrollbar { width: 3px; }
   .content::-webkit-scrollbar-track { background: transparent; }
   .content::-webkit-scrollbar-thumb { background: var(--wave-blue); border-radius: 3px; }
-
   .page { display: none; animation: fadeSlideIn 0.4s ease; }
   .page.active { display: block; }
   @keyframes fadeSlideIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
-
-  .glass-card {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    backdrop-filter: blur(10px);
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: var(--card-shadow);
-    position: relative; overflow: hidden;
-  }
-  .glass-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  }
-
-  .section-title {
-    font-size: 13px; font-weight: 700; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
+  .glass-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; backdrop-filter: blur(10px); padding: 16px; margin-bottom: 12px; box-shadow: var(--card-shadow); position: relative; overflow: hidden; }
+  .glass-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
   .section-title::after { content:''; flex:1; height:1px; background:var(--glass-border); }
-
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .stat-card {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    padding: 14px 12px;
-    text-align: center;
-    position: relative; overflow: hidden;
-    transition: transform 0.2s;
-  }
+  .stat-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px 12px; text-align: center; position: relative; overflow: hidden; transition: transform 0.2s; }
   .stat-card:active { transform: scale(0.97); }
   .stat-card .stat-icon { font-size: 24px; margin-bottom: 6px; }
   .stat-card .stat-value { font-size: 20px; font-weight: 900; color: var(--gold); }
@@ -117,211 +67,60 @@
   .stat-card.highlight { border-color: rgba(0,180,216,0.4); background: rgba(0,180,216,0.08); }
   .stat-card.danger { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.08); }
   .stat-card.success { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.08); }
-
-  .price-leader-card {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 8px;
-    display: flex; align-items: center; gap: 10px;
-  }
+  .price-leader-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
   .leader-rank { font-size: 20px; min-width: 32px; text-align: center; }
   .leader-info { flex: 1; }
   .leader-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
   .leader-fish { font-size: 11px; color: var(--cyan-glow); }
   .leader-price { font-size: 16px; font-weight: 900; color: var(--gold); }
-
   .form-group { margin-bottom: 14px; }
   .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; }
-  .form-input, .form-select, .form-textarea {
-    width: 100%; padding: 12px 14px; border-radius: 10px;
-    border: 1px solid var(--glass-border);
-    background: rgba(255,255,255,0.06);
-    color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 14px;
-    outline: none; transition: all 0.3s;
-    -webkit-appearance: none;
-  }
+  .form-input, .form-select, .form-textarea { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 14px; outline: none; transition: all 0.3s; -webkit-appearance: none; }
   .form-input:focus, .form-select:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
   .form-select option { background: var(--ocean-deep); color: var(--text-primary); }
   .form-input::placeholder { color: rgba(255,255,255,0.3); }
-
   input[type="date"] { color-scheme: dark; }
-
   .fish-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .fish-chip {
-    padding: 8px 14px; border-radius: 22px;
-    border: 1px solid var(--glass-border);
-    background: rgba(255,255,255,0.05);
-    color: var(--text-secondary);
-    font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all 0.25s;
-    font-family: 'Cairo', sans-serif;
-    user-select: none;
-  }
+  .fish-chip { padding: 8px 14px; border-radius: 22px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s; font-family: 'Cairo', sans-serif; user-select: none; }
   .fish-chip:active { transform: scale(0.95); }
-  .fish-chip.selected {
-    border-color: var(--cyan-glow);
-    background: rgba(0,180,216,0.18);
-    color: var(--cyan-glow);
-    box-shadow: 0 0 10px rgba(0,180,216,0.2);
-  }
-  .fish-chip.other-chip {
-    border-color: rgba(255,215,0,0.4);
-    background: rgba(255,215,0,0.08);
-    color: var(--gold);
-  }
-  .fish-chip.other-chip:active { transform: scale(0.95); }
-
-  .fish-item-row {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 12px;
-    position: relative;
-    animation: fishRowIn 0.3s ease;
-  }
+  .fish-chip.selected { border-color: var(--cyan-glow); background: rgba(0,180,216,0.18); color: var(--cyan-glow); box-shadow: 0 0 10px rgba(0,180,216,0.2); }
+  .fish-chip.other-chip { border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.08); color: var(--gold); }
+  .fish-item-row { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px; margin-bottom: 12px; position: relative; animation: fishRowIn 0.3s ease; }
   @keyframes fishRowIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-
-  .fish-row-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 10px;
-  }
-  .fish-row-name {
-    font-size: 14px; font-weight: 800; color: var(--gold);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .fish-row-total {
-    font-size: 15px; font-weight: 900; color: var(--emerald);
-    background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.3);
-    padding: 3px 10px; border-radius: 20px;
-  }
-
-  .unit-grid {
-    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 5px; margin-bottom: 10px;
-  }
-  .unit-btn {
-    padding: 8px 4px; border-radius: 10px;
-    border: 1px solid var(--glass-border);
-    background: transparent;
-    color: var(--text-secondary);
-    font-family: 'Cairo', sans-serif;
-    font-size: 10px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s;
-    text-align: center; line-height: 1.4;
-  }
-  .unit-btn.active-kg    { border: 2px solid var(--cyan-glow); background: rgba(0,180,216,0.15); color: var(--cyan-glow); }
-  .unit-btn.active-wqa   { border: 2px solid var(--warning);   background: rgba(255,165,0,0.15); color: var(--warning); }
-  .unit-btn.active-box20 { border: 2px solid var(--emerald);   background: rgba(0,200,150,0.15); color: var(--emerald); }
-  .unit-btn.active-box25 { border: 2px solid #c084fc;          background: rgba(192,132,252,0.15); color: #c084fc; }
-
-  .unit-info-box {
-    display: none; padding: 7px 12px; border-radius: 8px;
-    font-size: 12px; font-weight: 700; text-align: center;
-    margin-bottom: 10px;
-  }
-
-  .fish-inputs-row {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
-  }
-  .fish-input-group label {
-    font-size: 10px; color: var(--text-secondary);
-    display: block; margin-bottom: 3px; font-weight: 600;
-  }
-  .fish-input-group input {
-    width: 100%; padding: 10px 6px; border-radius: 9px;
-    border: 1px solid var(--glass-border);
-    background: rgba(255,255,255,0.06);
-    color: var(--text-primary);
-    font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
-    outline: none; text-align: center; transition: all 0.25px;
-    -webkit-appearance: none;
-  }
-  .fish-input-group input:focus {
-    border-color: var(--cyan-glow);
-    background: rgba(0,180,216,0.08);
-    box-shadow: 0 0 0 2px rgba(0,180,216,0.15);
-  }
-  .fish-input-group input.readonly-subtotal {
-    background: rgba(0,200,150,0.08);
-    border-color: rgba(0,200,150,0.3);
-    color: var(--emerald);
-  }
-
-  .custom-fish-input {
-    width: 100%; padding: 8px 12px; border-radius: 9px;
-    border: 1px solid rgba(255,215,0,0.3);
-    background: rgba(255,215,0,0.06);
-    color: var(--gold); font-family: 'Cairo', sans-serif;
-    font-size: 13px; font-weight: 600; outline: none;
-    margin-bottom: 10px; transition: all 0.2s;
-  }
+  .fish-row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .fish-row-name { font-size: 14px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 6px; }
+  .fish-row-total { font-size: 15px; font-weight: 900; color: var(--emerald); background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.3); padding: 3px 10px; border-radius: 20px; }
+  .unit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+  .unit-btn { padding: 8px 4px; border-radius: 10px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-family: 'Cairo', sans-serif; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.4; }
+  .unit-btn.active-kg { border: 2px solid var(--cyan-glow); background: rgba(0,180,216,0.15); color: var(--cyan-glow); }
+  .unit-btn.active-wqa { border: 2px solid var(--warning); background: rgba(255,165,0,0.15); color: var(--warning); }
+  .unit-btn.active-box20 { border: 2px solid var(--emerald); background: rgba(0,200,150,0.15); color: var(--emerald); }
+  .unit-btn.active-box25 { border: 2px solid #c084fc; background: rgba(192,132,252,0.15); color: #c084fc; }
+  .unit-info-box { display: none; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; margin-bottom: 10px; }
+  .fish-inputs-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .fish-input-group label { font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 3px; font-weight: 600; }
+  .fish-input-group input { width: 100%; padding: 10px 6px; border-radius: 9px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; outline: none; text-align: center; transition: all 0.25px; -webkit-appearance: none; }
+  .fish-input-group input:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); box-shadow: 0 0 0 2px rgba(0,180,216,0.15); }
+  .fish-input-group input.readonly-subtotal { background: rgba(0,200,150,0.08); border-color: rgba(0,200,150,0.3); color: var(--emerald); }
+  .custom-fish-input { width: 100%; padding: 8px 12px; border-radius: 9px; border: 1px solid rgba(255,215,0,0.3); background: rgba(255,215,0,0.06); color: var(--gold); font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; outline: none; margin-bottom: 10px; transition: all 0.2s; }
   .custom-fish-input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.15); }
   .custom-fish-input::placeholder { color: rgba(255,215,0,0.4); }
-
-  .remove-fish-btn {
-    position: absolute; top: 10px; left: 10px;
-    width: 26px; height: 26px; border-radius: 50%;
-    border: 1px solid rgba(255,71,87,0.4);
-    background: rgba(255,71,87,0.1);
-    color: var(--danger); font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.2s; line-height: 1;
-  }
+  .remove-fish-btn { position: absolute; top: 10px; left: 10px; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,71,87,0.4); background: rgba(255,71,87,0.1); color: var(--danger); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; line-height: 1; }
   .remove-fish-btn:hover, .remove-fish-btn:active { background: rgba(255,71,87,0.25); transform: scale(1.1); }
-
-  .expense-row {
-    display: flex; gap: 8px; align-items: center;
-    background: rgba(255,71,87,0.05);
-    border: 1px solid rgba(255,71,87,0.2);
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 8px;
-    animation: fishRowIn 0.3s ease;
-  }
-  .expense-row input {
-    padding: 9px 10px; border-radius: 9px;
-    border: 1px solid rgba(255,71,87,0.25);
-    background: rgba(255,71,87,0.06);
-    color: var(--text-primary); font-family: 'Cairo', sans-serif;
-    font-size: 13px; outline: none; transition: all 0.2s;
-    -webkit-appearance: none;
-  }
+  .expense-row { display: flex; gap: 8px; align-items: center; background: rgba(255,71,87,0.05); border: 1px solid rgba(255,71,87,0.2); border-radius: 12px; padding: 10px; margin-bottom: 8px; animation: fishRowIn 0.3s ease; }
+  .expense-row input { padding: 9px 10px; border-radius: 9px; border: 1px solid rgba(255,71,87,0.25); background: rgba(255,71,87,0.06); color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 13px; outline: none; transition: all 0.2s; -webkit-appearance: none; }
   .expense-row input:focus { border-color: var(--danger); }
   .expense-row .expense-desc { flex: 2; }
   .expense-row .expense-amt { flex: 1; text-align: center; font-weight: 700; }
-  .expense-remove-btn {
-    width: 28px; height: 28px; border-radius: 50%;
-    border: 1px solid rgba(255,71,87,0.4);
-    background: rgba(255,71,87,0.1);
-    color: var(--danger); font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; flex-shrink: 0;
-  }
-
-  .invoice-summary-card {
-    background: linear-gradient(135deg, rgba(0,180,216,0.08), rgba(21,101,192,0.05));
-    border: 1px solid rgba(0,180,216,0.3);
-    border-radius: 14px; padding: 14px; margin-bottom: 12px;
-  }
-  .summary-row {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 8px;
-  }
+  .expense-remove-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,71,87,0.4); background: rgba(255,71,87,0.1); color: var(--danger); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .invoice-summary-card { background: linear-gradient(135deg, rgba(0,180,216,0.08), rgba(21,101,192,0.05)); border: 1px solid rgba(0,180,216,0.3); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .summary-label { font-size: 13px; color: var(--text-secondary); }
   .summary-value { font-size: 15px; font-weight: 700; color: var(--text-primary); }
   .summary-total-label { font-size: 14px; font-weight: 800; color: var(--gold); }
   .summary-total-value { font-size: 24px; font-weight: 900; color: var(--gold); }
   .summary-divider { height: 1px; background: rgba(255,215,0,0.2); margin: 8px 0; }
-
-  .btn {
-    padding: 12px 20px; border-radius: 12px; border: none;
-    font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: all 0.25s; display: inline-flex; align-items: center; gap: 8px;
-    justify-content: center; width: 100%; margin-bottom: 8px;
-  }
+  .btn { padding: 12px 20px; border-radius: 12px; border: none; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.25s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; width: 100%; margin-bottom: 8px; }
   .btn-primary { background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue)); color: white; box-shadow: 0 4px 15px rgba(0,180,216,0.4); }
   .btn-primary:active { transform: scale(0.97); }
   .btn-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1200; box-shadow: 0 4px 15px rgba(255,215,0,0.3); }
@@ -330,12 +129,7 @@
   .btn-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; box-shadow: 0 4px 15px rgba(37,211,102,0.3); }
   .btn-outline { background: transparent; border: 1px solid var(--glass-border); color: var(--text-primary); }
   .btn-pdf { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; box-shadow: 0 4px 15px rgba(231,76,60,0.3); }
-
-  .invoice-preview {
-    background: linear-gradient(135deg, rgba(21,101,192,0.15), rgba(10,22,40,0.95));
-    border: 1px solid rgba(21,101,192,0.4);
-    border-radius: 16px; padding: 20px;
-  }
+  .invoice-preview { background: linear-gradient(135deg, rgba(21,101,192,0.15), rgba(10,22,40,0.95)); border: 1px solid rgba(21,101,192,0.4); border-radius: 16px; padding: 20px; }
   .invoice-header { text-align: center; margin-bottom: 16px; border-bottom: 1px solid var(--glass-border); padding-bottom: 12px; }
   .invoice-shop { font-size: 18px; font-weight: 900; color: var(--gold); }
   .invoice-owner { font-size: 13px; color: var(--cyan-glow); }
@@ -343,12 +137,7 @@
   .invoice-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
   .invoice-table th { font-size: 11px; color: var(--text-secondary); padding: 6px 4px; text-align: center; border-bottom: 1px solid var(--glass-border); }
   .invoice-table td { font-size: 12px; padding: 7px 4px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
-  .client-card {
-    background: var(--glass); border: 1px solid var(--glass-border);
-    border-radius: 14px; padding: 14px; margin-bottom: 10px;
-    cursor: pointer; transition: all 0.25s; position: relative;
-  }
+  .client-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.25s; position: relative; }
   .client-card:active { transform: scale(0.98); }
   .client-card.has-debt { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
   .client-card.paid { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.06); }
@@ -357,238 +146,84 @@
   .balance-amount { font-size: 18px; font-weight: 900; }
   .balance-amount.debt { color: var(--danger); }
   .balance-amount.paid { color: var(--emerald); }
-
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
-    display: flex; align-items: flex-end; justify-content: center;
-    animation: fadeIn 0.2s ease;
-  }
+  .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  .modal-sheet {
-    background: linear-gradient(180deg, var(--ocean-mid), var(--ocean-deep));
-    border: 1px solid var(--glass-border);
-    border-radius: 24px 24px 0 0;
-    padding: 20px 20px max(20px, env(safe-area-inset-bottom));
-    width: 100%; max-height: 85vh; overflow-y: auto;
-    animation: slideUp 0.35s cubic-bezier(0.25,0.8,0.25,1);
-  }
+  .modal-sheet { background: linear-gradient(180deg, var(--ocean-mid), var(--ocean-deep)); border: 1px solid var(--glass-border); border-radius: 24px 24px 0 0; padding: 20px 20px max(20px, env(safe-area-inset-bottom)); width: 100%; max-height: 85vh; overflow-y: auto; animation: slideUp 0.35s cubic-bezier(0.25,0.8,0.25,1); }
   @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
   .modal-handle { width: 40px; height: 4px; background: var(--glass-border); border-radius: 2px; margin: 0 auto 16px; }
   .modal-title { font-size: 18px; font-weight: 900; color: var(--gold); text-align: center; margin-bottom: 16px; }
-
-  .toast {
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-surface));
-    border: 1px solid var(--glass-border);
-    border-radius: 12px; padding: 12px 20px;
-    font-size: 13px; font-weight: 600; color: var(--text-primary);
-    z-index: 500; box-shadow: var(--card-shadow);
-    animation: toastIn 0.3s ease; white-space: nowrap; max-width: 90vw;
-  }
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-surface)); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 20px; font-size: 13px; font-weight: 600; color: var(--text-primary); z-index: 500; box-shadow: var(--card-shadow); animation: toastIn 0.3s ease; white-space: nowrap; max-width: 90vw; }
   @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-
-  .history-item {
-    background: var(--glass); border: 1px solid var(--glass-border);
-    border-radius: 12px; padding: 12px; margin-bottom: 8px;
-    cursor: pointer; transition: all 0.2s;
-  }
+  .history-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
   .history-item:active { transform: scale(0.98); }
   .history-header { display: flex; justify-content: space-between; align-items: center; }
   .history-client { font-size: 14px; font-weight: 700; }
   .history-amount { font-size: 15px; font-weight: 900; color: var(--gold); }
   .history-meta { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
-
   .search-box { position: relative; margin-bottom: 14px; }
   .search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
-
   .empty-state { text-align: center; padding: 40px 20px; }
   .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
   .empty-text { font-size: 14px; color: var(--text-secondary); }
-
   .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 14px; scrollbar-width: none; }
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Cairo', sans-serif; transition: all 0.2s; }
   .tab-btn.active { background: var(--cyan-glow); border-color: var(--cyan-glow); color: var(--ocean-deep); }
-
   .glow-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent); margin: 16px 0; opacity: 0.5; }
-
   .price-table { width: 100%; border-collapse: collapse; }
   .price-table th { font-size: 11px; color: var(--text-secondary); padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--glass-border); }
   .price-table td { font-size: 12px; padding: 8px 6px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .price-table tr:last-child td { border-bottom: none; }
-
-  .install-banner {
-    background: linear-gradient(135deg, rgba(0,180,216,0.2), rgba(21,101,192,0.2));
-    border: 1px solid var(--cyan-glow); border-radius: 14px; padding: 12px 14px;
-    margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
-  }
+  .install-banner { background: linear-gradient(135deg, rgba(0,180,216,0.2), rgba(21,101,192,0.2)); border: 1px solid var(--cyan-glow); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
   .install-banner-text { flex: 1; font-size: 12px; color: var(--text-primary); }
   .install-banner-btn { padding: 7px 14px; border-radius: 8px; background: var(--cyan-glow); color: var(--ocean-deep); font-weight: 700; font-size: 12px; border: none; cursor: pointer; font-family: 'Cairo', sans-serif; white-space: nowrap; }
-
-  .no-fish-hint {
-    text-align: center; padding: 20px; color: var(--text-secondary);
-    font-size: 13px; border: 1px dashed var(--glass-border);
-    border-radius: 12px; margin-bottom: 8px;
-  }
-
-  .home-filter-bar {
-    display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
-  }
-  .home-filter-bar .hf-search {
-    flex: 1; min-width: 120px; padding: 9px 12px 9px 36px;
-    border-radius: 10px; border: 1px solid var(--glass-border);
-    background: rgba(255,255,255,0.06); color: var(--text-primary);
-    font-family: 'Cairo', sans-serif; font-size: 13px; outline: none;
-    transition: all 0.3s;
-  }
+  .no-fish-hint { text-align: center; padding: 20px; color: var(--text-secondary); font-size: 13px; border: 1px dashed var(--glass-border); border-radius: 12px; margin-bottom: 8px; }
+  .home-filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+  .home-filter-bar .hf-search { flex: 1; min-width: 120px; padding: 9px 12px 9px 36px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 13px; outline: none; transition: all 0.3s; }
   .home-filter-bar .hf-search:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
   .home-filter-bar .hf-search::placeholder { color: rgba(255,255,255,0.3); }
   .hf-search-wrap { position: relative; flex: 1; min-width: 120px; }
   .hf-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 15px; pointer-events: none; }
-  .hf-date {
-    padding: 9px 10px; border-radius: 10px; border: 1px solid var(--glass-border);
-    background: rgba(255,255,255,0.06); color: var(--text-primary);
-    font-family: 'Cairo', sans-serif; font-size: 12px; outline: none;
-    color-scheme: dark; cursor: pointer; transition: all 0.3s; width: 135px;
-  }
+  .hf-date { padding: 9px 10px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 12px; outline: none; color-scheme: dark; cursor: pointer; transition: all 0.3s; width: 135px; }
   .hf-date:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); }
-  .hf-clear-btn {
-    padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,71,87,0.3);
-    background: rgba(255,71,87,0.08); color: var(--danger);
-    font-family: 'Cairo', sans-serif; font-size: 11px; font-weight: 700;
-    cursor: pointer; white-space: nowrap; transition: all 0.2s;
-  }
+  .hf-clear-btn { padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,71,87,0.3); background: rgba(255,71,87,0.08); color: var(--danger); font-family: 'Cairo', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
   .hf-clear-btn:active { background: rgba(255,71,87,0.2); }
-
-  .recent-count-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 2px 10px; border-radius: 20px;
-    background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3);
-    color: var(--cyan-glow); font-size: 10px; font-weight: 700;
-    margin-right: 6px;
-  }
-
-  .show-all-btn {
-    width: 100%; padding: 10px; margin-top: 8px;
-    border-radius: 10px; border: 1px dashed rgba(0,180,216,0.3);
-    background: rgba(0,180,216,0.05); color: var(--cyan-glow);
-    font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s;
-  }
+  .recent-count-badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 20px; background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3); color: var(--cyan-glow); font-size: 10px; font-weight: 700; margin-right: 6px; }
+  .show-all-btn { width: 100%; padding: 10px; margin-top: 8px; border-radius: 10px; border: 1px dashed rgba(0,180,216,0.3); background: rgba(0,180,216,0.05); color: var(--cyan-glow); font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
   .show-all-btn:active { background: rgba(0,180,216,0.12); }
-
-  .prices-date-filter {
-    background: rgba(255,215,0,0.06);
-    border: 1px solid rgba(255,215,0,0.2);
-    border-radius: 14px; padding: 14px; margin-bottom: 14px;
-  }
-  .prices-date-filter-title {
-    font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 10px;
-    display: flex; align-items: center; gap: 6px;
-  }
+  .prices-date-filter { background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.2); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  .prices-date-filter-title { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
   .prices-date-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .price-date-inp {
-    flex: 1; min-width: 130px; padding: 9px 10px;
-    border-radius: 10px; border: 1px solid rgba(255,215,0,0.3);
-    background: rgba(255,215,0,0.06); color: var(--text-primary);
-    font-family: 'Cairo', sans-serif; font-size: 12px; outline: none;
-    color-scheme: dark; transition: all 0.2s;
-  }
+  .price-date-inp { flex: 1; min-width: 130px; padding: 9px 10px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.3); background: rgba(255,215,0,0.06); color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 12px; outline: none; color-scheme: dark; transition: all 0.2s; }
   .price-date-inp:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.12); }
-  .price-filter-apply {
-    padding: 9px 16px; border-radius: 10px; border: none;
-    background: linear-gradient(135deg, var(--gold), #e69500);
-    color: #1a1200; font-family: 'Cairo', sans-serif;
-    font-size: 12px; font-weight: 900; cursor: pointer; white-space: nowrap;
-    transition: all 0.2s;
-  }
+  .price-filter-apply { padding: 9px 16px; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--gold), #e69500); color: #1a1200; font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 900; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
   .price-filter-apply:active { transform: scale(0.96); }
-  .price-filter-reset {
-    padding: 9px 14px; border-radius: 10px;
-    border: 1px solid var(--glass-border); background: transparent;
-    color: var(--text-secondary); font-family: 'Cairo', sans-serif;
-    font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
-  }
-
-  .price-date-summary {
-    margin-top: 10px; padding: 10px 12px; border-radius: 10px;
-    background: rgba(0,180,216,0.07); border: 1px solid rgba(0,180,216,0.2);
-    font-size: 12px; color: var(--cyan-glow); font-weight: 600;
-    display: none;
-  }
-  .price-top-day-card {
-    background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,140,0,0.06));
-    border: 1px solid rgba(255,215,0,0.35); border-radius: 14px;
-    padding: 14px; margin-bottom: 12px;
-  }
-  .price-top-day-fish {
-    font-size: 11px; color: var(--text-secondary); margin-bottom: 3px;
-  }
-  .price-top-day-val {
-    font-size: 26px; font-weight: 900; color: var(--gold); line-height: 1;
-  }
-  .price-top-day-client {
-    font-size: 12px; color: var(--cyan-glow); margin-top: 4px;
-  }
-
-  #login-screen {
-    position: fixed; inset: 0; z-index: 9999;
-    background: linear-gradient(135deg, #040d1a 0%, #061525 50%, #050f1e 100%);
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-    animation: fadeIn 0.4s ease;
-  }
+  .price-filter-reset { padding: 9px 14px; border-radius: 10px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .price-date-summary { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(0,180,216,0.07); border: 1px solid rgba(0,180,216,0.2); font-size: 12px; color: var(--cyan-glow); font-weight: 600; display: none; }
+  .price-top-day-card { background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,140,0,0.06)); border: 1px solid rgba(255,215,0,0.35); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .price-top-day-fish { font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; }
+  .price-top-day-val { font-size: 26px; font-weight: 900; color: var(--gold); line-height: 1; }
+  .price-top-day-client { font-size: 12px; color: var(--cyan-glow); margin-top: 4px; }
+  #login-screen { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(135deg, #040d1a 0%, #061525 50%, #050f1e 100%); display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.4s ease; }
   #login-screen.hidden { display: none; }
-
-  .login-box {
-    width: 100%; max-width: 380px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 24px;
-    padding: 36px 28px 32px;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    text-align: center;
-    animation: slideUp 0.5s cubic-bezier(0.25,0.8,0.25,1);
-  }
-
+  .login-box { width: 100%; max-width: 380px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 36px 28px 32px; backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.6); text-align: center; animation: slideUp 0.5s cubic-bezier(0.25,0.8,0.25,1); }
   .login-fish { font-size: 56px; display: block; margin-bottom: 10px; animation: fishSwim 3s ease-in-out infinite; }
   .login-title { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 4px; }
   .login-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 28px; }
-
   .login-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
   .login-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--glass-border); transition: all 0.2s; }
   .login-dot.filled { background: var(--cyan-glow); box-shadow: 0 0 8px var(--cyan-glow); }
-
   .login-input-wrap { position: relative; margin-bottom: 14px; }
-  .login-input {
-    width: 100%; padding: 14px 16px 14px 50px;
-    border-radius: 12px; border: 1px solid var(--glass-border);
-    background: rgba(255,255,255,0.07); color: var(--text-primary);
-    font-family: 'Cairo', sans-serif; font-size: 22px; font-weight: 700;
-    text-align: center; letter-spacing: 8px; outline: none; transition: all 0.3s;
-    -webkit-appearance: none;
-  }
+  .login-input { width: 100%; padding: 14px 16px 14px 50px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.07); color: var(--text-primary); font-family: 'Cairo', sans-serif; font-size: 22px; font-weight: 700; text-align: center; letter-spacing: 8px; outline: none; transition: all 0.3s; -webkit-appearance: none; }
   .login-input:focus { border-color: var(--cyan-glow); background: rgba(0,180,216,0.08); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
   .login-eye { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 20px; cursor: pointer; user-select: none; color: var(--text-secondary); transition: all 0.2s; }
   .login-eye:hover { color: var(--cyan-glow); transform: translateY(-50%) scale(1.1); }
-
   .login-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--cyan-glow), var(--wave-blue)); color: white; font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 900; cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 20px rgba(0,180,216,0.4); margin-top: 6px; }
   .login-btn:active { transform: scale(0.97); }
   .login-error { color: var(--danger); font-size: 12px; font-weight: 600; margin-top: 10px; min-height: 18px; transition: all 0.2s; }
-
-  .welcome-toast {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
-    background: linear-gradient(135deg, rgba(0,180,216,0.95), rgba(21,101,192,0.95));
-    backdrop-filter: blur(10px); padding: 20px 24px;
-    display: flex; align-items: center; gap: 14px;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
-    animation: slideDown 0.5s cubic-bezier(0.25,0.8,0.25,1);
-  }
+  .welcome-toast { position: fixed; top: 0; left: 0; right: 0; z-index: 9998; background: linear-gradient(135deg, rgba(0,180,216,0.95), rgba(21,101,192,0.95)); backdrop-filter: blur(10px); padding: 20px 24px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 30px rgba(0,0,0,0.5); animation: slideDown 0.5s cubic-bezier(0.25,0.8,0.25,1); }
   @keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
   .welcome-toast.hiding { animation: slideUp2 0.4s ease forwards; }
   @keyframes slideUp2 { from{transform:translateY(0)} to{transform:translateY(-100%)} }
@@ -597,20 +232,10 @@
   .welcome-greeting { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 400; }
   .welcome-name { font-size: 18px; font-weight: 900; color: white; line-height: 1.3; }
   .welcome-role { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
-
   .role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; }
   .role-badge.admin { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
   .role-badge.viewer { background: rgba(0,180,216,0.15); color: var(--cyan-glow); border: 1px solid rgba(0,180,216,0.3); }
-
-  .inv-date-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3); color: var(--cyan-glow); font-size: 12px; font-weight: 700; }
-
-  .ai-grouping-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 20px;
-    background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3);
-    color: var(--cyan-glow); font-size: 10px; font-weight: 700;
-    margin-bottom: 8px;
-  }
+  .ai-grouping-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3); color: var(--cyan-glow); font-size: 10px; font-weight: 700; margin-bottom: 8px; }
   .ai-grouping-badge .ai-spin { display: inline-block; animation: spin 0.8s linear infinite; }
 </style>
 </head>
@@ -659,88 +284,37 @@
   </header>
 
   <div class="content" id="main-content">
-
     <div class="page active" id="page-home">
       <div id="install-banner-container"></div>
       <div class="stats-grid">
-        <div class="stat-card highlight">
-          <div class="stat-icon">💰</div>
-          <div class="stat-value" id="stat-total-sales">0</div>
-          <div class="stat-label">إجمالي المبيعات (ج.م)</div>
-        </div>
-        <div class="stat-card danger">
-          <div class="stat-icon">⚠️</div>
-          <div class="stat-value" id="stat-total-debt">0</div>
-          <div class="stat-label">إجمالي الديون (ج.م)</div>
-        </div>
-        <div class="stat-card success">
-          <div class="stat-icon">👥</div>
-          <div class="stat-value" id="stat-total-clients">0</div>
-          <div class="stat-label">عدد العملاء</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🧾</div>
-          <div class="stat-value" id="stat-total-invoices">0</div>
-          <div class="stat-label">الفواتير</div>
-        </div>
+        <div class="stat-card highlight"><div class="stat-icon">💰</div><div class="stat-value" id="stat-total-sales">0</div><div class="stat-label">إجمالي المبيعات (ج.م)</div></div>
+        <div class="stat-card danger"><div class="stat-icon">⚠️</div><div class="stat-value" id="stat-total-debt">0</div><div class="stat-label">إجمالي الديون (ج.م)</div></div>
+        <div class="stat-card success"><div class="stat-icon">👥</div><div class="stat-value" id="stat-total-clients">0</div><div class="stat-label">عدد العملاء</div></div>
+        <div class="stat-card"><div class="stat-icon">🧾</div><div class="stat-value" id="stat-total-invoices">0</div><div class="stat-label">الفواتير</div></div>
       </div>
       <div class="glass-card">
         <div class="section-title">🏆 أعلى الأسعار لكل صنف</div>
         <div id="price-leaders-list"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div></div>
       </div>
-
       <div class="glass-card">
-        <div class="section-title">
-          📅 آخر الفواتير
-          <span class="recent-count-badge" id="recent-count-badge">0</span>
-        </div>
-
+        <div class="section-title">📅 آخر الفواتير <span class="recent-count-badge" id="recent-count-badge">0</span></div>
         <div class="home-filter-bar">
-          <div class="hf-search-wrap">
-            <span class="hf-search-icon">🔍</span>
-            <input type="text" class="hf-search" id="recent-search"
-              placeholder="ابحث باسم العميل..."
-              oninput="renderRecentInvoices()">
-          </div>
-          <input type="date" class="hf-date" id="recent-date-filter"
-            title="فلتر بالتاريخ"
-            onchange="renderRecentInvoices()"
-            style="color-scheme:dark">
+          <div class="hf-search-wrap"><span class="hf-search-icon">🔍</span><input type="text" class="hf-search" id="recent-search" placeholder="ابحث باسم العميل..." oninput="renderRecentInvoices()"></div>
+          <input type="date" class="hf-date" id="recent-date-filter" title="فلتر بالتاريخ" onchange="renderRecentInvoices()" style="color-scheme:dark">
           <button class="hf-clear-btn" onclick="clearRecentFilters()" title="مسح الفلتر">✕ مسح</button>
         </div>
-
-        <div id="recent-invoices-list">
-          <div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div>
-        </div>
-        <div id="recent-show-all-wrap" style="display:none">
-          <button class="show-all-btn" id="recent-show-all-btn" onclick="toggleShowAllRecent()">
-            ▼ عرض جميع الفواتير
-          </button>
-        </div>
+        <div id="recent-invoices-list"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">لا توجد فواتير بعد</div></div></div>
+        <div id="recent-show-all-wrap" style="display:none"><button class="show-all-btn" id="recent-show-all-btn" onclick="toggleShowAllRecent()">▼ عرض جميع الفواتير</button></div>
       </div>
     </div>
 
     <div class="page" id="page-invoice">
       <div class="glass-card">
         <div class="section-title">🧾 بيانات الفاتورة</div>
-        <div class="form-group">
-          <label class="form-label">📅 تاريخ الفاتورة *</label>
-          <input type="date" id="inv-date" class="form-input" style="color-scheme:dark">
-        </div>
-        <div class="form-group">
-          <label class="form-label">🏪 اسم المؤسسة (اختياري)</label>
-          <input type="text" id="inv-shop" class="form-input" placeholder="اسم المؤسسة أو المحل">
-        </div>
-        <div class="form-group">
-          <label class="form-label">👤 اسم العميل *</label>
-          <input type="text" id="inv-client" class="form-input" placeholder="اسم التاجر" list="clients-datalist">
-          <datalist id="clients-datalist"></datalist>
-        </div>
-        <div class="form-group">
-          <label class="form-label">📱 رقم الهاتف (11 رقم يبدأ بـ 01) *</label>
-          <input type="tel" id="inv-phone" class="form-input" placeholder="01xxxxxxxxx" maxlength="11" dir="ltr">
-          <div id="phone-error" style="color:var(--danger);font-size:11px;margin-top:4px;display:none">❌ رقم الهاتف غير صحيح</div>
-        </div>
+        <div class="form-group"><label class="form-label">📅 تاريخ الفاتورة *</label><input type="date" id="inv-date" class="form-input" style="color-scheme:dark"></div>
+        <div class="form-group"><label class="form-label">🏪 اسم المؤسسة (اختياري)</label><input type="text" id="inv-shop" class="form-input" placeholder="اسم المؤسسة أو المحل"></div>
+        <div class="form-group"><label class="form-label">👤 اسم العميل *</label><input type="text" id="inv-client" class="form-input" placeholder="اسم التاجر" list="clients-datalist"><datalist id="clients-datalist"></datalist></div>
+        <div class="form-group"><label class="form-label">📱 رقم الهاتف (11 رقم يبدأ بـ 01) *</label><input type="tel" id="inv-phone" class="form-input" placeholder="01xxxxxxxxx" maxlength="11" dir="ltr"><div id="phone-error" style="color:var(--danger);font-size:11px;margin-top:4px;display:none">❌ رقم الهاتف غير صحيح</div></div>
         <div class="form-group">
           <label class="form-label">🏢 القطاع / المكان (اختياري)</label>
           <select id="inv-sector" class="form-select">
@@ -754,111 +328,48 @@
             <option value="المغزي">المغزي</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">🤝 عمولة التاجر % (اختياري)</label>
-          <div style="position:relative;display:flex;align-items:center">
-            <input type="number" id="inv-commission" class="form-input" placeholder="0" min="0" max="100" step="0.5"
-              oninput="updateInvoiceSummary()"
-              style="padding-left:50px;font-size:18px;font-weight:700;text-align:center">
-            <span style="position:absolute;left:14px;font-size:22px;font-weight:900;color:var(--gold);pointer-events:none">%</span>
-          </div>
-        </div>
+        <div class="form-group"><label class="form-label">🤝 عمولة التاجر % (اختياري)</label><div style="position:relative;display:flex;align-items:center"><input type="number" id="inv-commission" class="form-input" placeholder="0" min="0" max="100" step="0.5" oninput="updateInvoiceSummary()" style="padding-left:50px;font-size:18px;font-weight:700;text-align:center"><span style="position:absolute;left:14px;font-size:22px;font-weight:900;color:var(--gold);pointer-events:none">%</span></div></div>
       </div>
-
       <div class="glass-card">
         <div class="section-title">🐟 اختر الأصناف</div>
         <div class="fish-chips" id="fish-chips-container"></div>
         <div id="no-fish-hint" class="no-fish-hint">اضغط على الأصناف أعلاه لإضافتها للفاتورة</div>
         <div id="fish-items-container"></div>
       </div>
-
       <div class="glass-card">
         <div class="section-title">💸 مصاريف تُخصم من الفاتورة</div>
-        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(255,71,87,0.07);border:1px dashed rgba(255,71,87,0.3);margin-bottom:12px;font-size:12px;color:var(--danger)">
-          <span>⬇️</span>
-          <span>هذه المصاريف تُخصم من إجمالي الفاتورة وتظهر مفصّلة للعميل</span>
-        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(255,71,87,0.07);border:1px dashed rgba(255,71,87,0.3);margin-bottom:12px;font-size:12px;color:var(--danger)"><span>⬇️</span><span>هذه المصاريف تُخصم من إجمالي الفاتورة وتظهر مفصّلة للعميل</span></div>
         <div id="expenses-container"></div>
-        <button onclick="addExpenseRow()" style="width:100%;padding:10px;border-radius:10px;border:1px dashed rgba(255,71,87,0.4);background:rgba(255,71,87,0.06);color:var(--danger);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px">
-          ➕ إضافة مصروف مخصوم
-        </button>
+        <button onclick="addExpenseRow()" style="width:100%;padding:10px;border-radius:10px;border:1px dashed rgba(255,71,87,0.4);background:rgba(255,71,87,0.06);color:var(--danger);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px">➕ إضافة مصروف مخصوم</button>
       </div>
-
       <div id="invoice-summary" style="display:none">
         <div class="invoice-summary-card">
-          <div class="summary-row">
-            <span class="summary-label">📦 عدد الأصناف</span>
-            <span class="summary-value" id="inv-items-count">0 صنف</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">📦 إجمالي الأصناف</span>
-            <span class="summary-value" id="inv-gross-display">0 ج.م</span>
-          </div>
-          <div id="expenses-summary-row" style="display:none">
-            <div class="summary-row">
-              <span class="summary-label" style="color:var(--danger)">💸 خصم المصاريف</span>
-              <span class="summary-value" style="color:var(--danger)" id="expenses-total-display">- 0 ج.م</span>
-            </div>
-          </div>
-          <div id="commission-row" style="display:none">
-            <div class="summary-row">
-              <span class="summary-label" style="color:var(--warning)">🤝 عمولة (<span id="comm-pct-lbl">0</span>%)</span>
-              <span class="summary-value" style="color:var(--warning)" id="comm-amt-display">- 0 ج.م</span>
-            </div>
-          </div>
+          <div class="summary-row"><span class="summary-label">📦 عدد الأصناف</span><span class="summary-value" id="inv-items-count">0 صنف</span></div>
+          <div class="summary-row"><span class="summary-label">📦 إجمالي الأصناف</span><span class="summary-value" id="inv-gross-display">0 ج.م</span></div>
+          <div id="expenses-summary-row" style="display:none"><div class="summary-row"><span class="summary-label" style="color:var(--danger)">💸 خصم المصاريف</span><span class="summary-value" style="color:var(--danger)" id="expenses-total-display">- 0 ج.م</span></div></div>
+          <div id="commission-row" style="display:none"><div class="summary-row"><span class="summary-label" style="color:var(--warning)">🤝 عمولة (<span id="comm-pct-lbl">0</span>%)</span><span class="summary-value" style="color:var(--warning)" id="comm-amt-display">- 0 ج.م</span></div></div>
           <div class="summary-divider"></div>
-          <div class="summary-row">
-            <span class="summary-total-label">💰 المتبقى على التاجر</span>
-            <span class="summary-total-value" id="inv-grand-total">0 ج.م</span>
-          </div>
+          <div class="summary-row"><span class="summary-total-label">💰 المتبقى على التاجر</span><span class="summary-total-value" id="inv-grand-total">0 ج.م</span></div>
         </div>
-        <button class="btn btn-primary" id="save-invoice-btn" onclick="saveInvoice()">
-          💾 حفظ الفاتورة
-        </button>
+        <button class="btn btn-primary" id="save-invoice-btn" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
       </div>
     </div>
 
     <div class="page" id="page-clients">
-      <div class="search-box" style="display:flex;gap:8px;">
-        <div style="position:relative;flex:1;">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="client-search" class="form-input" placeholder="ابحث عن عميل..." oninput="renderClients()" style="padding-right:40px">
-        </div>
-        <select id="client-sort" class="form-select" style="width:auto;padding:8px 12px;font-size:12px;font-weight:600;" onchange="renderClients()">
-          <option value="debt">الأعلى ديناً</option>
-          <option value="newest">الأحدث تعاملاً</option>
-          <option value="oldest">الأقدم تعاملاً</option>
-        </select>
-      </div>
-      <div class="tab-bar">
-        <button class="tab-btn active" onclick="filterClients('all',this)">الكل</button>
-        <button class="tab-btn" onclick="filterClients('debt',this)">عليهم دين</button>
-        <button class="tab-btn" onclick="filterClients('paid',this)">مسويين</button>
-      </div>
+      <div class="search-box" style="display:flex;gap:8px;"><div style="position:relative;flex:1;"><span class="search-icon">🔍</span><input type="text" id="client-search" class="form-input" placeholder="ابحث عن عميل..." oninput="renderClients()" style="padding-right:40px"></div><select id="client-sort" class="form-select" style="width:auto;padding:8px 12px;font-size:12px;font-weight:600;" onchange="renderClients()"><option value="debt">الأعلى ديناً</option><option value="newest">الأحدث تعاملاً</option><option value="oldest">الأقدم تعاملاً</option></select></div>
+      <div class="tab-bar"><button class="tab-btn active" onclick="filterClients('all',this)">الكل</button><button class="tab-btn" onclick="filterClients('debt',this)">عليهم دين</button><button class="tab-btn" onclick="filterClients('paid',this)">مسويين</button></div>
       <div id="clients-list"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div></div>
     </div>
 
     <div class="page" id="page-history">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="history-search" class="form-input" placeholder="ابحث في الفواتير..." oninput="renderHistory()" style="padding-right:40px">
-      </div>
+      <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="history-search" class="form-input" placeholder="ابحث في الفواتير..." oninput="renderHistory()" style="padding-right:40px"></div>
       <div id="history-list"><div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير بعد</div></div></div>
     </div>
 
     <div class="page" id="page-sectors">
       <div class="glass-card">
         <div class="section-title">🏢 أرباح وفواتير كل قطاع</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-          <div>
-            <label class="form-label" style="font-size:10px">📅 من تاريخ</label>
-            <input type="date" id="sector-date-from" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderSectors()">
-          </div>
-          <div>
-            <label class="form-label" style="font-size:10px">📅 إلى تاريخ</label>
-            <input type="date" id="sector-date-to" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderSectors()">
-          </div>
-        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"><div><label class="form-label" style="font-size:10px">📅 من تاريخ</label><input type="date" id="sector-date-from" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderSectors()"></div><div><label class="form-label" style="font-size:10px">📅 إلى تاريخ</label><input type="date" id="sector-date-to" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderSectors()"></div></div>
         <div id="sectors-summary-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"></div>
       </div>
       <div class="glass-card">
@@ -871,84 +382,39 @@
     <div class="page" id="page-prices">
       <div class="glass-card" style="margin-bottom:14px;background:rgba(0,180,216,0.05);border-color:rgba(0,180,216,0.3)">
         <div class="section-title" style="color:var(--cyan-glow)">⚖️ مقارنة أسعار عميلين</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div>
-            <label class="form-label" style="font-size:10px">📅 من تاريخ</label>
-            <input type="date" id="comp-date-from" class="form-input" style="color-scheme:dark;padding:8px">
-          </div>
-          <div>
-            <label class="form-label" style="font-size:10px">📅 إلى تاريخ</label>
-            <input type="date" id="comp-date-to" class="form-input" style="color-scheme:dark;padding:8px">
-          </div>
-        </div>
-        <div style="margin-bottom:8px">
-          <label class="form-label" style="font-size:10px">🐟 الصنف</label>
-          <select id="comp-fish" class="form-select" style="padding:8px"></select>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div>
-            <label class="form-label" style="font-size:10px">👤 العميل الأول</label>
-            <select id="comp-client1" class="form-select" style="padding:8px"></select>
-          </div>
-          <div>
-            <label class="form-label" style="font-size:10px">👤 العميل الثاني</label>
-            <select id="comp-client2" class="form-select" style="padding:8px"></select>
-          </div>
-        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div><label class="form-label" style="font-size:10px">📅 من تاريخ</label><input type="date" id="comp-date-from" class="form-input" style="color-scheme:dark;padding:8px"></div><div><label class="form-label" style="font-size:10px">📅 إلى تاريخ</label><input type="date" id="comp-date-to" class="form-input" style="color-scheme:dark;padding:8px"></div></div>
+        <div style="margin-bottom:8px"><label class="form-label" style="font-size:10px">🐟 الصنف</label><select id="comp-fish" class="form-select" style="padding:8px"></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div><label class="form-label" style="font-size:10px">👤 العميل الأول</label><select id="comp-client1" class="form-select" style="padding:8px"></select></div><div><label class="form-label" style="font-size:10px">👤 العميل الثاني</label><select id="comp-client2" class="form-select" style="padding:8px"></select></div></div>
         <button class="btn btn-primary" style="padding:8px;font-size:12px;margin-bottom:0" onclick="comparePrices()">🔍 قارن الآن</button>
         <div id="comp-result" style="margin-top:10px;display:none;"></div>
       </div>
-
       <div class="glass-card">
         <div class="section-title">📈 جدول الأسعار بالصنف</div>
-
         <div id="prices-ai-status"></div>
-
         <div class="prices-date-filter" id="prices-date-filter-box">
-          <div class="prices-date-filter-title">
-            📅 البحث عن أعلى سعر بتاريخ محدد
-          </div>
+          <div class="prices-date-filter-title">📅 البحث عن أعلى سعر بتاريخ محدد</div>
           <div class="prices-date-row">
-            <input type="date" class="price-date-inp" id="price-date-from"
-              placeholder="من" style="color-scheme:dark"
-              onchange="applyPriceDateFilter()">
-            <input type="date" class="price-date-inp" id="price-date-to"
-              placeholder="إلى" style="color-scheme:dark"
-              onchange="applyPriceDateFilter()">
+            <input type="date" class="price-date-inp" id="price-date-from" placeholder="من" style="color-scheme:dark" onchange="applyPriceDateFilter()">
+            <input type="date" class="price-date-inp" id="price-date-to" placeholder="إلى" style="color-scheme:dark" onchange="applyPriceDateFilter()">
             <button class="price-filter-apply" onclick="applyPriceDateFilter()">🔍 بحث</button>
             <button class="price-filter-reset" onclick="resetPriceDateFilter()">✕ كل التواريخ</button>
           </div>
           <div class="price-date-summary" id="price-date-summary"></div>
         </div>
-
         <div id="price-date-result" style="display:none"></div>
-
         <div class="tab-bar" id="prices-fish-tabs"></div>
         <div id="prices-content"><div class="empty-state"><div class="empty-icon">💹</div><div class="empty-text">لا توجد بيانات بعد</div></div></div>
       </div>
     </div>
-    </div><!-- /page-prices -->
   </div>
 
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchPage('home',this)">
-      <span class="nav-icon">🏠</span><span class="nav-label">الرئيسية</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('invoice',this)">
-      <span class="nav-icon">➕</span><span class="nav-label">فاتورة</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('clients',this)">
-      <span class="nav-icon">👥</span><span class="nav-label">العملاء</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('history',this)">
-      <span class="nav-icon">📚</span><span class="nav-label">السجل</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('sectors',this)">
-      <span class="nav-icon">🏢</span><span class="nav-label">القطاعات</span>
-    </button>
-    <button class="nav-item" onclick="switchPage('prices',this)">
-      <span class="nav-icon">💹</span><span class="nav-label">الأسعار</span>
-    </button>
+    <button class="nav-item active" onclick="switchPage('home',this)"><span class="nav-icon">🏠</span><span class="nav-label">الرئيسية</span></button>
+    <button class="nav-item" onclick="switchPage('invoice',this)"><span class="nav-icon">➕</span><span class="nav-label">فاتورة</span></button>
+    <button class="nav-item" onclick="switchPage('clients',this)"><span class="nav-icon">👥</span><span class="nav-label">العملاء</span></button>
+    <button class="nav-item" onclick="switchPage('history',this)"><span class="nav-icon">📚</span><span class="nav-label">السجل</span></button>
+    <button class="nav-item" onclick="switchPage('sectors',this)"><span class="nav-icon">🏢</span><span class="nav-label">القطاعات</span></button>
+    <button class="nav-item" onclick="switchPage('prices',this)"><span class="nav-icon">💹</span><span class="nav-label">الأسعار</span></button>
   </nav>
 </div>
 
@@ -972,1140 +438,80 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ============================================================
-// CONSTANTS
-// ============================================================
-const FISH_TYPES = [
-  'بوري','طوبار','دباشي','سوبر','نمرة ١','نمرة ٢','نمرة ٣','نمرة ٤','دور','قراميط','بياض','قطع','أخرى'
-];
+const FISH_TYPES = ['بوري','طوبار','دباشي','سوبر','نمرة ١','نمرة ٢','نمرة ٣','نمرة ٤','دور','قراميط','بياض','قطع','أخرى'];
+const UNITS = { kg:{label:'كيلو',short:'ك',kgFactor:1}, wqa:{label:'وقة',short:'وقة',kgFactor:1.25}, box20:{label:'بوكشة 20 وقة (25 ك)',short:'ب20',kgFactor:25}, box25:{label:'بوكشة 25 ك',short:'ب25',kgFactor:25} };
 
-const UNITS = {
-  kg:    { label: 'كيلو',            short: 'ك',   kgFactor: 1    },
-  wqa:   { label: 'وقة',             short: 'وقة', kgFactor: 1.25 },
-  box20: { label: 'بوكشة 20 وقة  (25 ك)', short: 'ب20', kgFactor: 25   },
-  box25: { label: 'بوكشة 25 ك',      short: 'ب25', kgFactor: 25   },
-};
+window.appState = { invoices:{}, clients:{}, currentFilter:'all', deferredPrompt:null, fishItems:[], expenses:[], nextItemId:0, nextExpId:0, recentShowAll:false, priceDateFrom:'', priceDateTo:'', selectedSector:'القطاع الأول' };
 
-// ============================================================
-// STATE
-// ============================================================
-window.appState = {
-  invoices: {},
-  clients: {},
-  currentFilter: 'all',
-  deferredPrompt: null,
-  fishItems: [],
-  expenses: [],
-  nextItemId: 0,
-  nextExpId: 0,
-  recentShowAll: false,
-  priceDateFrom: '',
-  priceDateTo: '',
-};
+function getDisplayDate(isoOrDateStr, fallback) { if(!isoOrDateStr) return fallback||''; try { const d=new Date(isoOrDateStr.includes('T')?isoOrDateStr:isoOrDateStr+'T12:00:00'); if(isNaN(d)) return fallback||''; return d.toLocaleDateString('en-GB'); } catch(e){ return fallback||''; } }
+function updateDate() { document.getElementById('header-date').textContent=new Date().toLocaleDateString('en-GB'); }
+function getTodayISO() { return new Date().toISOString().split('T')[0]; }
+function isoToArabicDate(iso) { if(!iso) return ''; return new Date(iso+'T12:00:00').toLocaleDateString('en-GB'); }
+function formatNum(n) { return Math.round(n||0).toLocaleString('ar-EG'); }
+function validatePhone(p) { return p&&p.length===11&&p.startsWith('01')&&/^\d+$/.test(p); }
 
-// ============================================================
-// DATE FORMATTER (NEW: DD/MM/YYYY)
-// ============================================================
-function getDisplayDate(isoOrDateStr, fallback) {
-  if (!isoOrDateStr) return fallback || '';
-  try {
-    const d = new Date(isoOrDateStr.includes('T') ? isoOrDateStr : isoOrDateStr + 'T12:00:00');
-    if (isNaN(d)) return fallback || '';
-    return d.toLocaleDateString('en-GB'); // Outputs DD/MM/YYYY
-  } catch(e) {
-    return fallback || '';
-  }
-}
+// BG
+function init3DBackground(){const c=document.getElementById('bg-canvas');const x=c.getContext('2d');let W,H,ps=[],fs=[];function r(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}r();window.addEventListener('resize',r);for(let i=0;i<40;i++)ps.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*3+1,speed:Math.random()*0.5+0.2,opacity:Math.random()*0.4+0.1,wobble:Math.random()*Math.PI*2});const fe=['🐟','🐠','🐡'];for(let i=0;i<5;i++)fs.push({x:Math.random()*W,y:Math.random()*H*0.7+H*0.1,size:Math.random()*16+12,speed:Math.random()*0.8+0.3,dir:Math.random()>0.5?1:-1,emoji:fe[Math.floor(Math.random()*fe.length)],opacity:0.12+Math.random()*0.1,wave:Math.random()*Math.PI*2,waveAmp:Math.random()*30+15,waveSpeed:Math.random()*0.02+0.01});function dw(y,o,cl,op){x.save();x.globalAlpha=op;x.beginPath();x.moveTo(0,y);for(let i=0;i<=W;i+=5)x.lineTo(i,y+Math.sin(i*0.01+o)*20+Math.sin(i*0.007+o*1.3)*12);x.lineTo(W,H);x.lineTo(0,H);x.closePath();x.fillStyle=cl;x.fill();x.restore();}let t=0;function anim(){x.clearRect(0,0,W,H);const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#040d1a');g.addColorStop(0.5,'#061525');g.addColorStop(1,'#050f1e');x.fillStyle=g;x.fillRect(0,0,W,H);dw(H*0.3,t*0.5,'rgba(21,101,192,0.08)',1);dw(H*0.5,t*0.3+1,'rgba(0,180,216,0.05)',1);dw(H*0.7,t*0.4+2,'rgba(13,33,55,0.15)',1);ps.forEach(p=>{p.wobble+=0.03;p.x+=Math.sin(p.wobble)*0.3;p.y-=p.speed;if(p.y<-10){p.y=H+10;p.x=Math.random()*W;}x.save();x.globalAlpha=p.opacity;x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.strokeStyle='rgba(100,200,255,0.3)';x.lineWidth=0.5;x.fillStyle='rgba(100,200,255,0.3)';x.fill();x.stroke();x.restore();});fs.forEach(f=>{f.wave+=f.waveSpeed;f.x+=f.speed*f.dir;f.y+=Math.sin(f.wave)*0.5;if(f.x>W+50)f.x=-50;if(f.x<-50)f.x=W+50;x.save();x.globalAlpha=f.opacity;x.font=f.size+'px serif';x.textAlign='center';x.scale(f.dir,1);x.fillText(f.emoji,f.x*f.dir,f.y);x.restore();});t+=0.01;requestAnimationFrame(anim);}anim();}
 
-function updateDate() {
-  const now = new Date();
-  document.getElementById('header-date').textContent = now.toLocaleDateString('en-GB');
-}
-function getTodayISO() {
-  return new Date().toISOString().split('T')[0];
-}
-function isoToArabicDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + 'T12:00:00');
-  return d.toLocaleDateString('en-GB');
-}
+function generateInvoiceNumber(id){const y=new Date().getFullYear();const s=id?id.slice(-6).toUpperCase():Math.random().toString(36).slice(-6).toUpperCase();return'INV-'+y+'-'+s;}
 
-// ============================================================
-// BACKGROUND ANIMATION
-// ============================================================
-function init3DBackground() {
-  const canvas = document.getElementById('bg-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [], fishes = [];
-  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-  resize(); window.addEventListener('resize', resize);
-  for (let i = 0; i < 40; i++) {
-    particles.push({ x:Math.random()*W, y:Math.random()*H, r:Math.random()*3+1, speed:Math.random()*0.5+0.2, opacity:Math.random()*0.4+0.1, wobble:Math.random()*Math.PI*2 });
-  }
-  const fishEmojis = ['🐟','🐠','🐡'];
-  for (let i = 0; i < 5; i++) {
-    fishes.push({ x:Math.random()*W, y:Math.random()*H*0.7+H*0.1, size:Math.random()*16+12, speed:Math.random()*0.8+0.3, dir:Math.random()>0.5?1:-1, emoji:fishEmojis[Math.floor(Math.random()*fishEmojis.length)], opacity:0.12+Math.random()*0.1, wave:Math.random()*Math.PI*2, waveAmp:Math.random()*30+15, waveSpeed:Math.random()*0.02+0.01 });
-  }
-  function drawWave(y,offset,color,opacity) {
-    ctx.save(); ctx.globalAlpha=opacity; ctx.beginPath(); ctx.moveTo(0,y);
-    for(let x=0;x<=W;x+=5) ctx.lineTo(x,y+Math.sin((x*0.01)+offset)*20+Math.sin((x*0.007)+offset*1.3)*12);
-    ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fillStyle=color; ctx.fill(); ctx.restore();
-  }
-  let t=0;
-  function animate() {
-    ctx.clearRect(0,0,W,H);
-    const grad=ctx.createLinearGradient(0,0,0,H); grad.addColorStop(0,'#040d1a'); grad.addColorStop(0.5,'#061525'); grad.addColorStop(1,'#050f1e');
-    ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
-    drawWave(H*0.3,t*0.5,'rgba(21,101,192,0.08)',1);
-    drawWave(H*0.5,t*0.3+1,'rgba(0,180,216,0.05)',1);
-    drawWave(H*0.7,t*0.4+2,'rgba(13,33,55,0.15)',1);
-    particles.forEach(p => {
-      p.wobble+=0.03; p.x+=Math.sin(p.wobble)*0.3; p.y-=p.speed;
-      if(p.y<-10){p.y=H+10;p.x=Math.random()*W;}
-      ctx.save(); ctx.globalAlpha=p.opacity;
-      const bg=ctx.createRadialGradient(p.x-p.r*0.3,p.y-p.r*0.3,0,p.x,p.y,p.r);
-      bg.addColorStop(0,'rgba(100,200,255,0.8)'); bg.addColorStop(1,'rgba(0,100,200,0.1)');
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.strokeStyle='rgba(100,200,255,0.3)'; ctx.lineWidth=0.5; ctx.fillStyle=bg; ctx.fill(); ctx.stroke(); ctx.restore();
-    });
-    fishes.forEach(f => {
-      f.wave+=f.waveSpeed; f.x+=f.speed*f.dir; f.y+=Math.sin(f.wave)*0.5;
-      if(f.x>W+50){f.x=-50;} if(f.x<-50){f.x=W+50;}
-      ctx.save(); ctx.globalAlpha=f.opacity; ctx.font=`${f.size}px serif`; ctx.textAlign='center';
-      ctx.scale(f.dir,1); ctx.fillText(f.emoji,f.x*f.dir,f.y); ctx.restore();
-    });
-    t+=0.01; requestAnimationFrame(animate);
-  }
-  animate();
-}
+window.switchPage=function(page,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');btn.classList.add('active');if(page==='invoice')initInvoiceForm();if(page==='clients')renderClients();if(page==='history')renderHistory();if(page==='sectors')renderSectors();};
 
-// ============================================================
-// INVOICE NUMBER GENERATOR
-// ============================================================
-function generateInvoiceNumber(invoiceId) {
-  const year = new Date().getFullYear();
-  const shortId = invoiceId ? invoiceId.slice(-6).toUpperCase() : Math.random().toString(36).slice(-6).toUpperCase();
-  return `INV-${year}-${shortId}`;
-}
+function initInvoiceForm(){window.appState.fishItems=[];window.appState.expenses=[];window.appState.nextItemId=0;window.appState.nextExpId=0;document.getElementById('inv-date').value=getTodayISO();document.getElementById('inv-client').value='';document.getElementById('inv-phone').value='';document.getElementById('inv-shop').value='';document.getElementById('inv-commission').value='';document.getElementById('inv-sector').value='';document.getElementById('phone-error').style.display='none';renderFishChips();document.getElementById('fish-items-container').innerHTML='';document.getElementById('no-fish-hint').style.display='block';document.getElementById('invoice-summary').style.display='none';document.getElementById('expenses-container').innerHTML='';updateClientDatalist();}
 
-// ============================================================
-// PAGE NAVIGATION
-// ============================================================
-window.switchPage = function(page, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  btn.classList.add('active');
-  if (page === 'invoice') initInvoiceForm();
-  if (page === 'clients') renderClients();
-  if (page === 'history') renderHistory();
-  if (page === 'sectors') renderSectors();
-};
+function renderFishChips(){const c=document.getElementById('fish-chips-container');const sel=window.appState.fishItems.filter(i=>!i.isOther).map(i=>i.fishName);c.innerHTML=FISH_TYPES.map(f=>{if(f==='أخرى')return'<div class="fish-chip other-chip" onclick="addOtherFish()" title="إضافة صنف مخصص">➕ أخرى</div>';const s=sel.includes(f);return'<div class="fish-chip '+(s?'selected':'')+'" onclick="toggleFish(\''+f+'\', this)">'+f+'</div>';}).join('');}
 
-// ============================================================
-// INVOICE FORM
-// ============================================================
-function initInvoiceForm() {
-  window.appState.fishItems = [];
-  window.appState.expenses = [];
-  window.appState.nextItemId = 0;
-  window.appState.nextExpId = 0;
-  document.getElementById('inv-date').value = getTodayISO();
-  document.getElementById('inv-client').value = '';
-  document.getElementById('inv-phone').value = '';
-  document.getElementById('inv-shop').value = '';
-  document.getElementById('inv-commission').value = '';
-  document.getElementById('inv-sector').value = '';
-  document.getElementById('phone-error').style.display = 'none';
-  renderFishChips();
-  document.getElementById('fish-items-container').innerHTML = '';
-  document.getElementById('no-fish-hint').style.display = 'block';
-  document.getElementById('invoice-summary').style.display = 'none';
-  document.getElementById('expenses-container').innerHTML = '';
-  updateClientDatalist();
-}
+window.addOtherFish=function(){const id=window.appState.nextItemId++;window.appState.fishItems.push({id,fishName:'أخرى',isOther:true,customName:'',unit:'kg',qty:0,price:0,subtotal:0,kg:0});document.getElementById('no-fish-hint').style.display='none';document.getElementById('invoice-summary').style.display='block';const c=document.getElementById('fish-items-container');const t=document.createElement('div');t.innerHTML=buildFishRowHTML(window.appState.fishItems.at(-1));c.appendChild(t.firstElementChild);setTimeout(()=>{const el=document.getElementById('fish-row-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});const ni=document.getElementById('fish-custom-'+id);if(ni)ni.focus();},100);updateInvoiceSummary();};
 
-function renderFishChips() {
-  const container = document.getElementById('fish-chips-container');
-  const regularSelected = window.appState.fishItems.filter(i => !i.isOther).map(i => i.fishName);
-  container.innerHTML = FISH_TYPES.map(f => {
-    if (f === 'أخرى') {
-      return `<div class="fish-chip other-chip" onclick="addOtherFish()" title="إضافة صنف مخصص">➕ أخرى</div>`;
-    }
-    const sel = regularSelected.includes(f);
-    return `<div class="fish-chip ${sel ? 'selected' : ''}" onclick="toggleFish('${f}', this)">${f}</div>`;
-  }).join('');
-}
+window.toggleFish=function(fishName,chipEl){const idx=window.appState.fishItems.findIndex(i=>i.fishName===fishName&&!i.isOther);if(idx===-1){const id=window.appState.nextItemId++;window.appState.fishItems.push({id,fishName,isOther:false,unit:'kg',qty:0,price:0,subtotal:0,kg:0});chipEl.classList.add('selected');renderFishItems();setTimeout(()=>{const el=document.getElementById('fish-row-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},100);}else{window.appState.fishItems.splice(idx,1);chipEl.classList.remove('selected');renderFishItems();}updateInvoiceSummary();};
 
-window.addOtherFish = function() {
-  const id = window.appState.nextItemId++;
-  window.appState.fishItems.push({ id, fishName: 'أخرى', isOther: true, customName: '', unit: 'kg', qty: 0, price: 0, subtotal: 0, kg: 0 });
-  document.getElementById('no-fish-hint').style.display = 'none';
-  document.getElementById('invoice-summary').style.display = 'block';
-  const container = document.getElementById('fish-items-container');
-  const tmp = document.createElement('div');
-  tmp.innerHTML = buildFishRowHTML(window.appState.fishItems.at(-1));
-  container.appendChild(tmp.firstElementChild);
-  setTimeout(() => {
-    const el = document.getElementById('fish-row-' + id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    const nameInput = document.getElementById('fish-custom-' + id);
-    if (nameInput) nameInput.focus();
-  }, 100);
-  updateInvoiceSummary();
-};
+window.removeFishItem=function(id){const idx=window.appState.fishItems.findIndex(i=>i.id===id);if(idx===-1)return;window.appState.fishItems.splice(idx,1);renderFishChips();renderFishItems();updateInvoiceSummary();};
 
-window.toggleFish = function(fishName, chipEl) {
-  const existingIdx = window.appState.fishItems.findIndex(i => i.fishName === fishName && !i.isOther);
-  if (existingIdx === -1) {
-    const id = window.appState.nextItemId++;
-    window.appState.fishItems.push({ id, fishName, isOther: false, unit: 'kg', qty: 0, price: 0, subtotal: 0, kg: 0 });
-    chipEl.classList.add('selected');
-    renderFishItems();
-    setTimeout(() => {
-      const el = document.getElementById('fish-row-' + id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-  } else {
-    window.appState.fishItems.splice(existingIdx, 1);
-    chipEl.classList.remove('selected');
-    renderFishItems();
-  }
-  updateInvoiceSummary();
-};
+function renderFishItems(){const c=document.getElementById('fish-items-container');const h=document.getElementById('no-fish-hint');if(window.appState.fishItems.length===0){c.innerHTML='';h.style.display='block';document.getElementById('invoice-summary').style.display='none';return;}h.style.display='none';document.getElementById('invoice-summary').style.display='block';c.innerHTML=window.appState.fishItems.map(item=>buildFishRowHTML(item)).join('');}
 
-window.removeFishItem = function(id) {
-  const idx = window.appState.fishItems.findIndex(i => i.id === id);
-  if (idx === -1) return;
-  window.appState.fishItems.splice(idx, 1);
-  renderFishChips();
-  renderFishItems();
-  updateInvoiceSummary();
-};
+function buildFishRowHTML(item){const id=item.id;const unit=item.unit||'kg';const uDef=UNITS[unit]||UNITS.kg;const ub=Object.entries(UNITS).map(([u,d])=>{const a=u===unit;return'<button class="unit-btn '+(a?'active-'+u:'')+'" onclick="setItemUnit('+id+',\''+u+'\')">'+d.label+'</button>';}).join('');const kgEq=item.qty*uDef.kgFactor;const kgT=unit!=='kg'?item.qty+' '+uDef.label+' = '+kgEq.toFixed(unit==='wqa'?2:0)+' كيلو':'';const dn=item.isOther?'✏️ صنف مخصص':'🐟 '+item.fishName;return'<div class="fish-item-row" id="fish-row-'+id+'"><button class="remove-fish-btn" onclick="removeFishItem('+id+')" title="حذف">✕</button><div class="fish-row-header"><div class="fish-row-name">'+dn+'</div><div class="fish-row-total" id="fish-total-'+id+'">'+(item.subtotal>0?formatNum(item.subtotal)+' ج.م':'0 ج.م')+'</div></div>'+(item.isOther?'<input type="text" class="custom-fish-input" id="fish-custom-'+id+'" placeholder="اكتب اسم الصنف المخصص..." value="'+(item.customName||'')+'" oninput="window.appState.fishItems.find(x=>x.id==='+id+').customName=this.value">':'')+'<div class="unit-grid">'+ub+'</div><div class="unit-info-box" id="fish-info-'+id+'" style="'+(unit!=='kg'&&item.qty>0?'display:block;':'display:none;')+'background:'+(unit==='wqa'?'rgba(255,165,0,0.08)':unit==='box20'?'rgba(0,200,150,0.08)':'rgba(192,132,252,0.08)')+';border:1px solid '+(unit==='wqa'?'rgba(255,165,0,0.3)':unit==='box20'?'rgba(0,200,150,0.3)':'rgba(192,132,252,0.3)')+';color:'+(unit==='wqa'?'var(--warning)':unit==='box20'?'var(--emerald)':'#c084fc')+'">📐 <span id="fish-convert-'+id+'">'+kgT+'</span></div><div class="fish-inputs-row"><div class="fish-input-group"><label id="fish-qty-lbl-'+id+'">الكمية ('+uDef.label+')</label><input type="number" id="fish-qty-'+id+'" value="'+(item.qty>0?item.qty:'')+'" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="onFishInput('+id+')"></div><div class="fish-input-group"><label id="fish-price-lbl-'+id+'">سعر ال'+uDef.label+'</label><input type="number" id="fish-price-'+id+'" value="'+(item.price>0?item.price:'')+'" placeholder="0" min="0" inputmode="decimal" oninput="onFishInput('+id+')"></div><div class="fish-input-group"><label>الإجمالي</label><input type="number" id="fish-subtotal-'+id+'" value="'+(item.subtotal>0?item.subtotal.toFixed(2):'')+'" placeholder="0" readonly class="readonly-subtotal"></div></div></div>';}
 
-function renderFishItems() {
-  const container = document.getElementById('fish-items-container');
-  const hint = document.getElementById('no-fish-hint');
-  if (window.appState.fishItems.length === 0) {
-    container.innerHTML = '';
-    hint.style.display = 'block';
-    document.getElementById('invoice-summary').style.display = 'none';
-    return;
-  }
-  hint.style.display = 'none';
-  document.getElementById('invoice-summary').style.display = 'block';
-  container.innerHTML = window.appState.fishItems.map(item => buildFishRowHTML(item)).join('');
-}
+window.onFishInput=function(id){const item=window.appState.fishItems.find(x=>x.id===id);if(!item)return;const qty=parseFloat(document.getElementById('fish-qty-'+id)?.value)||0;const price=parseFloat(document.getElementById('fish-price-'+id)?.value)||0;const uDef=UNITS[item.unit]||UNITS.kg;item.qty=qty;item.price=price;item.kg=qty*uDef.kgFactor;item.subtotal=qty*price;const se=document.getElementById('fish-subtotal-'+id);if(se)se.value=item.subtotal>0?item.subtotal.toFixed(2):'';const te=document.getElementById('fish-total-'+id);if(te)te.textContent=formatNum(item.subtotal)+' ج.م';const ie=document.getElementById('fish-info-'+id);const ce=document.getElementById('fish-convert-'+id);if(ie&&item.unit!=='kg'){if(qty>0){const k=qty*uDef.kgFactor;if(ce)ce.textContent=qty+' '+uDef.label+' = '+k.toFixed(item.unit==='wqa'?2:0)+' كيلو';ie.style.display='block';}else{ie.style.display='none';}}updateInvoiceSummary();};
 
-function buildFishRowHTML(item) {
-  const id = item.id;
-  const unit = item.unit || 'kg';
-  const uDef = UNITS[unit] || UNITS.kg;
-  const unitButtons = Object.entries(UNITS).map(([u, def]) => {
-    const isActive = u === unit;
-    return `<button class="unit-btn ${isActive ? 'active-' + u : ''}" onclick="setItemUnit(${id},'${u}')">${def.label}</button>`;
-  }).join('');
-  const kgEq = item.qty * uDef.kgFactor;
-  const kgEqText = unit !== 'kg' ? `${item.qty} ${uDef.label} = ${kgEq.toFixed(unit==='wqa'?2:0)} كيلو` : '';
-  const displayName = item.isOther ? '✏️ صنف مخصص' : ('🐟 ' + item.fishName);
-  return `
-    <div class="fish-item-row" id="fish-row-${id}">
-      <button class="remove-fish-btn" onclick="removeFishItem(${id})" title="حذف هذا الصنف">✕</button>
-      <div class="fish-row-header">
-        <div class="fish-row-name">${displayName}</div>
-        <div class="fish-row-total" id="fish-total-${id}">${item.subtotal > 0 ? formatNum(item.subtotal) + ' ج.م' : '0 ج.م'}</div>
-      </div>
-      ${item.isOther ? `
-        <input type="text" class="custom-fish-input" id="fish-custom-${id}"
-          placeholder="اكتب اسم الصنف المخصص..."
-          value="${item.customName || ''}"
-          oninput="window.appState.fishItems.find(x=>x.id===${id}).customName=this.value">
-      ` : ''}
-      <div class="unit-grid">${unitButtons}</div>
-      <div class="unit-info-box" id="fish-info-${id}"
-        style="${unit !== 'kg' && item.qty > 0 ? 'display:block;' : 'display:none;'}background:${unit==='wqa'?'rgba(255,165,0,0.08)':unit==='box20'?'rgba(0,200,150,0.08)':'rgba(192,132,252,0.08)'};border:1px solid ${unit==='wqa'?'rgba(255,165,0,0.3)':unit==='box20'?'rgba(0,200,150,0.3)':'rgba(192,132,252,0.3)'};color:${unit==='wqa'?'var(--warning)':unit==='box20'?'var(--emerald)':'#c084fc'}">
-        📐 <span id="fish-convert-${id}">${kgEqText}</span>
-      </div>
-      <div class="fish-inputs-row">
-        <div class="fish-input-group">
-          <label id="fish-qty-lbl-${id}">الكمية (${uDef.label})</label>
-          <input type="number" id="fish-qty-${id}"
-            value="${item.qty > 0 ? item.qty : ''}"
-            placeholder="0" min="0" step="0.5" inputmode="decimal"
-            oninput="onFishInput(${id})">
-        </div>
-        <div class="fish-input-group">
-          <label id="fish-price-lbl-${id}">سعر ال${uDef.label}</label>
-          <input type="number" id="fish-price-${id}"
-            value="${item.price > 0 ? item.price : ''}"
-            placeholder="0" min="0" inputmode="decimal"
-            oninput="onFishInput(${id})">
-        </div>
-        <div class="fish-input-group">
-          <label>الإجمالي</label>
-          <input type="number" id="fish-subtotal-${id}"
-            value="${item.subtotal > 0 ? item.subtotal.toFixed(2) : ''}"
-            placeholder="0" readonly class="readonly-subtotal">
-        </div>
-      </div>
-    </div>
-  `;
-}
+window.setItemUnit=function(id,unit){const item=window.appState.fishItems.find(x=>x.id===id);if(!item)return;item.unit=unit;item.qty=0;item.price=0;item.subtotal=0;item.kg=0;const row=document.getElementById('fish-row-'+id);if(row){const tmp=document.createElement('div');tmp.innerHTML=buildFishRowHTML(item);row.replaceWith(tmp.firstElementChild);}updateInvoiceSummary();};
 
-window.onFishInput = function(id) {
-  const item = window.appState.fishItems.find(x => x.id === id);
-  if (!item) return;
-  const qty = parseFloat(document.getElementById('fish-qty-' + id)?.value) || 0;
-  const price = parseFloat(document.getElementById('fish-price-' + id)?.value) || 0;
-  const uDef = UNITS[item.unit] || UNITS.kg;
-  item.qty = qty; item.price = price;
-  item.kg = qty * uDef.kgFactor;
-  item.subtotal = qty * price;
-  const subEl = document.getElementById('fish-subtotal-' + id);
-  if (subEl) subEl.value = item.subtotal > 0 ? item.subtotal.toFixed(2) : '';
-  const totalEl = document.getElementById('fish-total-' + id);
-  if (totalEl) totalEl.textContent = formatNum(item.subtotal) + ' ج.م';
-  const infoEl = document.getElementById('fish-info-' + id);
-  const convertEl = document.getElementById('fish-convert-' + id);
-  if (infoEl && item.unit !== 'kg') {
-    if (qty > 0) {
-      const kgEq = qty * uDef.kgFactor;
-      if (convertEl) convertEl.textContent = `${qty} ${uDef.label} = ${kgEq.toFixed(item.unit==='wqa'?2:0)} كيلو`;
-      infoEl.style.display = 'block';
-    } else { infoEl.style.display = 'none'; }
-  }
-  updateInvoiceSummary();
-};
+window.addExpenseRow=function(){const id=window.appState.nextExpId++;window.appState.expenses.push({id,desc:'',amount:0});const c=document.getElementById('expenses-container');const row=document.createElement('div');row.className='expense-row';row.id='exp-row-'+id;row.innerHTML='<input type="text" class="expense-desc" id="exp-desc-'+id+'" placeholder="وصف المصروف" oninput="window.appState.expenses.find(e=>e.id==='+id+').desc=this.value"><input type="number" class="expense-amt" id="exp-amt-'+id+'" placeholder="0" min="0" inputmode="decimal" oninput="window.appState.expenses.find(e=>e.id==='+id+').amount=parseFloat(this.value)||0;updateInvoiceSummary()"><button class="expense-remove-btn" onclick="removeExpenseRow('+id+')">✕</button>';c.appendChild(row);updateInvoiceSummary();};
+window.removeExpenseRow=function(id){const idx=window.appState.expenses.findIndex(e=>e.id===id);if(idx!==-1)window.appState.expenses.splice(idx,1);document.getElementById('exp-row-'+id)?.remove();updateInvoiceSummary();};
+function getTotalExpenses(){return window.appState.expenses.reduce((s,e)=>s+(e.amount||0),0);}
 
-window.setItemUnit = function(id, unit) {
-  const item = window.appState.fishItems.find(x => x.id === id);
-  if (!item) return;
-  item.unit = unit; item.qty = 0; item.price = 0; item.subtotal = 0; item.kg = 0;
-  const row = document.getElementById('fish-row-' + id);
-  if (row) {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = buildFishRowHTML(item);
-    row.replaceWith(tmp.firstElementChild);
-  }
-  updateInvoiceSummary();
-};
+function updateInvoiceSummary(){let fg=0,cnt=0;window.appState.fishItems.forEach(item=>{fg+=item.subtotal||0;if((item.qty||0)>0)cnt++;});const et=getTotalExpenses();const cp=parseFloat(document.getElementById('inv-commission')?.value)||0;const ca=(fg*cp)/100;const net=fg-et-ca;const ge=document.getElementById('inv-gross-display');const te=document.getElementById('inv-grand-total');const ce=document.getElementById('inv-items-count');if(ge)ge.textContent=formatNum(fg)+' ج.م';if(te)te.textContent=formatNum(Math.max(net,0))+' ج.م';if(ce)ce.textContent=window.appState.fishItems.length+' صنف';const esr=document.getElementById('expenses-summary-row');const ete=document.getElementById('expenses-total-display');if(esr)esr.style.display=et>0?'block':'none';if(ete)ete.textContent='- '+formatNum(et)+' ج.م';const cr=document.getElementById('commission-row');const cpl=document.getElementById('comm-pct-lbl');const cae=document.getElementById('comm-amt-display');if(cr)cr.style.display=cp>0&&fg>0?'block':'none';if(cpl)cpl.textContent=cp;if(cae)cae.textContent='- '+formatNum(ca)+' ج.م';const hs=window.appState.fishItems.length>0||window.appState.expenses.length>0;document.getElementById('invoice-summary').style.display=hs?'block':'none';}
 
-// ============================================================
-// EXPENSES
-// ============================================================
-window.addExpenseRow = function() {
-  const id = window.appState.nextExpId++;
-  window.appState.expenses.push({ id, desc: '', amount: 0 });
-  const container = document.getElementById('expenses-container');
-  const row = document.createElement('div');
-  row.className = 'expense-row'; row.id = 'exp-row-' + id;
-  row.innerHTML = `
-    <input type="text" class="expense-desc" id="exp-desc-${id}" placeholder="وصف المصروف"
-      oninput="window.appState.expenses.find(e=>e.id===${id}).desc=this.value">
-    <input type="number" class="expense-amt" id="exp-amt-${id}" placeholder="0" min="0" inputmode="decimal"
-      oninput="window.appState.expenses.find(e=>e.id===${id}).amount=parseFloat(this.value)||0;updateInvoiceSummary()">
-    <button class="expense-remove-btn" onclick="removeExpenseRow(${id})">✕</button>
-  `;
-  container.appendChild(row);
-  updateInvoiceSummary();
-};
+document.getElementById('inv-phone').addEventListener('input',function(){document.getElementById('phone-error').style.display=this.value.length>0&&!validatePhone(this.value)?'block':'none';});
 
-window.removeExpenseRow = function(id) {
-  const idx = window.appState.expenses.findIndex(e => e.id === id);
-  if (idx !== -1) window.appState.expenses.splice(idx, 1);
-  document.getElementById('exp-row-' + id)?.remove();
-  updateInvoiceSummary();
-};
+window.saveInvoice=async function(){const cn=document.getElementById('inv-client').value.trim();const ph=document.getElementById('inv-phone').value.trim();const sh=document.getElementById('inv-shop').value.trim();const sec=document.getElementById('inv-sector').value.trim();const di=document.getElementById('inv-date').value||getTodayISO();if(!cn)return showToast('❌ يرجى إدخال اسم العميل');if(!validatePhone(ph))return showToast('❌ رقم الهاتف غير صحيح');if(window.appState.fishItems.length===0)return showToast('❌ يرجى اختيار صنف واحد على الأقل');const items=[];let ft=0;for(const item of window.appState.fishItems){if((item.qty||0)<=0)continue;const uDef=UNITS[item.unit]||UNITS.kg;let dn=item.fishName;if(item.isOther&&item.customName)dn=item.customName;else if(item.isOther)dn='أخرى';items.push({fish:dn,unit:item.unit,unitLabel:uDef.label,qty:item.qty,kg:item.kg,pricePerUnit:item.price,pricePerKg:+(item.price/uDef.kgFactor).toFixed(4),subtotal:item.subtotal});ft+=item.subtotal;}if(items.length===0)return showToast('❌ يرجى إدخال كميات وأسعار');const el=window.appState.expenses.filter(e=>e.amount>0||e.desc).map(e=>({desc:e.desc||'مصروف',amount:e.amount||0}));const et=el.reduce((s,e)=>s+e.amount,0);const cp=parseFloat(document.getElementById('inv-commission')?.value)||0;const ca=(ft*cp)/100;const nt=Math.max(ft-et-ca,0);const btn=document.getElementById('save-invoice-btn');btn.innerHTML='<span class="spinner"></span> جاري الحفظ...';btn.disabled=true;try{const invDate=new Date(di+'T12:00:00');const dateStr=invDate.toLocaleDateString('en-GB');const invoice={clientName:cn,phone:ph,shopName:sh,sector:sec,items,expenses:el,fishTotal:ft,expTotal:et,gross:ft,commissionPct:cp,commissionAmt:ca,total:nt,paid:0,remaining:nt,date:invDate.toISOString(),dateStr,invDateISO:di,createdAt:Date.now()};const invRef=push(ref(db,'invoices'));const invNum=generateInvoiceNumber(invRef.key);invoice.invoiceNumber=invNum;await set(invRef,invoice);const clientKey=ph;const clientRef=ref(db,'clients/'+clientKey);const clientSnap=await get(clientRef);if(clientSnap.exists()){const ex=clientSnap.val();await update(clientRef,{name:cn,phone:ph,totalDebt:(ex.totalDebt||0)+nt,totalPurchases:(ex.totalPurchases||0)+nt,invoiceCount:(ex.invoiceCount||0)+1,lastInvoice:invDate.toISOString()});}else{await set(clientRef,{name:cn,phone:ph,shopName:sh,totalDebt:nt,totalPurchases:nt,totalPaid:0,invoiceCount:1,lastInvoice:invDate.toISOString()});}showToast('✅ تم حفظ الفاتورة بنجاح!');showInvoicePreview(invoice,invRef.key);}catch(err){showToast('❌ حدث خطأ: '+err.message);}finally{btn.innerHTML='💾 حفظ الفاتورة';btn.disabled=false;}};
 
-function getTotalExpenses() {
-  return window.appState.expenses.reduce((s, e) => s + (e.amount || 0), 0);
-}
+function showInvoicePreview(invoice,invoiceId){const ih=(invoice.items||[]).map(item=>{const u=item.unit||'kg';const ul=item.unitLabel||UNITS[u]?.label||'كيلو';const q=item.qty!==undefined?item.qty:item.kg;const p=item.pricePerUnit!==undefined?item.pricePerUnit:item.pricePerKg;const sk=u!=='kg';const kn=sk?'<div style="font-size:9px;color:var(--warning);margin-top:2px">📐 '+(item.kg||0).toFixed(u==='wqa'?2:0)+' ك</div>':'';return'<tr><td>'+item.fish+'</td><td><div>'+q+'</div><div style="font-size:9px;color:var(--text-secondary)">'+ul+'</div>'+kn+'</td><td>'+p+' ج.م</td><td style="color:var(--gold);font-weight:700">'+(item.subtotal||0).toFixed(2)+'</td></tr>';}).join('');const eh=(invoice.expenses||[]).filter(e=>e.amount>0).map(e=>'<tr><td colspan="3" style="text-align:right;color:var(--danger)">⬇️ خصم: '+e.desc+'</td><td style="color:var(--danger);font-weight:700">- '+formatNum(e.amount)+'</td></tr>').join('');const ft=invoice.fishTotal||invoice.gross||invoice.total;const et=invoice.expTotal||0;const hc=invoice.commissionPct>0;const he=et>0;const wm=encodeURIComponent(buildInvoiceText(invoice));const wn='2'+invoice.phone;const modal=document.createElement('div');modal.className='modal-overlay';modal.id='invoice-modal';modal.innerHTML='<div class="modal-sheet"><div class="modal-handle"></div><div class="modal-title">🧾 الفاتورة</div><div class="invoice-preview"><div class="invoice-header"><div class="invoice-shop">الحاج أحمد الحديدي</div><div class="invoice-owner">تجارة الأسماك</div><div class="invoice-date">📅 '+getDisplayDate(invoice.invDateISO||invoice.date,invoice.dateStr)+'</div><div style="margin-top:6px"><span style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.35);color:#ffd700;padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700">📋 '+(invoice.invoiceNumber||generateInvoiceNumber(invoiceId))+'</span></div><div style="margin-top:8px;font-size:13px"><span style="color:var(--text-secondary)">العميل: </span><strong>'+invoice.clientName+'</strong></div>'+(invoice.shopName?'<div style="font-size:12px;color:var(--text-secondary)">🏪 '+invoice.shopName+'</div>':'')+(invoice.sector?'<div style="font-size:12px;color:var(--emerald)">🏢 '+invoice.sector+'</div>':'')+'<div style="font-size:12px;color:var(--cyan-glow)">📱 '+invoice.phone+'</div></div><table class="invoice-table"><thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>'+ih+eh+'</tbody></table><div style="padding-top:10px;border-top:1px solid var(--glass-border)"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الأصناف</span><span style="font-weight:700">'+formatNum(ft)+' ج.م</span></div>'+(he?'<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--danger)">⬇️ إجمالي المصاريف المخصومة</span><span style="color:var(--danger);font-weight:700">- '+formatNum(et)+' ج.م</span></div>':'')+(hc?'<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--warning)">🤝 عمولة ('+invoice.commissionPct+'%)</span><span style="color:var(--warning);font-weight:700">- '+formatNum(invoice.commissionAmt||0)+' ج.م</span></div><div style="height:1px;background:rgba(255,215,0,0.3);margin:8px 0"></div>':'')+'<div style="display:flex;justify-content:space-between"><span style="font-size:14px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span><span style="font-size:20px;font-weight:900;color:var(--gold)">'+formatNum(invoice.total)+' ج.م</span></div></div></div><div class="glow-divider"></div><a href="https://wa.me/'+wn+'?text='+wm+'" target="_blank" class="btn btn-whatsapp">📲 إرسال الفاتورة واتساب</a><button class="btn btn-pdf" onclick="exportInvoicePDF(\''+invoiceId+'\')">📄 تصدير PDF</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><button class="btn" onclick="closeModal();editInvoiceModal(\''+invoiceId+'\')" style="background:rgba(255,165,0,0.15);border:1px solid rgba(255,165,0,0.4);color:var(--warning)">✏️ تعديل</button><button class="btn" onclick="closeModal();confirmDeleteInvoice(\''+invoiceId+'\',\''+invoice.clientName+'\')" style="background:rgba(255,71,87,0.15);border:1px solid rgba(255,71,87,0.4);color:var(--danger)">🗑️ حذف</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn btn-primary" onclick="closeModal();switchPage(\'clients\',document.querySelectorAll(\'.nav-item\')[2])">👥 العملاء</button><button class="btn btn-outline" onclick="closeModal();initInvoiceForm()">➕ فاتورة جديدة</button></div></div>';modal.onclick=(e)=>{if(e.target===modal)closeModal();};document.getElementById('modals-container').appendChild(modal);}
 
-// ============================================================
-// SUMMARY UPDATE
-// ============================================================
-function updateInvoiceSummary() {
-  let fishGross = 0, count = 0;
-  window.appState.fishItems.forEach(item => {
-    fishGross += item.subtotal || 0;
-    if ((item.qty || 0) > 0) count++;
-  });
-  const expTotal = getTotalExpenses();
-  const commPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
-  const commAmt = (fishGross * commPct) / 100;
-  const net = fishGross - expTotal - commAmt;
+function buildInvoiceText(invoice){const ft=invoice.fishTotal||invoice.gross||invoice.total;const et=invoice.expTotal||0;const hc=invoice.commissionPct>0;const he=et>0;const inum=invoice.invoiceNumber||'—';let t='🐟 *فاتورة - الحاج أحمد الحديدي*\n📋 رقم الفاتورة: *'+inum+'*\n━━━━━━━━━━━━━━━━━━\n';t+='👤 العميل : '+invoice.clientName+'\n';if(invoice.shopName)t+='🏪 المؤسسة: '+invoice.shopName+'\n';if(invoice.sector)t+='🏢 القطاع: '+invoice.sector+'\n';t+='📅 التاريخ: '+getDisplayDate(invoice.invDateISO||invoice.date,invoice.dateStr)+'\n━━━━━━━━━━━━━━━━━━\n*📦 تفاصيل الأصناف:*\n';(invoice.items||[]).forEach((item,idx)=>{const u=item.unit||'kg';const uD=UNITS[u]||UNITS.kg;const q=item.qty!==undefined?item.qty:item.kg;const p=item.pricePerUnit!==undefined?item.pricePerUnit:item.pricePerKg;t+=idx+1+'. 🐟 '+item.fish+'\n    '+q+' '+uD.label+' × '+p+' ج.م = *'+(item.subtotal||0).toFixed(2)+' ج.م*\n';if(u!=='kg')t+='    📐 يساوي '+(item.kg||0).toFixed(u==='wqa'?2:0)+' كيلو\n';});t+='─────────────────────\n📦 إجمالي الأصناف: *'+formatNum(ft)+' ج.م*\n';if(he){t+='\n⬇️ *المصاريف المخصومة:*\n';(invoice.expenses||[]).filter(e=>e.amount>0).forEach(e=>{t+='  • '+e.desc+': *- '+formatNum(e.amount)+' ج.م*\n';});t+='⬇️ إجمالي المخصومات: *- '+formatNum(et)+' ج.م*\n';}if(hc){t+='🤝 عمولة ('+invoice.commissionPct+'%) : *- '+formatNum(invoice.commissionAmt||0)+' ج.م*\n';}t+='━━━━━━━━━━━━━━━━━━\n💰 *المتبقى على التاجر : '+formatNum(invoice.total)+' ج.م*\n━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏';return t;}
 
-  const grossEl = document.getElementById('inv-gross-display');
-  const totalEl = document.getElementById('inv-grand-total');
-  const countEl = document.getElementById('inv-items-count');
-  const commRow = document.getElementById('commission-row');
-  const commPctLbl = document.getElementById('comm-pct-lbl');
-  const commAmtEl = document.getElementById('comm-amt-display');
-  const expSumRow = document.getElementById('expenses-summary-row');
-  const expTotalEl = document.getElementById('expenses-total-display');
+window.closeModal=function(){const m=document.querySelector('.modal-overlay');if(m)m.remove();};
 
-  if (grossEl) grossEl.textContent = formatNum(fishGross) + ' ج.م';
-  if (totalEl) totalEl.textContent = formatNum(Math.max(net, 0)) + ' ج.م';
-  if (countEl) countEl.textContent = window.appState.fishItems.length + ' صنف';
-  if (expSumRow) expSumRow.style.display = expTotal > 0 ? 'block' : 'none';
-  if (expTotalEl) expTotalEl.textContent = '- ' + formatNum(expTotal) + ' ج.م';
-  if (commRow) commRow.style.display = commPct > 0 && fishGross > 0 ? 'block' : 'none';
-  if (commPctLbl) commPctLbl.textContent = commPct;
-  if (commAmtEl) commAmtEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
+function buildInvoicePDFHTML(inv,invoiceId){const inum=inv.invoiceNumber||generateInvoiceNumber(invoiceId);const ft=inv.fishTotal||(inv.gross||inv.total);const et=inv.expTotal||0;const hc=(inv.commissionPct||0)>0;const he=et>0;const ir=(inv.items||[]).map((item,idx)=>{const u=item.unit||'kg';const uD=UNITS[u]||UNITS.kg;const q=item.qty!==undefined?item.qty:item.kg;const p=item.pricePerUnit!==undefined?item.pricePerUnit:item.pricePerKg;const bg=idx%2===0?'#f0f7ff':'#ffffff';return'<tr style="background:'+bg+'"><td style="text-align:right;padding:8px 10px;border-bottom:1px solid #e0e8f0">'+item.fish+'</td><td style="text-align:center;padding:8px 6px;border-bottom:1px solid #e0e8f0">'+q+' '+uD.label+(u!=='kg'?'<br><small style="color:#e67e00;font-size:10px">'+(item.kg||0).toFixed(u==='wqa'?2:0)+' كيلو</small>':'')+'</td><td style="text-align:center;padding:8px 6px;border-bottom:1px solid #e0e8f0">'+p+' ج.م</td><td style="text-align:center;padding:8px 6px;border-bottom:1px solid #e0e8f0;font-weight:700;color:#1a5276">'+formatNum(item.subtotal)+' ج.م</td></tr>';}).join('');const er=(inv.expenses||[]).filter(e=>e.amount>0).map(e=>'<tr style="background:#fff0f0"><td style="text-align:right;padding:8px 10px;border-bottom:1px solid #ffc0c0;color:#c0392b">⬇️ خصم: '+e.desc+'</td><td colspan="2" style="text-align:center;padding:8px 6px;border-bottom:1px solid #ffc0c0;color:#c0392b;font-size:11px">مصروف مخصوم</td><td style="text-align:center;padding:8px 6px;border-bottom:1px solid #ffc0c0;font-weight:700;color:#c0392b">- '+formatNum(e.amount)+' ج.م</td></tr>').join('');return'<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Cairo,Arial,sans-serif;background:#fff;color:#1a1a2e;direction:rtl;font-size:13px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:794px;margin:0 auto;background:#fff}.header{background:#1a3a6b;padding:22px 28px 18px;text-align:center}.header-fish{font-size:32px;margin-bottom:4px}.shop-name{font-size:24px;font-weight:900;color:#ffd700;margin-bottom:3px}.shop-sub{font-size:12px;color:#90caf9;margin-bottom:10px}.inv-meta{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px}.inv-num{font-size:12px;color:#ffd700;font-weight:700}.inv-date{font-size:12px;color:#cce5ff}.client-section{background:#e8f4fd;border-right:4px solid #1a3a6b;margin:18px 20px;padding:12px 16px;border-radius:4px}.client-title{font-size:11px;font-weight:700;color:#1a3a6b;margin-bottom:8px}.client-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.client-row{font-size:12px;color:#2c3e50}.client-row b{color:#1a3a6b}.table-section{margin:0 20px 16px}.table-title{font-size:11px;font-weight:700;color:#1a3a6b;margin-bottom:6px;padding-bottom:4px;border-bottom:2px solid #1a3a6b}table{width:100%;border-collapse:collapse}thead tr{background:#1a3a6b}th{color:#fff;padding:9px 8px;font-size:12px;font-weight:700}td{font-size:12px;color:#2c3e50;vertical-align:middle}.totals-section{margin:0 20px 16px}.total-row{display:flex;justify-content:space-between;padding:6px 12px;border-bottom:1px solid #e8f0fe}.total-label{font-size:12px;color:#5d6d7e}.total-val{font-size:13px;font-weight:700;color:#1a5276}.grand-box{margin:0 20px 20px;background:#1a3a6b;border-radius:8px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}.grand-label{font-size:15px;font-weight:900;color:#fff}.grand-val{font-size:26px;font-weight:900;color:#ffd700}.footer{text-align:center;padding:14px 20px;border-top:2px solid #e0e8f0;margin:0 20px}.footer-main{font-size:12px;color:#5d6d7e;margin-bottom:3px}.footer-num{font-size:10px;color:#aab7c4}@media print{@page{margin:10mm;size:A4}}</style></head><body><div class="page"><div class="header"><div class="header-fish">🐟</div><div class="shop-name">الحاج أحمد الحديدي</div><div class="shop-sub">تجارة الأسماك — فاتورة رسمية</div><div class="inv-meta"><div class="inv-num">📋 '+inum+'</div><div class="inv-date">📅 '+getDisplayDate(inv.invDateISO||inv.date,inv.dateStr)+'</div></div></div><div class="client-section"><div class="client-title">بيانات العميل</div><div class="client-grid"><div class="client-row"><b>الاسم:</b> '+inv.clientName+'</div><div class="client-row"><b>الهاتف:</b> '+inv.phone+'</div>'+(inv.shopName?'<div class="client-row"><b>المؤسسة:</b> '+inv.shopName+'</div>':'')+'</div></div><div class="table-section"><div class="table-title">تفاصيل الأصناف والمصاريف</div><table><thead><tr><th>البيان</th><th>الكمية</th><th>السعر / الوحدة</th><th>الإجمالي</th></tr></thead><tbody>'+ir+er+'</tbody></table></div><div class="totals-section"><div class="total-row"><span class="total-label">📦 إجمالي الأصناف</span><span class="total-val">'+formatNum(ft)+' ج.م</span></div>'+(he?'<div class="total-row"><span class="total-label" style="color:#c0392b">⬇️ إجمالي المصاريف المخصومة</span><span class="total-val" style="color:#c0392b">- '+formatNum(et)+' ج.م</span></div>':'')+(hc?'<div class="total-row"><span class="total-label" style="color:#c0392b">🤝 عمولة ('+inv.commissionPct+'%)</span><span class="total-val" style="color:#c0392b">- '+formatNum(inv.commissionAmt||0)+' ج.م</span></div>':'')+'</div><div class="grand-box"><div class="grand-label">💰 المتبقى على التاجر</div><div class="grand-val">'+formatNum(inv.total)+' ج.م</div></div><div class="footer"><div class="footer-main">شكراً لتعاملكم معنا 🙏 — الحاج أحمد الحديدي لتجارة الأسماك</div><div class="footer-num">رقم الفاتورة: '+inum+'</div></div></div></body></html>';}
 
-  const hasSomething = window.appState.fishItems.length > 0 || window.appState.expenses.length > 0;
-  document.getElementById('invoice-summary').style.display = hasSomething ? 'block' : 'none';
-}
+window.exportInvoicePDF=function(invoiceId){const inv=window.appState.invoices[invoiceId];if(!inv)return showToast('❌ الفاتورة غير موجودة');const inum=inv.invoiceNumber||generateInvoiceNumber(invoiceId);const cn=(inv.clientName||'عميل').replace(/\s+/g,'_');const ds=(inv.invDateISO||getTodayISO()).replace(/-/g,'');openPrintWindow(buildInvoicePDFHTML(inv,invoiceId),'فاتورة_'+cn+'_'+inum+'_'+ds);showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');};
 
-// ============================================================
-// PHONE VALIDATION
-// ============================================================
-function validatePhone(phone) {
-  return phone && phone.length === 11 && phone.startsWith('01') && /^\d+$/.test(phone);
-}
-document.getElementById('inv-phone').addEventListener('input', function() {
-  document.getElementById('phone-error').style.display =
-    this.value.length > 0 && !validatePhone(this.value) ? 'block' : 'none';
-});
+function openPrintWindow(html,fileName){const old=document.getElementById('__print_frame__');if(old)old.remove();const iframe=document.createElement('iframe');iframe.id='__print_frame__';iframe.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:99999;background:#fff;';document.body.appendChild(iframe);iframe.contentDocument.open();iframe.contentDocument.write(html);iframe.contentDocument.close();iframe.addEventListener('load',function(){try{const iDoc=iframe.contentDocument;const bar=iDoc.createElement('div');bar.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a3a6b;padding:10px 20px;display:flex;gap:10px;justify-content:center;z-index:9999;';bar.innerHTML='<button onclick="window.print()" style="background:#ffd700;color:#1a1a2e;border:none;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:900;cursor:pointer;font-family:Cairo,Arial,sans-serif">🖨️ طباعة / حفظ PDF</button><button onclick="window.parent.document.getElementById(\'__print_frame__\').remove()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,Arial,sans-serif">✖ إغلاق</button>';bar.id='__ctrl_bar__';const ps=iDoc.createElement('style');ps.textContent='@media print{#__ctrl_bar__{display:none!important}}';iDoc.body.appendChild(bar);iDoc.head.appendChild(ps);iDoc.body.style.paddingBottom='70px';}catch(e){}});}
 
-// ============================================================
-// SAVE INVOICE
-// ============================================================
-window.saveInvoice = async function() {
-  const clientName = document.getElementById('inv-client').value.trim();
-  const phone = document.getElementById('inv-phone').value.trim();
-  const shopName = document.getElementById('inv-shop').value.trim();
-  const sector = document.getElementById('inv-sector').value.trim();
-  const invDateISO = document.getElementById('inv-date').value || getTodayISO();
-  if (!clientName) return showToast('❌ يرجى إدخال اسم العميل');
-  if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
-  // sector is optional
-  if (window.appState.fishItems.length === 0) return showToast('❌ يرجى اختيار صنف واحد على الأقل');
-  const items = [];
-  let fishTotal = 0;
-  for (const item of window.appState.fishItems) {
-    if ((item.qty || 0) <= 0) continue;
-    const uDef = UNITS[item.unit] || UNITS.kg;
-    let displayName = item.fishName;
-    if (item.isOther && item.customName) displayName = item.customName;
-    else if (item.isOther) displayName = 'أخرى';
-    items.push({
-      fish: displayName, unit: item.unit, unitLabel: uDef.label,
-      qty: item.qty, kg: item.kg, pricePerUnit: item.price,
-      pricePerKg: +(item.price / uDef.kgFactor).toFixed(4), subtotal: item.subtotal
-    });
-    fishTotal += item.subtotal;
-  }
-  if (items.length === 0) return showToast('❌ يرجى إدخال كميات وأسعار');
+window.exportClientStatementPDF=async function(clientKey){showToast('⏳ جاري تحضير كشف الحساب...');const c=window.appState.clients[clientKey];if(!c)return showToast('❌ العميل غير موجود');let cp=[];try{const snap=await get(ref(db,'payments'));const all=snap.val()||{};cp=Object.entries(all).filter(([,p])=>p.clientKey===clientKey);}catch(e){}const ci=Object.entries(window.appState.invoices).filter(([,i])=>i.phone===c.phone);const tl=[...ci.map(([id,inv])=>{const d=inv.invDateISO||inv.date?.split('T')[0]||getTodayISO();return{type:'invoice',id,data:inv,ts:new Date(d+'T12:00:00').getTime()};}),...cp.map(([id,pay])=>{const d=pay.customDate||pay.date?.split('T')[0]||getTodayISO();return{type:'payment',id,data:pay,ts:new Date(d+'T12:00:00').getTime()};})].sort((a,b)=>a.ts-b.ts);let rb=0;tl.forEach(item=>{if(item.type==='invoice')rb+=item.data.total;else{rb-=item.data.amount||0;if(rb<0)rb=0;}item.runBal=rb;});const ns=new Date().toLocaleDateString('en-GB');let trs='';tl.forEach((item,idx)=>{const dn=idx+1;if(item.type==='invoice'){const inv=item.data;const inum=generateInvoiceNumber(item.id);trs+='<tr style="background:'+(idx%2===0?'#f0f7ff':'#ffffff')+'"><td style="text-align:center;color:#7f8c8d">'+dn+'</td><td style="text-align:center">'+getDisplayDate(inv.invDateISO||inv.date,inv.dateStr)+'</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">🧾 فاتورة</span><br><small style="color:#aaa;font-size:9px">'+inum+'</small></td><td style="font-size:11px">'+(inv.items||[]).map(i=>i.fish).join('، ')+'</td><td style="color:#1a5276;font-weight:700;text-align:center">+'+formatNum(inv.total)+' ج.م</td><td style="text-align:center;color:#2c3e50;font-weight:600">'+formatNum(item.runBal)+' ج.م</td></tr>';}else{const pay=item.data;trs+='<tr style="background:'+(idx%2===0?'#f0fff8':'#ffffff')+'"><td style="text-align:center;color:#7f8c8d">'+dn+'</td><td style="text-align:center">'+getDisplayDate(pay.customDate||pay.date,pay.dateStr)+'</td><td><span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">💳 دفعة</span></td><td style="text-align:center;font-size:11px">'+(pay.notes||pay.from||'—')+'</td><td style="color:#27ae60;font-weight:700;text-align:center">-'+formatNum(pay.amount)+' ج.م</td><td style="text-align:center;color:'+(item.runBal>0?'#c0392b':'#27ae60')+';font-weight:600">'+formatNum(item.runBal)+' ج.م</td></tr>';}});const debt=c.totalDebt||0;const tp=c.totalPaid||0;const tpu=c.totalPurchases||0;const cn=(c.name||'عميل').replace(/\s+/g,'_');const dc=getTodayISO().replace(/-/g,'');const fn='كشف_حساب_'+cn+'_'+dc;const html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Cairo,Arial,sans-serif;background:#fff;color:#1a1a2e;direction:rtl;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:794px;margin:0 auto;background:#fff}.header{background:#1a3a6b;padding:20px 24px 16px;text-align:center}.header-fish{font-size:28px;margin-bottom:3px}.shop-name{font-size:20px;font-weight:900;color:#ffd700;margin-bottom:3px}.shop-sub{font-size:11px;color:#90caf9;margin-bottom:6px}.doc-title{font-size:13px;font-weight:700;color:#fff;background:rgba(255,255,255,0.15);display:inline-block;padding:4px 18px;border-radius:20px;margin-top:6px}.doc-date{font-size:10px;color:#cce5ff;margin-top:5px}.client-section{background:#e8f4fd;border-right:4px solid #1a3a6b;margin:16px 18px;padding:10px 14px;border-radius:4px;display:flex;gap:24px;flex-wrap:wrap}.client-field{font-size:12px;color:#2c3e50}.client-field b{color:#1a3a6b}.summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:0 18px 16px}.summary-card{border-radius:8px;padding:10px 8px;text-align:center}.summary-card.debt{background:#fff0f0;border:2px solid #e74c3c}.summary-card.paid{background:#f0fff8;border:2px solid #27ae60}.summary-card.total{background:#f0f8ff;border:2px solid #2980b9}.s-label{font-size:10px;font-weight:700;margin-bottom:4px}.s-label.debt{color:#c0392b}.s-label.paid{color:#27ae60}.s-label.total{color:#2980b9}.s-val{font-size:17px;font-weight:900}.s-val.debt{color:#c0392b}.s-val.paid{color:#27ae60}.s-val.total{color:#2980b9}.s-unit{font-size:9px;color:#888}.section-title{font-size:11px;font-weight:700;color:#1a3a6b;margin:0 18px 6px;padding-bottom:4px;border-bottom:2px solid #1a3a6b}table{width:calc(100% - 36px);margin:0 18px 16px;border-collapse:collapse}thead tr{background:#1a3a6b}th{color:#fff;padding:8px 6px;font-size:10px;font-weight:700}td{padding:6px 5px;font-size:11px;color:#2c3e50;border-bottom:1px solid #eef2f7}.balance-section{margin:0 18px 16px;border-radius:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}.balance-section.has-debt{background:#fff0f0;border:2px solid #e74c3c}.balance-section.no-debt{background:#f0fff8;border:2px solid #27ae60}.balance-label{font-size:14px;font-weight:900}.balance-val{font-size:24px;font-weight:900}.footer{text-align:center;padding:12px 18px;border-top:2px solid #e0e8f0;margin:0 18px}.footer-text{font-size:10px;color:#7f8c8d}@media print{@page{margin:8mm;size:A4}}</style></head><body><div class="page"><div class="header"><div class="header-fish">🐟</div><div class="shop-name">الحاج أحمد الحديدي</div><div class="shop-sub">تجارة الأسماك</div><div class="doc-title">📊 كشف حساب شامل</div><div class="doc-date">📅 تاريخ الإصدار: '+ns+'</div></div><div class="client-section"><div class="client-field"><b>👤 العميل:</b> '+c.name+'</div><div class="client-field"><b>📱 الهاتف:</b> '+c.phone+'</div>'+(c.shopName?'<div class="client-field"><b>🏪 المؤسسة:</b> '+c.shopName+'</div>':'')+'</div><div class="summary-grid"><div class="summary-card debt"><div class="s-label debt">⚠️ المتبقي</div><div class="s-val debt">'+formatNum(debt)+'</div><div class="s-unit">جنيه مصري</div></div><div class="summary-card paid"><div class="s-label paid">✅ المدفوع</div><div class="s-val paid">'+formatNum(tp)+'</div><div class="s-unit">جنيه مصري</div></div><div class="summary-card total"><div class="s-label total">💰 إجمالي المشتريات</div><div class="s-val total">'+formatNum(tpu)+'</div><div class="s-unit">جنيه مصري</div></div></div><div class="section-title">🕐 سجل الحركات — الأقدم أولاً</div><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>التفاصيل</th><th>المبلغ</th><th>الرصيد</th></tr></thead><tbody>'+(trs||'<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa">لا توجد حركات مسجلة</td></tr>')+'</tbody></table><div class="balance-section '+(debt>0?'has-debt':'no-debt')+'"><div class="balance-label" style="color:'+(debt>0?'#c0392b':'#27ae60')+'">'+(debt>0?'⚠️ الرصيد المتبقي':'✅ الحساب مسوّي بالكامل')+'</div><div class="balance-val" style="color:'+(debt>0?'#c0392b':'#27ae60')+'">'+formatNum(debt)+' ج.م</div></div><div class="footer"><div class="footer-text">شكراً لتعاملكم معنا 🙏 — الحاج أحمد الحديدي لتجارة الأسماك</div></div></div></body></html>';openPrintWindow(html,fn);showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');};
 
-  const expensesList = window.appState.expenses
-    .filter(e => e.amount > 0 || e.desc)
-    .map(e => ({ desc: e.desc || 'مصروف', amount: e.amount || 0 }));
-  const expTotal = expensesList.reduce((s, e) => s + e.amount, 0);
+function setupListeners(){onValue(ref(db,'invoices'),snap=>{window.appState.invoices=snap.val()||{};updateDashboard();renderHistory();renderPricesPage();});onValue(ref(db,'clients'),snap=>{window.appState.clients=snap.val()||{};updateDashboard();renderClients();updateClientDatalist();});}
 
-  const commissionPct = parseFloat(document.getElementById('inv-commission')?.value) || 0;
-  const commissionAmt = (fishTotal * commissionPct) / 100;
-  const netTotal = Math.max(fishTotal - expTotal - commissionAmt, 0);
+function updateDashboard(){const invs=Object.values(window.appState.invoices);const cls=Object.values(window.appState.clients);const ts=invs.reduce((s,i)=>s+(i.total||0),0);const td=cls.reduce((s,c)=>s+(c.totalDebt||0),0);document.getElementById('stat-total-sales').textContent=formatNum(ts);document.getElementById('stat-total-debt').textContent=formatNum(td);document.getElementById('stat-total-clients').textContent=cls.length;document.getElementById('stat-total-invoices').textContent=invs.length;renderPriceLeaders();renderRecentInvoices();}
 
-  const btn = document.getElementById('save-invoice-btn');
-  btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...'; btn.disabled = true;
-  try {
-    const invDate = new Date(invDateISO + 'T12:00:00');
-    const dateStr = invDate.toLocaleDateString('en-GB'); // Changed to DD/MM/YYYY
-    const invoice = {
-      clientName, phone, shopName, sector, items, expenses: expensesList,
-      fishTotal, expTotal, gross: fishTotal,
-      commissionPct, commissionAmt,
-      total: netTotal,
-      paid: 0, remaining: netTotal,
-      date: invDate.toISOString(), dateStr, invDateISO, createdAt: Date.now()
-    };
-    const invRef = push(ref(db, 'invoices'));
-    const invNum = generateInvoiceNumber(invRef.key);
-    invoice.invoiceNumber = invNum;
-    await set(invRef, invoice);
-    const clientKey = phone;
-    const clientRef = ref(db, 'clients/' + clientKey);
-    const clientSnap = await get(clientRef);
-    if (clientSnap.exists()) {
-      const existing = clientSnap.val();
-      await update(clientRef, {
-        name: clientName, phone,
-        totalDebt: (existing.totalDebt || 0) + netTotal,
-        totalPurchases: (existing.totalPurchases || 0) + netTotal,
-        invoiceCount: (existing.invoiceCount || 0) + 1,
-        lastInvoice: invDate.toISOString()
-      });
-    } else {
-      await set(clientRef, {
-        name: clientName, phone, shopName,
-        totalDebt: netTotal, totalPurchases: netTotal, totalPaid: 0,
-        invoiceCount: 1, lastInvoice: invDate.toISOString()
-      });
-    }
-    showToast('✅ تم حفظ الفاتورة بنجاح!');
-    showInvoicePreview(invoice, invRef.key);
-  } catch (err) {
-    showToast('❌ حدث خطأ: ' + err.message);
-  } finally {
-    btn.innerHTML = '💾 حفظ الفاتورة'; btn.disabled = false;
-  }
-};
+function renderPriceLeaders(){const invs=Object.values(window.appState.invoices);const pm={};invs.forEach(inv=>{(inv.items||[]).forEach(item=>{if(!pm[item.fish]||item.pricePerKg>pm[item.fish].maxPrice){pm[item.fish]={maxPrice:item.pricePerKg,clientName:inv.clientName};}});});const entries=Object.entries(pm).sort((a,b)=>b[1].maxPrice-a[1].maxPrice);const container=document.getElementById('price-leaders-list');if(entries.length===0){container.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div>';return;}const medals=['🥇','🥈','🥉'];container.innerHTML=entries.slice(0,6).map((e,i)=>'<div class="price-leader-card"><div class="leader-rank">'+(medals[i]||'🐟')+'</div><div class="leader-info"><div class="leader-name">'+e[0]+'</div><div class="leader-fish">أعلى سعر: '+e[1].clientName+'</div></div><div class="leader-price">'+e[1].maxPrice+' ج.م/ك</div></div>').join('');}
 
-// ============================================================
-// INVOICE PREVIEW MODAL
-// ============================================================
-function showInvoicePreview(invoice, invoiceId) {
-  const itemsHtml = (invoice.items || []).map(item => {
-    const unit = item.unit || 'kg';
-    const unitLabel = item.unitLabel || UNITS[unit]?.label || 'كيلو';
-    const qty = item.qty !== undefined ? item.qty : item.kg;
-    const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
-    const showKg = unit !== 'kg';
-    const kgNote = showKg ? `<div style="font-size:9px;color:var(--warning);margin-top:2px">📐 ${(item.kg||0).toFixed(unit==='wqa'?2:0)} ك</div>` : '';
-    return `<tr>
-      <td>${item.fish}</td>
-      <td><div>${qty}</div><div style="font-size:9px;color:var(--text-secondary)">${unitLabel}</div>${kgNote}</td>
-      <td>${prc} ج.م</td>
-      <td style="color:var(--gold);font-weight:700">${(item.subtotal||0).toFixed(2)}</td>
-    </tr>`;
-  }).join('');
+window.renderRecentInvoices=function(){const sv=(document.getElementById('recent-search')?.value||'').toLowerCase().trim();const df=document.getElementById('recent-date-filter')?.value||'';let invs=Object.entries(window.appState.invoices).sort((a,b)=>{const da=a[1].invDateISO||a[1].date?.split('T')[0]||'0000-00-00';const db=b[1].invDateISO||b[1].date?.split('T')[0]||'0000-00-00';if(db!==da)return db.localeCompare(da);return(b[1].createdAt||0)-(a[1].createdAt||0);});if(sv)invs=invs.filter(([,i])=>(i.clientName||'').toLowerCase().includes(sv)||(i.shopName||'').toLowerCase().includes(sv)||(i.phone||'').includes(sv));if(df)invs=invs.filter(([,i])=>(i.invDateISO||i.date?.split('T')[0]||'')===df);const tf=invs.length;const badge=document.getElementById('recent-count-badge');if(badge)badge.textContent=tf+' فاتورة';const container=document.getElementById('recent-invoices-list');const saw=document.getElementById('recent-show-all-wrap');const sab=document.getElementById('recent-show-all-btn');if(tf===0){container.innerHTML='<div class="empty-state"><div class="empty-icon">'+(df||sv?'🔍':'🧾')+'</div><div class="empty-text">'+(df||sv?'لا توجد فواتير بهذه المعايير':'لا توجد فواتير بعد')+'</div></div>';if(saw)saw.style.display='none';return;}const SL=5;const sa=window.appState.recentShowAll||sv!==''||df!=='';const dl=sa?invs:invs.slice(0,SL);const hm=tf>SL&&!sv&&!df;container.innerHTML=dl.map(([id,inv])=>{const ft=inv.fishTotal||inv.gross||inv.total;const et=inv.expTotal||0;const hd=et>0||(inv.commissionPct||0)>0;const inum=inv.invoiceNumber||generateInvoiceNumber(id);const cd=sv?(inv.clientName||'').replace(new RegExp('('+sv+')','gi'),'<mark style="background:rgba(0,180,216,0.3);border-radius:3px;padding:0 2px">$1</mark>'):(inv.clientName||'');return'<div class="history-item" onclick="showInvoiceDetail(\''+id+'\')"><div class="history-header"><span class="history-client">👤 '+cd+'</span><div style="text-align:left"><div class="history-amount">'+formatNum(inv.total)+' ج.م</div>'+(hd?'<div style="font-size:10px;color:var(--danger)">قبل الخصم: '+formatNum(ft)+' ج.م</div>':'')+'</div></div><div class="history-meta" style="display:flex;justify-content:space-between;align-items:center"><span>📅 '+getDisplayDate(inv.invDateISO||inv.date,inv.dateStr)+' • 📦 '+(inv.items||[]).length+' صنف</span><span style="font-size:10px;color:rgba(0,180,216,0.6)">📋 '+inum+'</span></div></div>';}).join('');if(saw)saw.style.display=hm?'block':'none';if(sab&&hm)sab.textContent=window.appState.recentShowAll?'▲ عرض أقل':'▼ عرض جميع الفواتير ('+tf+')';};
+window.toggleShowAllRecent=function(){window.appState.recentShowAll=!window.appState.recentShowAll;renderRecentInvoices();};
+window.clearRecentFilters=function(){const se=document.getElementById('recent-search');const de=document.getElementById('recent-date-filter');if(se)se.value='';if(de)de.value='';window.appState.recentShowAll=false;renderRecentInvoices();};
 
-  const expensesHtml = (invoice.expenses || []).filter(e => e.amount > 0).map(e => `
-    <tr>
-      <td colspan="3" style="text-align:right;color:var(--danger)">⬇️ خصم: ${e.desc}</td>
-      <td style="color:var(--danger);font-weight:700">- ${formatNum(e.amount)}</td>
-    </tr>
-  `).join('');
+window.filterClients=function(filter,btn){window.appState.currentFilter=filter;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderClients();};
 
-  const fishTotal = invoice.fishTotal || invoice.gross || invoice.total;
-  const expTotal = invoice.expTotal || 0;
-  const hasComm = invoice.commissionPct > 0;
-  const hasExpenses = expTotal > 0;
-  const waMsg = encodeURIComponent(buildInvoiceText(invoice));
-  const waNum = '2' + invoice.phone;
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay'; modal.id = 'invoice-modal';
-  modal.innerHTML = `
-    <div class="modal-sheet">
-      <div class="modal-handle"></div>
-      <div class="modal-title">🧾 الفاتورة</div>
-      <div class="invoice-preview">
-        <div class="invoice-header">
-          <div class="invoice-shop">الحاج أحمد الحديدي</div>
-          <div class="invoice-owner">تجارة الأسماك</div>
-          <div class="invoice-date">📅 ${getDisplayDate(invoice.invDateISO || invoice.date, invoice.dateStr)}</div>
-          <div style="margin-top:6px">
-            <span style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.35);color:#ffd700;padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700">
-              📋 ${invoice.invoiceNumber || generateInvoiceNumber(invoiceId)}
-            </span>
-          </div>
-          <div style="margin-top:8px;font-size:13px"><span style="color:var(--text-secondary)">العميل: </span><strong>${invoice.clientName}</strong></div>
-          ${invoice.shopName ? `<div style="font-size:12px;color:var(--text-secondary)">🏪 ${invoice.shopName}</div>` : ''}
-          ${invoice.sector ? `<div style="font-size:12px;color:var(--emerald)">🏢 ${invoice.sector}</div>` : ''}
-          <div style="font-size:12px;color:var(--cyan-glow)">📱 ${invoice.phone}</div>
-        </div>
-        <table class="invoice-table">
-          <thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-          <tbody>${itemsHtml}${expensesHtml}</tbody>
-        </table>
-        <div style="padding-top:10px;border-top:1px solid var(--glass-border)">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الأصناف</span>
-            <span style="font-weight:700">${formatNum(fishTotal)} ج.م</span>
-          </div>
-          ${hasExpenses ? `
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <span style="font-size:12px;color:var(--danger)">⬇️ إجمالي المصاريف المخصومة</span>
-            <span style="color:var(--danger);font-weight:700">- ${formatNum(expTotal)} ج.م</span>
-          </div>` : ''}
-          ${hasComm ? `
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <span style="font-size:12px;color:var(--warning)">🤝 عمولة (${invoice.commissionPct}%)</span>
-            <span style="color:var(--warning);font-weight:700">- ${formatNum(invoice.commissionAmt||0)} ج.م</span>
-          </div>
-          <div style="height:1px;background:rgba(255,215,0,0.3);margin:8px 0"></div>` : ''}
-          <div style="display:flex;justify-content:space-between">
-            <span style="font-size:14px;font-weight:800;color:var(--gold)">💰 المتبقى على التاجر</span>
-            <span style="font-size:20px;font-weight:900;color:var(--gold)">${formatNum(invoice.total)} ج.م</span>
-          </div>
-        </div>
-      </div>
-      <div class="glow-divider"></div>
-      <a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="btn btn-whatsapp">📲 إرسال الفاتورة واتساب</a>
-      <button class="btn btn-pdf" onclick="exportInvoicePDF('${invoiceId}')">📄 تصدير PDF</button>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <button class="btn" onclick="closeModal();editInvoiceModal('${invoiceId}')" style="background:rgba(255,165,0,0.15);border:1px solid rgba(255,165,0,0.4);color:var(--warning)">✏️ تعديل</button>
-        <button class="btn" onclick="closeModal();confirmDeleteInvoice('${invoiceId}','${invoice.clientName}')" style="background:rgba(255,71,87,0.15);border:1px solid rgba(255,71,87,0.4);color:var(--danger)">🗑️ حذف</button>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button class="btn btn-primary" onclick="closeModal();switchPage('clients',document.querySelectorAll('.nav-item')[2])">👥 العملاء</button>
-        <button class="btn btn-outline" onclick="closeModal();initInvoiceForm()">➕ فاتورة جديدة</button>
-      </div>
-    </div>
-  `;
-  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
-  document.getElementById('modals-container').appendChild(modal);
-}
+window.renderClients=function(){const search=(document.getElementById('client-search')?.value||'').toLowerCase();const sortMode=document.getElementById('client-sort')?.value||'debt';const filter=window.appState.currentFilter;const container=document.getElementById('clients-list');if(!container)return;let clients=Object.entries(window.appState.clients);if(search)clients=clients.filter(([,c])=>c.name?.toLowerCase().includes(search)||c.phone?.includes(search));if(filter==='debt')clients=clients.filter(([,c])=>(c.totalDebt||0)>0);if(filter==='paid')clients=clients.filter(([,c])=>(c.totalDebt||0)<=0);if(clients.length===0){container.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div>';return;}clients.sort((a,b)=>{if(sortMode==='newest')return new Date(b[1].lastInvoice||0)-new Date(a[1].lastInvoice||0);if(sortMode==='oldest')return new Date(a[1].lastInvoice||0)-new Date(b[1].lastInvoice||0);return(b[1].totalDebt||0)-(a[1].totalDebt||0);});container.innerHTML=clients.map(([key,c])=>{const debt=c.totalDebt||0;const tpu=c.totalPurchases||0;const tp=c.totalPaid||0;const hd=debt>0;const pp=tpu>0?Math.min(100,Math.round((tp/tpu)*100)):0;return'<div class="client-card '+(hd?'has-debt':'paid')+'" onclick="showClientAccount(\''+key+'\')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:50%;background:'+(hd?'linear-gradient(135deg,rgba(255,71,87,0.3),rgba(255,71,87,0.1))':'linear-gradient(135deg,rgba(0,200,150,0.3),rgba(0,200,150,0.1))')+';border:2px solid '+(hd?'var(--danger)':'var(--emerald)')+';display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">'+(hd?'👤':'✅')+'</div><div><div class="client-name">'+c.name+'</div><div class="client-phone">📱 '+c.phone+'</div>'+(c.shopName?'<div style="font-size:10px;color:var(--text-secondary)">🏪 '+c.shopName+'</div>':'')+'</div></div><div style="text-align:left;min-width:90px"><div style="font-size:10px;color:var(--text-secondary)">'+(hd?'⚠️ المتبقي':'✅ الحساب')+'</div><div class="balance-amount '+(hd?'debt':'paid')+'">'+formatNum(Math.abs(debt))+'</div><div style="font-size:9px;color:'+(hd?'var(--danger)':'var(--emerald)')+'">ج.م '+(hd?'مدين':'مسوي')+'</div></div></div><div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:3px"><span>المدفوع '+formatNum(tp)+' ج.م</span><span>'+pp+'%</span></div><div style="height:5px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden"><div style="height:100%;width:'+pp+'%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px"></div></div></div><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:10px;color:var(--text-secondary)">📦 '+(c.invoiceCount||0)+' فاتورة • 💰 '+formatNum(tpu)+' ج.م</div><div style="display:flex;gap:6px"><button onclick="event.stopPropagation();editClientModal(\''+key+'\')" style="padding:6px 10px;border-radius:14px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:\'Cairo\',sans-serif;font-size:11px;font-weight:600;cursor:pointer">✏️ تعديل</button><button onclick="event.stopPropagation();confirmDeleteClient(\''+key+'\',\''+c.name+'\')" style="padding:6px 10px;border-radius:14px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:\'Cairo\',sans-serif;font-size:11px;font-weight:600;cursor:pointer">🗑️</button></div></div></div>';}).join('');};
 
-// ============================================================
-// WHATSAPP TEXT
-// ============================================================
-function buildInvoiceText(invoice) {
-  const fishTotal = invoice.fishTotal || invoice.gross || invoice.total;
-  const expTotal = invoice.expTotal || 0;
-  const hasComm = invoice.commissionPct > 0;
-  const hasExp = expTotal > 0;
-  const invNum = invoice.invoiceNumber || '—';
-  let text = `🐟 *فاتورة - الحاج أحمد الحديدي*\n📋 رقم الفاتورة: *${invNum}*\n━━━━━━━━━━━━━━━━━━\n`;
-  text += `👤 العميل : ${invoice.clientName}\n`;
-  if (invoice.shopName) text += `🏪 المؤسسة: ${invoice.shopName}\n`;
-  if (invoice.sector)   text += `🏢 القطاع: ${invoice.sector}\n`;
-  text += `📅 التاريخ: ${getDisplayDate(invoice.invDateISO || invoice.date, invoice.dateStr)}\n━━━━━━━━━━━━━━━━━━\n*📦 تفاصيل الأصناف:*\n`;
-  (invoice.items || []).forEach((item, idx) => {
-    const unit = item.unit || 'kg';
-    const uDef = UNITS[unit] || UNITS.kg;
-    const qty = item.qty !== undefined ? item.qty : item.kg;
-    const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
-    text += `${idx+1}. 🐟 ${item.fish}\n    ${qty} ${uDef.label} × ${prc} ج.م = *${(item.subtotal||0).toFixed(2)} ج.م*\n`;
-    if (unit !== 'kg') text += `    📐 يساوي ${(item.kg||0).toFixed(unit==='wqa'?2:0)} كيلو\n`;
-  });
-  text += `─────────────────────\n📦 إجمالي الأصناف: *${formatNum(fishTotal)} ج.م*\n`;
-  if (hasExp) {
-    text += `\n⬇️ *المصاريف المخصومة:*\n`;
-    (invoice.expenses||[]).filter(e=>e.amount>0).forEach(e => {
-      text += `  • ${e.desc}: *- ${formatNum(e.amount)} ج.م*\n`;
-    });
-    text += `⬇️ إجمالي المخصومات: *- ${formatNum(expTotal)} ج.م*\n`;
-  }
-  if (hasComm) {
-    text += `🤝 عمولة (${invoice.commissionPct}%) : *- ${formatNum(invoice.commissionAmt||0)} ج.م*\n`;
-  }
-  text += `━━━━━━━━━━━━━━━━━━\n💰 *المتبقى على التاجر : ${formatNum(invoice.total)} ج.م*\n`;
-  text += `━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
-  return text;
-}
-
-window.closeModal = function() {
-  const m = document.querySelector('.modal-overlay');
-  if (m) m.remove();
-};
-
-// ============================================================
-// PDF EXPORT
-// ============================================================
-function buildInvoicePDFHTML(inv, invoiceId) {
-  const invNum = inv.invoiceNumber || generateInvoiceNumber(invoiceId);
-  const fishTotal = inv.fishTotal || (inv.gross || inv.total);
-  const expTotal = inv.expTotal || 0;
-  const hasComm = (inv.commissionPct || 0) > 0;
-  const hasExp = expTotal > 0;
-  const itemsRows = (inv.items || []).map((item, idx) => {
-    const unit = item.unit || 'kg';
-    const uDef = UNITS[unit] || UNITS.kg;
-    const qty = item.qty !== undefined ? item.qty : item.kg;
-    const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
-    const bg = idx % 2 === 0 ? '#f0f7ff' : '#ffffff';
-    return `<tr style="background:${bg}">
-      <td style="text-align:right;padding:8px 10px;border-bottom:1px solid #e0e8f0">${item.fish}</td>
-      <td style="text-align:center;padding:8px 6px;border-bottom:1px solid #e0e8f0">${qty} ${uDef.label}${unit !== 'kg' ? `<br><small style="color:#e67e00;font-size:10px">${(item.kg||0).toFixed(unit==='wqa'?2:0)} كيلو</small>` : ''}</td>
-      <td style="text-align:center;padding:8px 6px;border-bottom:1px solid #e0e8f0">${prc} ج.م</td>
-      <td style="text-align:center;padding:8px 6px;border-bottom:1px solid #e0e8f0;font-weight:700;color:#1a5276">${formatNum(item.subtotal)} ج.م</td>
-    </tr>`;
-  }).join('');
-
-  const expRows = (inv.expenses || []).filter(e => e.amount > 0).map(e => `
-    <tr style="background:#fff0f0">
-      <td style="text-align:right;padding:8px 10px;border-bottom:1px solid #ffc0c0;color:#c0392b">⬇️ خصم: ${e.desc}</td>
-      <td colspan="2" style="text-align:center;padding:8px 6px;border-bottom:1px solid #ffc0c0;color:#c0392b;font-size:11px">مصروف مخصوم</td>
-      <td style="text-align:center;padding:8px 6px;border-bottom:1px solid #ffc0c0;font-weight:700;color:#c0392b">- ${formatNum(e.amount)} ج.م</td>
-    </tr>
-  `).join('');
-
-  return `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Cairo', 'Arial', sans-serif; background: #fff; color: #1a1a2e; direction: rtl; font-size: 13px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .page { max-width: 794px; margin: 0 auto; background: #fff; }
-  .header { background: #1a3a6b; padding: 22px 28px 18px; text-align: center; }
-  .header-fish { font-size: 32px; margin-bottom: 4px; }
-  .shop-name { font-size: 24px; font-weight: 900; color: #ffd700; margin-bottom: 3px; }
-  .shop-sub { font-size: 12px; color: #90caf9; margin-bottom: 10px; }
-  .inv-meta { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); border-radius: 8px; padding: 7px 14px; }
-  .inv-num { font-size: 12px; color: #ffd700; font-weight: 700; }
-  .inv-date { font-size: 12px; color: #cce5ff; }
-  .client-section { background: #e8f4fd; border-right: 4px solid #1a3a6b; margin: 18px 20px; padding: 12px 16px; border-radius: 4px; }
-  .client-title { font-size: 11px; font-weight: 700; color: #1a3a6b; margin-bottom: 8px; }
-  .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-  .client-row { font-size: 12px; color: #2c3e50; }
-  .client-row b { color: #1a3a6b; }
-  .table-section { margin: 0 20px 16px; }
-  .table-title { font-size: 11px; font-weight: 700; color: #1a3a6b; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 2px solid #1a3a6b; }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: #1a3a6b; }
-  th { color: #fff; padding: 9px 8px; font-size: 12px; font-weight: 700; }
-  td { font-size: 12px; color: #2c3e50; vertical-align: middle; }
-  .totals-section { margin: 0 20px 16px; }
-  .total-row { display: flex; justify-content: space-between; padding: 6px 12px; border-bottom: 1px solid #e8f0fe; }
-  .total-label { font-size: 12px; color: #5d6d7e; }
-  .total-val { font-size: 13px; font-weight: 700; color: #1a5276; }
-  .grand-box { margin: 0 20px 20px; background: #1a3a6b; border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .grand-label { font-size: 15px; font-weight: 900; color: #fff; }
-  .grand-val { font-size: 26px; font-weight: 900; color: #ffd700; }
-  .footer { text-align: center; padding: 14px 20px; border-top: 2px solid #e0e8f0; margin: 0 20px; }
-  .footer-main { font-size: 12px; color: #5d6d7e; margin-bottom: 3px; }
-  .footer-num { font-size: 10px; color: #aab7c4; }
-  @media print { @page { margin: 10mm; size: A4; } }
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="header">
-    <div class="header-fish">🐟</div>
-    <div class="shop-name">الحاج أحمد الحديدي</div>
-    <div class="shop-sub">تجارة الأسماك — فاتورة رسمية</div>
-    <div class="inv-meta">
-      <div class="inv-num">📋 ${invNum}</div>
-      <div class="inv-date">📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}</div>
-    </div>
-  </div>
-  <div class="client-section">
-    <div class="client-title">بيانات العميل</div>
-    <div class="client-grid">
-      <div class="client-row"><b>الاسم:</b> ${inv.clientName}</div>
-      <div class="client-row"><b>الهاتف:</b> ${inv.phone}</div>
-      ${inv.shopName ? `<div class="client-row"><b>المؤسسة:</b> ${inv.shopName}</div>` : ''}
-    </div>
-  </div>
-  <div class="table-section">
-    <div class="table-title">تفاصيل الأصناف والمصاريف</div>
-    <table>
-      <thead><tr><th>البيان</th><th>الكمية</th><th>السعر / الوحدة</th><th>الإجمالي</th></tr></thead>
-      <tbody>${itemsRows}${expRows}</tbody>
-    </table>
-  </div>
-  <div class="totals-section">
-    <div class="total-row">
-      <span class="total-label">📦 إجمالي الأصناف</span>
-      <span class="total-val">${formatNum(fishTotal)} ج.م</span>
-    </div>
-    ${hasExp ? `
-    <div class="total-row">
-      <span class="total-label" style="color:#c0392b">⬇️ إجمالي المصاريف المخصومة</span>
-      <span class="total-val" style="color:#c0392b">- ${formatNum(expTotal)} ج.م</span>
-    </div>` : ''}
-    ${hasComm ? `
-    <div class="total-row">
-      <span class="total-label" style="color:#c0392b">🤝 عمولة (${inv.commissionPct}%)</span>
-      <span class="total-val" style="color:#c0392b">- ${formatNum(inv.commissionAmt||0)} ج.م</span>
-    </div>` : ''}
-  </div>
-  <div class="grand-box">
-    <div class="grand-label">💰 المتبقى على التاجر</div>
-    <div class="grand-val">${formatNum(inv.total)} ج.م</div>
-  </div>
-  <div class="footer">
-    <div class="footer-main">شكراً لتعاملكم معنا 🙏 — الحاج أحمد الحديدي لتجارة الأسماك</div>
-    <div class="footer-num">رقم الفاتورة: ${invNum}</div>
-  </div>
-</div>
-</body>
-</html>`;
-}
-
-window.exportInvoicePDF = function(invoiceId) {
-  const inv = window.appState.invoices[invoiceId];
-  if (!inv) return showToast('❌ الفاتورة غير موجودة');
-  const invNum = inv.invoiceNumber || generateInvoiceNumber(invoiceId);
-  const clientName = (inv.clientName || 'عميل').replace(/\s+/g, '_');
-  const dateStr = (inv.invDateISO || getTodayISO()).replace(/-/g, '');
-  const fileName = `فاتورة_${clientName}_${invNum}_${dateStr}`;
-  openPrintWindow(buildInvoicePDFHTML(inv, invoiceId), fileName);
-  showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
-};
-
-function openPrintWindow(html, fileName) {
-  const old = document.getElementById('__print_frame__');
-  if (old) old.remove();
-  const iframe = document.createElement('iframe');
-  iframe.id = '__print_frame__';
-  iframe.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:99999;background:#fff;';
-  document.body.appendChild(iframe);
-  iframe.contentDocument.open();
-  iframe.contentDocument.write(html);
-  iframe.contentDocument.close();
-  iframe.addEventListener('load', function() {
-    try {
-      const iDoc = iframe.contentDocument;
-      const bar = iDoc.createElement('div');
-      bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1a3a6b;padding:10px 20px;display:flex;gap:10px;justify-content:center;z-index:9999;';
-      bar.innerHTML = `
-        <button onclick="window.print()" style="background:#ffd700;color:#1a1a2e;border:none;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:900;cursor:pointer;font-family:Cairo,Arial,sans-serif">🖨️ طباعة / حفظ PDF</button>
-        <button onclick="window.parent.document.getElementById('__print_frame__').remove()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,Arial,sans-serif">✖ إغلاق</button>
-      `;
-      const printStyle = iDoc.createElement('style');
-      printStyle.textContent = '@media print { #__ctrl_bar__ { display:none!important; } }';
-      bar.id = '__ctrl_bar__';
-      iDoc.body.appendChild(bar);
-      iDoc.head.appendChild(printStyle);
-      iDoc.body.style.paddingBottom = '70px';
-    } catch(e) {}
-  });
-}
-
-// ============================================================
-// PDF EXPORT — CLIENT STATEMENT
-// ============================================================
-window.exportClientStatementPDF = async function(clientKey) {
-  showToast('⏳ جاري تحضير كشف الحساب...');
-  const c = window.appState.clients[clientKey];
-  if (!c) return showToast('❌ العميل غير موجود');
-  
-  let clientPayments = [];
-  try {
-    const snap = await get(ref(db, 'payments'));
-    const all = snap.val() || {};
-    clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey);
-  } catch(e) {}
-  
-  const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone === c.phone);
-  
-  // Create unified timeline and sort OLDEST first to calculate running balance correctly
-  const timeline = [
-    ...clientInvoices.map(([id,inv]) => {
-      const d = inv.invDateISO || inv.date?.split('T')[0] || getTodayISO();
-      return { type:'invoice', id, data:inv, ts: new Date(d+'T12:00:00').getTime() };
-    }),
-    ...clientPayments.map(([id,pay]) => {
-      const d = pay.customDate || pay.date?.split('T')[0] || getTodayISO();
-      return { type:'payment', id, data:pay, ts: new Date(d+'T12:00:00').getTime() };
-    })
-  ].sort((a,b) => a.ts - b.ts);
-
-  // Calculate Running Balance
-  let runBal = 0;
-  timeline.forEach(item => {
-    if (item.type === 'invoice') {
-      runBal += item.data.total;
-    } else {
-      runBal -= item.data.amount || 0;
-      if (runBal < 0) runBal = 0;
-    }
-    item.runBal = runBal;
-  });
-
-  const nowStr = new Date().toLocaleDateString('en-GB');
-  let timelineRows = '';
-  
-  timeline.forEach((item, idx) => {
-    const displayNum = idx + 1;
-    if (item.type === 'invoice') {
-      const inv = item.data;
-      const invNum = generateInvoiceNumber(item.id);
-      timelineRows += `<tr style="background:${idx%2===0?'#f0f7ff':'#ffffff'}">
-        <td style="text-align:center;color:#7f8c8d">${displayNum}</td>
-        <td style="text-align:center">${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}</td>
-        <td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">🧾 فاتورة</span><br><small style="color:#aaa;font-size:9px">${invNum}</small></td>
-        <td style="font-size:11px">${(inv.items||[]).map(i=>i.fish).join('، ')}</td>
-        <td style="color:#1a5276;font-weight:700;text-align:center">+${formatNum(inv.total)} ج.م</td>
-        <td style="text-align:center;color:#2c3e50;font-weight:600">${formatNum(item.runBal)} ج.م</td>
-      </tr>`;
-    } else {
-      const pay = item.data;
-      timelineRows += `<tr style="background:${idx%2===0?'#f0fff8':'#ffffff'}">
-        <td style="text-align:center;color:#7f8c8d">${displayNum}</td>
-        <td style="text-align:center">${getDisplayDate(pay.customDate || pay.date, pay.dateStr)}</td>
-        <td><span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">💳 دفعة</span></td>
-        <td style="text-align:center;font-size:11px">${pay.notes||pay.from||'—'}</td>
-        <td style="color:#27ae60;font-weight:700;text-align:center">-${formatNum(pay.amount)} ج.م</td>
-        <td style="text-align:center;color:${item.runBal>0?'#c0392b':'#27ae60'};font-weight:600">${formatNum(item.runBal)} ج.م</td>
-      </tr>`;
-    }
-  });
-
-  const debt = c.totalDebt || 0;
-  const totalPaid = c.totalPaid || 0;
-  const totalPurchases = c.totalPurchases || 0;
-  const clientName = (c.name || 'عميل').replace(/\s+/g, '_');
-  const dateCode = getTodayISO().replace(/-/g, '');
-  const fileName = `كشف_حساب_${clientName}_${dateCode}`;
-  
-  const html = `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Cairo', Arial, sans-serif; background: #fff; color: #1a1a2e; direction: rtl; font-size: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .page { max-width: 794px; margin: 0 auto; background: #fff; }
-  .header { background: #1a3a6b; padding: 20px 24px 16px; text-align: center; }
-  .header-fish { font-size: 28px; margin-bottom: 3px; }
-  .shop-name { font-size: 20px; font-weight: 900; color: #ffd700; margin-bottom: 3px; }
-  .shop-sub { font-size: 11px; color: #90caf9; margin-bottom: 6px; }
-  .doc-title { font-size: 13px; font-weight: 700; color: #fff; background: rgba(255,255,255,0.15); display: inline-block; padding: 4px 18px; border-radius: 20px; margin-top: 6px; }
-  .doc-date { font-size: 10px; color: #cce5ff; margin-top: 5px; }
-  .client-section { background: #e8f4fd; border-right: 4px solid #1a3a6b; margin: 16px 18px; padding: 10px 14px; border-radius: 4px; display: flex; gap: 24px; flex-wrap: wrap; }
-  .client-field { font-size: 12px; color: #2c3e50; }
-  .client-field b { color: #1a3a6b; }
-  .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 0 18px 16px; }
-  .summary-card { border-radius: 8px; padding: 10px 8px; text-align: center; }
-  .summary-card.debt { background: #fff0f0; border: 2px solid #e74c3c; }
-  .summary-card.paid { background: #f0fff8; border: 2px solid #27ae60; }
-  .summary-card.total { background: #f0f8ff; border: 2px solid #2980b9; }
-  .s-label { font-size: 10px; font-weight: 700; margin-bottom: 4px; }
-  .s-label.debt { color: #c0392b; } .s-label.paid { color: #27ae60; } .s-label.total { color: #2980b9; }
-  .s-val { font-size: 17px; font-weight: 900; }
-  .s-val.debt { color: #c0392b; } .s-val.paid { color: #27ae60; } .s-val.total { color: #2980b9; }
-  .s-unit { font-size: 9px; color: #888; }
-  .section-title { font-size: 11px; font-weight: 700; color: #1a3a6b; margin: 0 18px 6px; padding-bottom: 4px; border-bottom: 2px solid #1a3a6b; }
-  table { width: calc(100% - 36px); margin: 0 18px 16px; border-collapse: collapse; }
-  thead tr { background: #1a3a6b; }
-  th { color: #fff; padding: 8px 6px; font-size: 10px; font-weight: 700; }
-  td { padding: 6px 5px; font-size: 11px; color: #2c3e50; border-bottom: 1px solid #eef2f7; }
-  .balance-section { margin: 0 18px 16px; border-radius: 8px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
-  .balance-section.has-debt { background: #fff0f0; border: 2px solid #e74c3c; }
-  .balance-section.no-debt { background: #f0fff8; border: 2px solid #27ae60; }
-  .balance-label { font-size: 14px; font-weight: 900; }
-  .balance-val { font-size: 24px; font-weight: 900; }
-  .footer { text-align: center; padding: 12px 18px; border-top: 2px solid #e0e8f0; margin: 0 18px; }
-  .footer-text { font-size: 10px; color: #7f8c8d; }
-  @media print { @page { margin: 8mm; size: A4; } }
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="header">
-    <div class="header-fish">🐟</div>
-    <div class="shop-name">الحاج أحمد الحديدي</div>
-    <div class="shop-sub">تجارة الأسماك</div>
-    <div class="doc-title">📊 كشف حساب شامل</div>
-    <div class="doc-date">📅 تاريخ الإصدار: ${nowStr}</div>
-  </div>
-  <div class="client-section">
-    <div class="client-field"><b>👤 العميل:</b> ${c.name}</div>
-    <div class="client-field"><b>📱 الهاتف:</b> ${c.phone}</div>
-    ${c.shopName ? `<div class="client-field"><b>🏪 المؤسسة:</b> ${c.shopName}</div>` : ''}
-  </div>
-  <div class="summary-grid">
-    <div class="summary-card debt"><div class="s-label debt">⚠️ المتبقي</div><div class="s-val debt">${formatNum(debt)}</div><div class="s-unit">جنيه مصري</div></div>
-    <div class="summary-card paid"><div class="s-label paid">✅ المدفوع</div><div class="s-val paid">${formatNum(totalPaid)}</div><div class="s-unit">جنيه مصري</div></div>
-    <div class="summary-card total"><div class="s-label total">💰 إجمالي المشتريات</div><div class="s-val total">${formatNum(totalPurchases)}</div><div class="s-unit">جنيه مصري</div></div>
-  </div>
-  <div class="section-title">🕐 سجل الحركات — الأقدم أولاً</div>
-  <table>
-    <thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>التفاصيل</th><th>المبلغ</th><th>الرصيد</th></tr></thead>
-    <tbody>${timelineRows || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa">لا توجد حركات مسجلة</td></tr>'}</tbody>
-  </table>
-  <div class="balance-section ${debt > 0 ? 'has-debt' : 'no-debt'}">
-    <div class="balance-label" style="color:${debt>0?'#c0392b':'#27ae60'}">${debt>0?'⚠️ الرصيد المتبقي':'✅ الحساب مسوّي بالكامل'}</div>
-    <div class="balance-val" style="color:${debt>0?'#c0392b':'#27ae60'}">${formatNum(debt)} ج.م</div>
-  </div>
-  <div class="footer"><div class="footer-text">شكراً لتعاملكم معنا 🙏 — الحاج أحمد الحديدي لتجارة الأسماك</div></div>
-</div>
-</body>
-</html>`;
-  openPrintWindow(html, fileName);
-  showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
-};
-
-// ============================================================
-// FIREBASE LISTENERS
-// ============================================================
-function setupListeners() {
-  onValue(ref(db, 'invoices'), snap => {
-    window.appState.invoices = snap.val() || {};
-    updateDashboard(); renderHistory(); renderPricesPage();
-  });
-  onValue(ref(db, 'clients'), snap => {
-    window.appState.clients = snap.val() || {};
-    updateDashboard(); renderClients(); updateClientDatalist();
-  });
-}
-
-// ============================================================
-// DASHBOARD
-// ============================================================
-function updateDashboard() {
-  const invoices = Object.values(window.appState.invoices);
-  const clients = Object.values(window.appState.clients);
-  const totalSales = invoices.reduce((s,i) => s+(i.total||0), 0);
-  const totalDebt = clients.reduce((s,c) => s+(c.totalDebt||0), 0);
-  document.getElementById('stat-total-sales').textContent = formatNum(totalSales);
-  document.getElementById('stat-total-debt').textContent = formatNum(totalDebt);
-  document.getElementById('stat-total-clients').textContent = clients.length;
-  document.getElementById('stat-total-invoices').textContent = invoices.length;
-  renderPriceLeaders();
-  renderRecentInvoices();
-}
-
-function renderPriceLeaders() {
-  const invoices = Object.values(window.appState.invoices);
-  const priceMap = {};
-  invoices.forEach(inv => {
-    (inv.items||[]).forEach(item => {
-      if (!priceMap[item.fish] || item.pricePerKg > priceMap[item.fish].maxPrice) {
-        priceMap[item.fish] = { maxPrice: item.pricePerKg, clientName: inv.clientName };
-      }
-    });
-  });
-  const entries = Object.entries(priceMap).sort((a,b) => b[1].maxPrice - a[1].maxPrice);
-  const container = document.getElementById('price-leaders-list');
-  if (entries.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات بعد</div></div>';
-    return;
-  }
-  const medals = ['🥇','🥈','🥉'];
-  container.innerHTML = entries.slice(0,6).map((e,i) => `
-    <div class="price-leader-card">
-      <div class="leader-rank">${medals[i]||'🐟'}</div>
-      <div class="leader-info">
-        <div class="leader-name">${e[0]}</div>
-        <div class="leader-fish">أعلى سعر: ${e[1].clientName}</div>
-      </div>
-      <div class="leader-price">${e[1].maxPrice} ج.م/ك</div>
-    </div>
-  `).join('');
-}
-
-// ============================================================
-// ★ RECENT INVOICES — UPDATED WITH SEARCH + DATE FILTER ★
-// ============================================================
-window.renderRecentInvoices = function() {
-  const searchVal = (document.getElementById('recent-search')?.value || '').toLowerCase().trim();
-  const dateFilter = document.getElementById('recent-date-filter')?.value || '';
-
-  // Get all invoices sorted by invDateISO (invoice date) then by createdAt for same-day ordering
-  let invoices = Object.entries(window.appState.invoices).sort((a, b) => {
-    const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
-    const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
-    if (dateB !== dateA) return dateB.localeCompare(dateA); // newest date first
-    return (b[1].createdAt || 0) - (a[1].createdAt || 0);  // then by creation time
-  });
-
-  // Apply search filter
-  if (searchVal) {
-    invoices = invoices.filter(([, i]) =>
-      (i.clientName || '').toLowerCase().includes(searchVal) ||
-      (i.shopName || '').toLowerCase().includes(searchVal) ||
-      (i.phone || '').includes(searchVal)
-    );
-  }
-
-  // Apply date filter (exact day)
-  if (dateFilter) {
-    invoices = invoices.filter(([, i]) => {
-      const d = i.invDateISO || i.date?.split('T')[0] || '';
-      return d === dateFilter;
-    });
-  }
-
-  const totalFound = invoices.length;
-  // Update count badge
-  const badge = document.getElementById('recent-count-badge');
-  if (badge) badge.textContent = totalFound + ' فاتورة';
-
-  const container = document.getElementById('recent-invoices-list');
-  const showAllWrap = document.getElementById('recent-show-all-wrap');
-  const showAllBtn = document.getElementById('recent-show-all-btn');
-
-  if (totalFound === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">${dateFilter || searchVal ? '🔍' : '🧾'}</div>
-        <div class="empty-text">${dateFilter || searchVal ? 'لا توجد فواتير بهذه المعايير' : 'لا توجد فواتير بعد'}</div>
-      </div>`;
-    if (showAllWrap) showAllWrap.style.display = 'none';
-    return;
-  }
-
-  // Determine how many to show
-  const SHOW_LIMIT = 5;
-  const showAll = window.appState.recentShowAll || (searchVal !== '') || (dateFilter !== '');
-  const displayList = showAll ? invoices : invoices.slice(0, SHOW_LIMIT);
-  const hasMore = totalFound > SHOW_LIMIT && !searchVal && !dateFilter;
-
-  container.innerHTML = displayList.map(([id, inv]) => {
-    const fishTotal = inv.fishTotal || inv.gross || inv.total;
-    const expTotal = inv.expTotal || 0;
-    const hasDeductions = expTotal > 0 || (inv.commissionPct || 0) > 0;
-    const invNum = inv.invoiceNumber || generateInvoiceNumber(id);
-    // Highlight matching text
-    const clientDisplay = searchVal
-      ? (inv.clientName || '').replace(new RegExp(`(${searchVal})`, 'gi'), '<mark style="background:rgba(0,180,216,0.3);border-radius:3px;padding:0 2px">$1</mark>')
-      : (inv.clientName || '');
-    return `
-      <div class="history-item" onclick="showInvoiceDetail('${id}')">
-        <div class="history-header">
-          <span class="history-client">👤 ${clientDisplay}</span>
-          <div style="text-align:left">
-            <div class="history-amount">${formatNum(inv.total)} ج.م</div>
-            ${hasDeductions ? `<div style="font-size:10px;color:var(--danger)">قبل الخصم: ${formatNum(fishTotal)} ج.م</div>` : ''}
-          </div>
-        </div>
-        <div class="history-meta" style="display:flex;justify-content:space-between;align-items:center">
-          <span>📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)} • 📦 ${(inv.items || []).length} صنف</span>
-          <span style="font-size:10px;color:rgba(0,180,216,0.6)">📋 ${invNum}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  // Show/hide "show all" button
-  if (showAllWrap) {
-    showAllWrap.style.display = hasMore ? 'block' : 'none';
-  }
-  if (showAllBtn && hasMore) {
-    if (window.appState.recentShowAll) {
-      showAllBtn.textContent = '▲ عرض أقل';
-    } else {
-      showAllBtn.textContent = `▼ عرض جميع الفواتير (${totalFound})`;
-    }
-  }
-};
-
-window.toggleShowAllRecent = function() {
-  window.appState.recentShowAll = !window.appState.recentShowAll;
-  renderRecentInvoices();
-};
-
-window.clearRecentFilters = function() {
-  const searchEl = document.getElementById('recent-search');
-  const dateEl = document.getElementById('recent-date-filter');
-  if (searchEl) searchEl.value = '';
-  if (dateEl) dateEl.value = '';
-  window.appState.recentShowAll = false;
-  renderRecentInvoices();
-};
-
-// ============================================================
-// CLIENTS
-// ============================================================
-window.filterClients = function(filter, btn) {
-  window.appState.currentFilter = filter;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderClients();
-};
-
-window.renderClients = function() {
-  const search = (document.getElementById('client-search')?.value||'').toLowerCase();
-  const sortMode = document.getElementById('client-sort')?.value || 'debt';
-  const filter = window.appState.currentFilter;
-  const container = document.getElementById('clients-list');
-  if (!container) return;
-  
-  let clients = Object.entries(window.appState.clients);
-  
-  if (search) clients = clients.filter(([,c]) => c.name?.toLowerCase().includes(search)||c.phone?.includes(search));
-  if (filter==='debt') clients = clients.filter(([,c]) => (c.totalDebt||0)>0);
-  if (filter==='paid') clients = clients.filter(([,c]) => (c.totalDebt||0)<=0);
-  
-  if (clients.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div>'; return; }
-  
-  // NEW SORTING LOGIC
-  clients.sort((a,b)
+window.showClientAccount=async function(clientKey){const c=window.appState.clients[clientKey];if(!c)return;let cp=[];try{const snap=await get(ref(db,'payments'));const all=snap.val()||{};cp=Object.entries(all).filter(([,p])=>p.clientKey===clientKey);}catch(e){}const debt=c.totalDebt||0;const tpu=c.totalPurchases||0;const tp=c.totalPaid||0;const hd=debt>0;const pp=tpu>0?Math.min(100,Math.round((tp/tpu)*100)):0;const ci=Object.entries(window.appState.invoices).filter(([,i])=>i.phone===c.phone);const tl=[...ci.map(([id,inv])=>{const d=inv.invDateISO||inv.date?.split('T')[0]||getTodayISO();return{type:'invoice',id,data:inv,ts:new Date(d+'T12:00:00').getTime()};}),...cp.map(([id,pay])=>{const d=pay.customDate||pay.date?.split('T')[0]||getTodayISO();return{type:'payment',id,data:pay,ts:new Date(d+'T12:00:00').getTime()};})].sort((a,b)=>a.ts-b.ts);const ti=getTodayISO();const modal=document.createElement('div');modal.className='modal-overlay';modal.id='client-account-modal';let tlHtml='';if(tl.length===0){tlHtml='<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">لا توجد حركات</div>';}else{tl.forEach(item=>{if(item.type==='invoice'){const inv=item.data;tlHtml+='<div onclick="closeModal();showInvoiceDetail(\''+item.id+'\')" style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;margin-bottom:7px;cursor:pointer"><div style="width:36px;height:36px;border-radius:50%;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🧾</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:var(--gold)">فاتورة بيع</div><div style="font-size:10px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(inv.items||[]).map(i=>i.fish).join(' • ')+'</div><div style="font-size:10px;color:var(--text-secondary)">📅 '+getDisplayDate(inv.invDateISO||inv.date,inv.dateStr)+'</div></div><div style="text-align:left;flex-shrink:0"><div style="font-size:14px;font-weight:900;color:var(--gold)">+'+formatNum(inv.total)+'</div><div style="font-size:9px;color:var(--text-secondary)">ج.م مدين</div></div></div>';}else{const pay=item.data;tlHtml+='<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:12px;margin-bottom:7px"><div style="width:36px;height:36px;border-radius:50%;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">💳</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:var(--emerald)">دفعة مالية</div>'+(pay.from?'<div style="font-size:10px;color:var(--text-secondary)">👤 '+pay.from+'</div>':'')+(pay.notes?'<div style="font-size:10px;color:var(--text-secondary)">📝 '+pay.notes+'</div>':'')+'<div style="font-size:10px;color:var(--text-secondary)">📅 '+getDisplayDate(pay.customDate||pay.date,pay.dateStr)+'</div></div><div style="text-align:left;flex-shrink:0"><div style="font-size:14px;font-weight:900;color:var(--emerald)">-'+formatNum(pay.amount)+'</div><div style="font-size:9px;color:var(--text-secondary)">ج.م دفع</div><div style="font-size:10px;color:var(--danger)">متبقي: '+formatNum(pay.remainingAfter)+'</div><div style="display:flex;gap:4px;margin-top:4px"><button onclick="editPaymentModal(\''+item.id+'\',\''+clientKey+'\')" style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:\'Cairo\',sans-serif;font-size:10px;cursor:pointer">✏️</button><button onclick="confirmDeletePayment(\''+item.id+'\',\''+clientKey+'\','+pay.amount+','+pay.remainingAfter+')" style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,71,87,0.4);background:rgba(255,71,87,0.1);color:var(--danger);font-family:\'Cairo\',sans-serif;font-size:10px;cursor:pointer">🗑️</button></div></div></div>';}});}
+modal.innerHTML='<div class="modal-sheet" style="max-height:95vh"><div class="modal-handle"></div><div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,rgba(0,180,216,0.25),rgba(21,101,192,0.15));border:2px solid var(--cyan-glow);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👤</div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:900;color:var(--text-primary)">'+c.name+'</div><div style="font-size:12px;color:var(--cyan-glow)">📱 '+c.phone+'</div>'+(c.shopName?'<div style="font-size:10px;color:var(--text-secondary)">🏪 '+c.shopName+'</div>':'')+'</div><div style="display:flex;gap:6px"><button onclick="sendClientStatementWA(\''+clientKey+'\')" style="background:linear-gradient(135deg,#25D366,#128C7E);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center;border:none;cursor:pointer">📲</button><button onclick="exportClientStatementPDF(\''+clientKey+'\')" style="background:linear-gradient(135deg,#e74c3c,#c0392b);padding:9px 11px;border-radius:10px;font-size:18px;display:flex;align-items:center;border:none;cursor:pointer">📄</button></div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px"><div style="background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.35);border-radius:13px;padding:10px 6px;text-align:center"><div style="font-size:9px;color:var(--danger);margin-bottom:3px;font-weight:700">⚠️ المتبقي</div><div style="font-size:15px;font-weight:900;color:var(--danger)">'+formatNum(debt)+'</div><div style="font-size:9px;color:rgba(255,71,87,0.6)">ج.م</div></div><div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.35);border-radius:13px;padding:10px 6px;text-align:center"><div style="font-size:9px;color:var(--emerald);margin-bottom:3px;font-weight:700">✅ المدفوع</div><div style="font-size:15px;font-weight:900;color:var(--emerald)">'+formatNum(tp)+'</div><div style="font-size:9px;color:rgba(0,200,150,0.6)">ج.م</div></div><div style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.35);border-radius:13px;padding:10px 6px;text-align:center"><div style="font-size:9px;color:var(--cyan-glow);margin-bottom:3px;font-weight:700">💰 الإجمالي</div><div style="font-size:15px;font-weight:900;color:var(--cyan-glow)">'+formatNum(tpu)+'</div><div style="font-size:9px;color:rgba(0,180,216,0.6)">ج.م</div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:5px"><span>نسبة السداد</span><span style="color:var(--emerald);font-weight:700">'+pp+'%</span></div><div style="height:7px;background:rgba(255,255,255,0.07);border-radius:10px;overflow:hidden"><div id="pay-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald),var(--cyan-glow));border-radius:10px;transition:width 0.9s"></div></div></div>'+(hd?'<div style="background:linear-gradient(135deg,rgba(0,200,150,0.08),rgba(0,180,216,0.04));border:1px solid rgba(0,200,150,0.3);
