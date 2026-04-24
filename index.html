@@ -435,6 +435,7 @@
     border-radius: 12px; margin-bottom: 8px;
   }
 
+  /* ── HOME SEARCH & FILTER BAR ── */
   .home-filter-bar {
     display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
   }
@@ -481,6 +482,7 @@
   }
   .show-all-btn:active { background: rgba(0,180,216,0.12); }
 
+  /* ── PRICES DATE FILTER ── */
   .prices-date-filter {
     background: rgba(255,215,0,0.06);
     border: 1px solid rgba(255,215,0,0.2);
@@ -535,6 +537,7 @@
     font-size: 12px; color: var(--cyan-glow); margin-top: 4px;
   }
 
+  /* ===================== LOGIN SCREEN ===================== */
   #login-screen {
     position: fixed; inset: 0; z-index: 9999;
     background: linear-gradient(135deg, #040d1a 0%, #061525 50%, #050f1e 100%);
@@ -604,6 +607,7 @@
 
   .inv-date-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3); color: var(--cyan-glow); font-size: 12px; font-weight: 700; }
 
+  /* ===================== AI BADGE ===================== */
   .ai-grouping-badge {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 3px 10px; border-radius: 20px;
@@ -743,16 +747,16 @@
         </div>
         <div class="form-group">
           <label class="form-label">🏢 القطاع / المكان (اختياري)</label>
-          <select id="inv-sector" class="form-select">
-            <option value="">-- اختر القطاع --</option>
-            <option value="القطاع الأول">القطاع الأول</option>
-            <option value="القطاع الثاني">القطاع الثاني</option>
-            <option value="القطاع الثالث">القطاع الثالث</option>
-            <option value="الصرف الوسطاني">الصرف الوسطاني</option>
-            <option value="الصرف سكة القطار">الصرف سكة القطار</option>
-            <option value="الصرف القنالي">الصرف القنالي</option>
-            <option value="المغزي">المغزي</option>
-          </select>
+   <select id="inv-sector" class="form-select">
+  <option value="">-- اختر القطاع --</option>
+  <option value="القطاع الأول">القطاع الأول</option>
+  <option value="القطاع الثاني">القطاع الثاني</option>
+  <option value="القطاع الثالث">القطاع الثالث</option>
+  <option value="الصرف الوسطاني">الصرف الوسطاني</option>
+  <option value="الصرف سكة القطار">الصرف سكة القطار</option>
+  <option value="الصرف القنالي">الصرف القنالي</option>
+  <option value="المغزي">المغزي</option>
+</select>
         </div>
         <div class="form-group">
           <label class="form-label">🤝 عمولة التاجر % (اختياري)</label>
@@ -987,18 +991,6 @@ const UNITS = {
 };
 
 // ============================================================
-// SECTORS — updated list
-// ============================================================
-const SECTORS = ['القطاع الأول','القطاع الثاني','القطاع الثالث','الصرف الوسطاني','الصرف سكة القطار','الصرف القنالي','المغزي'];
-
-// Helper: sector match — supports includes for الصرف types (backward compat with old data)
-function sectorMatch(invoiceSector, targetSector) {
-  if (!invoiceSector) return false;
-  if (targetSector.includes('الصرف') && invoiceSector.includes('الصرف')) return true;
-  return invoiceSector === targetSector;
-}
-
-// ============================================================
 // STATE
 // ============================================================
 window.appState = {
@@ -1016,14 +1008,14 @@ window.appState = {
 };
 
 // ============================================================
-// DATE FORMATTER
+// DATE FORMATTER (NEW: DD/MM/YYYY)
 // ============================================================
 function getDisplayDate(isoOrDateStr, fallback) {
   if (!isoOrDateStr) return fallback || '';
   try {
     const d = new Date(isoOrDateStr.includes('T') ? isoOrDateStr : isoOrDateStr + 'T12:00:00');
     if (isNaN(d)) return fallback || '';
-    return d.toLocaleDateString('en-GB');
+    return d.toLocaleDateString('en-GB'); // Outputs DD/MM/YYYY
   } catch(e) {
     return fallback || '';
   }
@@ -1391,6 +1383,7 @@ window.saveInvoice = async function() {
   const invDateISO = document.getElementById('inv-date').value || getTodayISO();
   if (!clientName) return showToast('❌ يرجى إدخال اسم العميل');
   if (!validatePhone(phone)) return showToast('❌ رقم الهاتف غير صحيح');
+  // sector is optional
   if (window.appState.fishItems.length === 0) return showToast('❌ يرجى اختيار صنف واحد على الأقل');
   const items = [];
   let fishTotal = 0;
@@ -1422,7 +1415,7 @@ window.saveInvoice = async function() {
   btn.innerHTML = '<span class="spinner"></span> جاري الحفظ...'; btn.disabled = true;
   try {
     const invDate = new Date(invDateISO + 'T12:00:00');
-    const dateStr = invDate.toLocaleDateString('en-GB');
+    const dateStr = invDate.toLocaleDateString('en-GB'); // Changed to DD/MM/YYYY
     const invoice = {
       clientName, phone, shopName, sector, items, expenses: expensesList,
       fishTotal, expTotal, gross: fishTotal,
@@ -1785,6 +1778,7 @@ window.exportClientStatementPDF = async function(clientKey) {
   
   const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone === c.phone);
   
+  // Create unified timeline and sort OLDEST first to calculate running balance correctly
   const timeline = [
     ...clientInvoices.map(([id,inv]) => {
       const d = inv.invDateISO || inv.date?.split('T')[0] || getTodayISO();
@@ -1796,6 +1790,7 @@ window.exportClientStatementPDF = async function(clientKey) {
     })
   ].sort((a,b) => a.ts - b.ts);
 
+  // Calculate Running Balance
   let runBal = 0;
   timeline.forEach(item => {
     if (item.type === 'invoice') {
@@ -1982,19 +1977,21 @@ function renderPriceLeaders() {
 }
 
 // ============================================================
-// RECENT INVOICES
+// ★ RECENT INVOICES — UPDATED WITH SEARCH + DATE FILTER ★
 // ============================================================
 window.renderRecentInvoices = function() {
   const searchVal = (document.getElementById('recent-search')?.value || '').toLowerCase().trim();
   const dateFilter = document.getElementById('recent-date-filter')?.value || '';
 
+  // Get all invoices sorted by invDateISO (invoice date) then by createdAt for same-day ordering
   let invoices = Object.entries(window.appState.invoices).sort((a, b) => {
     const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
     const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
-    if (dateB !== dateA) return dateB.localeCompare(dateA);
-    return (b[1].createdAt || 0) - (a[1].createdAt || 0);
+    if (dateB !== dateA) return dateB.localeCompare(dateA); // newest date first
+    return (b[1].createdAt || 0) - (a[1].createdAt || 0);  // then by creation time
   });
 
+  // Apply search filter
   if (searchVal) {
     invoices = invoices.filter(([, i]) =>
       (i.clientName || '').toLowerCase().includes(searchVal) ||
@@ -2003,6 +2000,7 @@ window.renderRecentInvoices = function() {
     );
   }
 
+  // Apply date filter (exact day)
   if (dateFilter) {
     invoices = invoices.filter(([, i]) => {
       const d = i.invDateISO || i.date?.split('T')[0] || '';
@@ -2011,6 +2009,7 @@ window.renderRecentInvoices = function() {
   }
 
   const totalFound = invoices.length;
+  // Update count badge
   const badge = document.getElementById('recent-count-badge');
   if (badge) badge.textContent = totalFound + ' فاتورة';
 
@@ -2028,6 +2027,7 @@ window.renderRecentInvoices = function() {
     return;
   }
 
+  // Determine how many to show
   const SHOW_LIMIT = 5;
   const showAll = window.appState.recentShowAll || (searchVal !== '') || (dateFilter !== '');
   const displayList = showAll ? invoices : invoices.slice(0, SHOW_LIMIT);
@@ -2038,6 +2038,7 @@ window.renderRecentInvoices = function() {
     const expTotal = inv.expTotal || 0;
     const hasDeductions = expTotal > 0 || (inv.commissionPct || 0) > 0;
     const invNum = inv.invoiceNumber || generateInvoiceNumber(id);
+    // Highlight matching text
     const clientDisplay = searchVal
       ? (inv.clientName || '').replace(new RegExp(`(${searchVal})`, 'gi'), '<mark style="background:rgba(0,180,216,0.3);border-radius:3px;padding:0 2px">$1</mark>')
       : (inv.clientName || '');
@@ -2058,9 +2059,16 @@ window.renderRecentInvoices = function() {
     `;
   }).join('');
 
-  if (showAllWrap) showAllWrap.style.display = hasMore ? 'block' : 'none';
+  // Show/hide "show all" button
+  if (showAllWrap) {
+    showAllWrap.style.display = hasMore ? 'block' : 'none';
+  }
   if (showAllBtn && hasMore) {
-    showAllBtn.textContent = window.appState.recentShowAll ? '▲ عرض أقل' : `▼ عرض جميع الفواتير (${totalFound})`;
+    if (window.appState.recentShowAll) {
+      showAllBtn.textContent = '▲ عرض أقل';
+    } else {
+      showAllBtn.textContent = `▼ عرض جميع الفواتير (${totalFound})`;
+    }
   }
 };
 
@@ -2103,10 +2111,15 @@ window.renderClients = function() {
   
   if (clients.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد عملاء بعد</div></div>'; return; }
   
+  // NEW SORTING LOGIC
   clients.sort((a,b) => {
-    if (sortMode === 'newest') return new Date(b[1].lastInvoice||0) - new Date(a[1].lastInvoice||0);
-    else if (sortMode === 'oldest') return new Date(a[1].lastInvoice||0) - new Date(b[1].lastInvoice||0);
-    else return (b[1].totalDebt||0)-(a[1].totalDebt||0);
+    if (sortMode === 'newest') {
+      return new Date(b[1].lastInvoice||0) - new Date(a[1].lastInvoice||0);
+    } else if (sortMode === 'oldest') {
+      return new Date(a[1].lastInvoice||0) - new Date(b[1].lastInvoice||0);
+    } else {
+      return (b[1].totalDebt||0)-(a[1].totalDebt||0);
+    }
   });
 
   container.innerHTML = clients.map(([key,c]) => {
@@ -2160,7 +2173,8 @@ window.showClientAccount = async function(clientKey) {
   try {
     const snap = await get(ref(db, 'payments'));
     const all = snap.val() || {};
-    clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey);
+    clientPayments = Object.entries(all)
+      .filter(([,p]) => p.clientKey === clientKey);
   } catch(e) {}
   
   const debt=c.totalDebt||0, totalPurchases=c.totalPurchases||0, totalPaid=c.totalPaid||0;
@@ -2169,6 +2183,7 @@ window.showClientAccount = async function(clientKey) {
   
   const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone===c.phone);
 
+  // Map to unified format and sort OLDEST FIRST
   const timeline = [
     ...clientInvoices.map(([id,inv]) => {
       const d = inv.invDateISO || inv.date?.split('T')[0] || getTodayISO();
@@ -2178,7 +2193,7 @@ window.showClientAccount = async function(clientKey) {
       const d = pay.customDate || pay.date?.split('T')[0] || getTodayISO();
       return {type:'payment', id, data:pay, ts: new Date(d+'T12:00:00').getTime()};
     })
-  ].sort((a,b) => a.ts - b.ts);
+  ].sort((a,b) => a.ts - b.ts); // Oldest First
 
   const todayISO = getTodayISO();
   const modal = document.createElement('div');
@@ -2363,7 +2378,7 @@ window.processPayment = async function(clientKey, currentDebt) {
     const snap=await get(clientRef);
     const existing=snap.val()||{};
     await update(clientRef,{totalDebt:newDebt,totalPaid:(existing.totalPaid||0)+actualPaid});
-    const customDateStr=new Date(dateVal+'T12:00:00').toLocaleDateString('en-GB');
+    const customDateStr=new Date(dateVal+'T12:00:00').toLocaleDateString('en-GB'); // Changed
     await push(ref(db,'payments'),{
       clientKey,clientName:c?.name||existing.name,clientPhone:c?.phone||existing.phone,
       amount:actualPaid,remainingAfter:newDebt,
@@ -2388,8 +2403,8 @@ window.renderHistory = function() {
   let invoices=Object.entries(window.appState.invoices).sort((a,b) => {
     const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
     const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
-    if (dateB !== dateA) return dateB.localeCompare(dateA);
-    return (b[1].createdAt||0) - (a[1].createdAt||0);
+    if (dateB !== dateA) return dateB.localeCompare(dateA); // Newest First
+    return (b[1].createdAt||0) - (a[1].createdAt||0); // Time fallback
   });
   if (search) invoices=invoices.filter(([,i])=>i.clientName?.toLowerCase().includes(search)||i.phone?.includes(search));
   if (invoices.length===0){container.innerHTML='<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد فواتير</div></div>';return;}
@@ -2429,7 +2444,7 @@ window.showInvoiceDetail = function(id) {
 };
 
 // ============================================================
-// PRICES PAGE
+// ★ PRICES PAGE — AI SMART GROUPING + DATE FILTER + COMPARE ★
 // ============================================================
 function normalizeFishNameLocal(name) {
   if (!name) return '';
@@ -2447,12 +2462,17 @@ function groupFishNamesLocally(fishData) {
   const groups = {};
   Object.entries(fishData).forEach(([originalName, entries]) => {
     const key = normalizeFishNameLocal(originalName);
-    if (!groups[key]) groups[key] = { displayName: originalName, entries: [] };
-    else if (originalName.length < groups[key].displayName.length) groups[key].displayName = originalName;
+    if (!groups[key]) {
+      groups[key] = { displayName: originalName, entries: [] };
+    } else if (originalName.length < groups[key].displayName.length) {
+      groups[key].displayName = originalName;
+    }
     groups[key].entries.push(...entries);
   });
   const merged = {};
-  Object.values(groups).forEach(({ displayName, entries }) => { merged[displayName] = entries; });
+  Object.values(groups).forEach(({ displayName, entries }) => {
+    merged[displayName] = entries;
+  });
   return merged;
 }
 
@@ -2478,14 +2498,19 @@ async function getAIFishGrouping(fishNames) {
 
 أرجع JSON فقط بدون أي نص إضافي أو backticks:
 { "الاسم_الأصلي_1": "الاسم_الموحد", "الاسم_الأصلي_2": "الاسم_الموحد" }`,
-        messages: [{ role: "user", content: `هذه قائمة أسماء أصناف الأسماك، ادمج المتشابه منها:\n${JSON.stringify(fishNames)}` }]
+        messages: [{
+          role: "user",
+          content: `هذه قائمة أسماء أصناف الأسماك، ادمج المتشابه منها:\n${JSON.stringify(fishNames)}`
+        }]
       })
     });
     const data = await response.json();
     const text = (data.content || []).map(c => c.text || '').join('');
     const clean = text.replace(/```json|```/g, '').trim();
     return JSON.parse(clean);
-  } catch (e) { return {}; }
+  } catch (e) {
+    return {};
+  }
 }
 
 function applyAIMapping(fishData, aiMapping) {
@@ -2508,11 +2533,14 @@ function renderPricesUI(fishData) {
     `<button class="tab-btn ${i === 0 ? 'active' : ''}" onclick="showFishPrices('${f.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}',this)">${f}</button>`
   ).join('');
   window._fishPriceData = fishData;
+  // Re-apply date filter if active
   const from = window.appState.priceDateFrom;
   const to = window.appState.priceDateTo;
-  if (from || to) applyPriceDateFilter();
+  if (from || to) {
+    applyPriceDateFilter();
+  }
   showFishPrices(fishes[0], tabBar.children[0]);
-  updateCompareDropdowns();
+  updateCompareDropdowns(); // Update new compare widget
 }
 
 window.renderPricesPage = async function() {
@@ -2525,7 +2553,7 @@ window.renderPricesPage = async function() {
       if (!fishData[item.fish]) fishData[item.fish] = [];
       fishData[item.fish].push({
         client: inv.clientName, price: item.pricePerKg,
-        kg: item.kg, date: getDisplayDate(inv.invDateISO || inv.date, inv.dateStr),
+        kg: item.kg, date: getDisplayDate(inv.invDateISO || inv.date, inv.dateStr), // Updated formatting
         dateISO: inv.invDateISO || inv.date?.split('T')[0] || ''
       });
     });
@@ -2537,7 +2565,9 @@ window.renderPricesPage = async function() {
   const mergedNames = Object.keys(localMerged);
   if (mergedNames.length > 1) {
     const statusEl = document.getElementById('prices-ai-status');
-    if (statusEl) statusEl.innerHTML = `<div class="ai-grouping-badge"><span class="ai-spin">⚡</span> AI يتحقق من الأسماء المتشابهة...</div>`;
+    if (statusEl) {
+      statusEl.innerHTML = `<div class="ai-grouping-badge"><span class="ai-spin">⚡</span> AI يتحقق من الأسماء المتشابهة...</div>`;
+    }
     try {
       const aiMapping = await getAIFishGrouping(mergedNames);
       const aiMerged = applyAIMapping(localMerged, aiMapping);
@@ -2553,20 +2583,26 @@ window.renderPricesPage = async function() {
           setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 3000);
         }
       }
-    } catch (e) { if (statusEl) statusEl.innerHTML = ''; }
+    } catch (e) {
+      if (statusEl) statusEl.innerHTML = '';
+    }
   }
 };
 
 // ============================================================
-// COMPARE PRICES LOGIC
+// ★ COMPARE PRICES LOGIC ★
 // ============================================================
 window.updateCompareDropdowns = function() {
   const fishSelect = document.getElementById('comp-fish');
   const client1Select = document.getElementById('comp-client1');
   const client2Select = document.getElementById('comp-client2');
   if (!fishSelect || !client1Select || !client2Select) return;
+
+  // Populate Fishes
   const fishNames = Object.keys(window._fishPriceData || {});
   fishSelect.innerHTML = '<option value="">اختر الصنف...</option>' + fishNames.map(f => `<option value="${f}">${f}</option>`).join('');
+
+  // Populate Clients
   const clients = Object.values(window.appState.clients).map(c => c.name);
   const clientOpts = '<option value="">اختر العميل...</option>' + clients.map(c => `<option value="${c}">${c}</option>`).join('');
   client1Select.innerHTML = clientOpts;
@@ -2580,25 +2616,41 @@ window.comparePrices = function() {
   const c1 = document.getElementById('comp-client1')?.value;
   const c2 = document.getElementById('comp-client2')?.value;
   const resEl = document.getElementById('comp-result');
-  if(!fish || !c1 || !c2) return showToast('❌ يرجى اختيار الصنف والعميلين بالكامل');
-  if(c1 === c2) return showToast('❌ يرجى اختيار عميلين مختلفين للمقارنة');
+
+  if(!fish || !c1 || !c2) {
+    showToast('❌ يرجى اختيار الصنف والعميلين بالكامل');
+    return;
+  }
+  if(c1 === c2) {
+    showToast('❌ يرجى اختيار عميلين مختلفين للمقارنة');
+    return;
+  }
+
   const allEntries = (window._fishPriceData || {})[fish] || [];
+  
+  // Filter by date range
   const rangeEntries = allEntries.filter(e => {
     const d = e.dateISO || '';
-    if (!d) return true;
+    if (!d) return true; // Include if there's no date data
     if (fromDate && d < fromDate) return false;
     if (toDate && d > toDate) return false;
     return true;
   });
+
+  // Get max price for c1
   const c1Entries = rangeEntries.filter(e => e.client === c1);
   const c1Price = c1Entries.length > 0 ? Math.max(...c1Entries.map(e => e.price)) : 0;
+
+  // Get max price for c2
   const c2Entries = rangeEntries.filter(e => e.client === c2);
   const c2Price = c2Entries.length > 0 ? Math.max(...c2Entries.map(e => e.price)) : 0;
+
   resEl.style.display = 'block';
   if(c1Price === 0 && c2Price === 0) {
     resEl.innerHTML = `<div style="text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:10px;font-size:12px;color:var(--text-secondary)">لا توجد أسعار مسجلة لأي من العميلين لهذا الصنف في هذه الفترة.</div>`;
     return;
   }
+
   const buildClientCard = (name, price, isWinner) => `
     <div style="flex:1;text-align:center;padding:12px 6px;border-radius:10px;background:${isWinner ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.03)'};border:1px solid ${isWinner ? 'rgba(255,215,0,0.4)' : 'transparent'};">
       <div style="font-size:12px;color:var(--text-primary);margin-bottom:6px;font-weight:600">${name}</div>
@@ -2606,42 +2658,59 @@ window.comparePrices = function() {
       ${isWinner ? `<div style="font-size:10px;color:var(--gold);margin-top:6px;font-weight:700">🏆 أعلى سعر</div>` : ''}
     </div>
   `;
+
   const c1Wins = c1Price > c2Price;
   const c2Wins = c2Price > c1Price;
   const tie = c1Price === c2Price && c1Price > 0;
+
   let html = `<div style="display:flex;gap:12px;align-items:center;background:var(--glass);padding:12px;border-radius:12px;border:1px solid var(--glass-border);">`;
   html += buildClientCard(c1, c1Price, c1Wins || tie);
   html += `<div style="font-size:16px;font-weight:900;color:var(--text-secondary)">VS</div>`;
   html += buildClientCard(c2, c2Price, c2Wins || tie);
   html += `</div>`;
+  
   resEl.innerHTML = html;
 };
 
 // ============================================================
-// PRICES DATE FILTER
+// ★ PRICES DATE FILTER — NEW FUNCTIONS ★
 // ============================================================
 window.applyPriceDateFilter = function() {
   const from = document.getElementById('price-date-from')?.value || '';
   const to = document.getElementById('price-date-to')?.value || '';
   window.appState.priceDateFrom = from;
   window.appState.priceDateTo = to;
+
   const summaryEl = document.getElementById('price-date-summary');
   const resultEl = document.getElementById('price-date-result');
+
   if (!from && !to) {
     if (summaryEl) summaryEl.style.display = 'none';
     if (resultEl) resultEl.style.display = 'none';
+    // Refresh current fish tab without filter
     const activeFishBtn = document.querySelector('#prices-fish-tabs .tab-btn.active');
-    if (activeFishBtn && window._fishPriceData) showFishPrices(activeFishBtn.textContent, activeFishBtn);
+    if (activeFishBtn && window._fishPriceData) {
+      const fishName = activeFishBtn.textContent;
+      showFishPrices(fishName, activeFishBtn);
+    }
     return;
   }
+
+  // Show summary text
   if (summaryEl) {
     summaryEl.style.display = 'block';
     let txt = '🔍 عرض الأسعار';
-    if (from && to) txt += ` من ${isoToArabicDate(from)} إلى ${isoToArabicDate(to)}`;
-    else if (from) txt += ` من ${isoToArabicDate(from)} فصاعداً`;
-    else txt += ` حتى ${isoToArabicDate(to)}`;
+    if (from && to) {
+      txt += ` من ${isoToArabicDate(from)} إلى ${isoToArabicDate(to)}`;
+    } else if (from) {
+      txt += ` من ${isoToArabicDate(from)} فصاعداً`;
+    } else {
+      txt += ` حتى ${isoToArabicDate(to)}`;
+    }
     summaryEl.textContent = txt;
   }
+
+  // Build top prices per fish in date range
   const fishData = window._fishPriceData || {};
   const topResults = [];
   Object.entries(fishData).forEach(([fishName, entries]) => {
@@ -2657,10 +2726,16 @@ window.applyPriceDateFilter = function() {
     topResults.push({ fishName, ...best, count: filtered.length });
   });
   topResults.sort((a, b) => b.price - a.price);
+
+  // Show date-range result cards
   if (resultEl) {
     if (topResults.length === 0) {
       resultEl.style.display = 'block';
-      resultEl.innerHTML = `<div style="text-align:center;padding:20px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:12px;margin-bottom:12px"><div style="font-size:32px;margin-bottom:8px">📭</div><div style="font-size:13px;color:var(--text-secondary)">لا توجد أسعار في هذه الفترة</div></div>`;
+      resultEl.innerHTML = `
+        <div style="text-align:center;padding:20px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:12px;margin-bottom:12px">
+          <div style="font-size:32px;margin-bottom:8px">📭</div>
+          <div style="font-size:13px;color:var(--text-secondary)">لا توجد أسعار في هذه الفترة</div>
+        </div>`;
     } else {
       const medals = ['🥇','🥈','🥉'];
       resultEl.style.display = 'block';
@@ -2680,8 +2755,13 @@ window.applyPriceDateFilter = function() {
       `;
     }
   }
+
+  // Also update current fish tab with filtered data
   const activeFishBtn = document.querySelector('#prices-fish-tabs .tab-btn.active');
-  if (activeFishBtn && window._fishPriceData) showFishPricesFiltered(activeFishBtn.textContent, activeFishBtn, from, to);
+  if (activeFishBtn && window._fishPriceData) {
+    const fishName = activeFishBtn.textContent;
+    showFishPricesFiltered(fishName, activeFishBtn, from, to);
+  }
 };
 
 window.resetPriceDateFilter = function() {
@@ -2695,25 +2775,34 @@ window.resetPriceDateFilter = function() {
   if (summaryEl) summaryEl.style.display = 'none';
   const resultEl = document.getElementById('price-date-result');
   if (resultEl) resultEl.style.display = 'none';
+  // Refresh tabs
   const activeFishBtn = document.querySelector('#prices-fish-tabs .tab-btn.active');
-  if (activeFishBtn && window._fishPriceData) showFishPrices(activeFishBtn.textContent, activeFishBtn);
+  if (activeFishBtn && window._fishPriceData) {
+    const fishName = activeFishBtn.textContent;
+    showFishPrices(fishName, activeFishBtn);
+  }
 };
 
+// Show fish prices — all dates (original behavior)
 window.showFishPrices = function(fishName, btn) {
   document.querySelectorAll('#prices-fish-tabs .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const from = window.appState.priceDateFrom;
   const to = window.appState.priceDateTo;
-  if (from || to) { showFishPricesFiltered(fishName, btn, from, to); return; }
+  if (from || to) {
+    showFishPricesFiltered(fishName, btn, from, to);
+    return;
+  }
   const data = (window._fishPriceData || {})[fishName] || [];
   renderFishPriceTable(data, fishName, false);
 };
 
+// Show fish prices — filtered by date range
 function showFishPricesFiltered(fishName, btn, from, to) {
   const allData = (window._fishPriceData || {})[fishName] || [];
   const filtered = allData.filter(e => {
     const d = e.dateISO || '';
-    if (!d) return true;
+    if (!d) return true; // include if no date info
     if (from && d < from) return false;
     if (to && d > to) return false;
     return true;
@@ -2784,7 +2873,7 @@ window.sendClientStatementWA = async function(clientKey) {
   showToast('⏳ جاري تحضير الكشف الكامل...');
   try {
     const debt = c.totalDebt || 0;
-    const now = new Date().toLocaleDateString('en-GB');
+    const now = new Date().toLocaleDateString('en-GB'); // Changed
     const clientInvoices = Object.entries(window.appState.invoices).filter(([,i]) => i.phone === c.phone);
     let clientPayments = [];
     try {
@@ -2793,6 +2882,7 @@ window.sendClientStatementWA = async function(clientKey) {
       clientPayments = Object.entries(all).filter(([,p]) => p.clientKey === clientKey);
     } catch(e) {}
     
+    // Sort oldest first to calculate running balance correctly
     const timeline = [
       ...clientInvoices.map(([id,inv]) => {
         const d = inv.invDateISO || inv.date?.split('T')[0] || getTodayISO();
@@ -2806,10 +2896,16 @@ window.sendClientStatementWA = async function(clientKey) {
 
     let runBal = 0;
     timeline.forEach(item => {
-      if (item.type === 'invoice') { runBal += item.data.total; }
-      else { runBal -= item.data.amount || 0; if (runBal < 0) runBal = 0; }
+      if (item.type === 'invoice') {
+        runBal += item.data.total;
+      } else {
+        runBal -= item.data.amount || 0;
+        if (runBal < 0) runBal = 0;
+      }
       item.runBal = runBal;
     });
+
+    // Removed reverse to display oldest first
 
     let text = `🐟 *كشف حساب كامل*\n🏪 الحاج أحمد الحديدي - تجارة الأسماك\n━━━━━━━━━━━━━━━━━━━━━━\n`;
     text += `👤 العميل  : *${c.name}*\n`;
@@ -2953,16 +3049,16 @@ window.editInvoiceModal = function(invoiceId) {
       </div>
       <div class="form-group">
         <label class="form-label">🏢 القطاع / المكان (اختياري)</label>
-        <select id="ei-sector" class="form-select">
-          <option value="">-- بدون قطاع --</option>
-          <option value="القطاع الأول" ${inv.sector==='القطاع الأول'?'selected':''}>القطاع الأول</option>
-          <option value="القطاع الثاني" ${inv.sector==='القطاع الثاني'?'selected':''}>القطاع الثاني</option>
-          <option value="القطاع الثالث" ${inv.sector==='القطاع الثالث'?'selected':''}>القطاع الثالث</option>
-          <option value="الصرف الوسطاني" ${inv.sector==='الصرف الوسطاني'?'selected':''}>الصرف الوسطاني</option>
-          <option value="الصرف سكة القطار" ${inv.sector==='الصرف سكة القطار'?'selected':''}>الصرف سكة القطار</option>
-          <option value="الصرف القنالي" ${inv.sector==='الصرف القنالي'?'selected':''}>الصرف القنالي</option>
-          <option value="المغزي" ${inv.sector==='المغزي'?'selected':''}>المغزي</option>
-        </select>
+   <select id="ei-sector" class="form-select">
+  <option value="">-- بدون قطاع --</option>
+  <option value="القطاع الأول" ${inv.sector==='القطاع الأول'?'selected':''}>القطاع الأول</option>
+  <option value="القطاع الثاني" ${inv.sector==='القطاع الثاني'?'selected':''}>القطاع الثاني</option>
+  <option value="القطاع الثالث" ${inv.sector==='القطاع الثالث'?'selected':''}>القطاع الثالث</option>
+  <option value="الصرف الوسطاني" ${inv.sector==='الصرف الوسطاني'?'selected':''}>الصرف الوسطاني</option>
+  <option value="الصرف سكة القطار" ${inv.sector==='الصرف سكة القطار'?'selected':''}>الصرف سكة القطار</option>
+  <option value="الصرف القنالي" ${inv.sector==='الصرف القنالي'?'selected':''}>الصرف القنالي</option>
+  <option value="المغزي" ${inv.sector==='المغزي'?'selected':''}>المغزي</option>
+</select>
       </div>
       <div class="form-group">
         <label class="form-label">🤝 عمولة %</label>
@@ -3058,12 +3154,12 @@ window.saveEditInvoice = async function(invoiceId) {
   const newClientName = document.getElementById('ei-client')?.value.trim();
   const newPhone = document.getElementById('ei-phone')?.value.trim();
   const newShop = document.getElementById('ei-shop')?.value.trim();
-  const newSector = document.getElementById('ei-sector')?.value || '';
+    const newSector = document.getElementById('ei-sector')?.value || '';
   const newCommPct = parseFloat(document.getElementById('ei-commission')?.value) || 0;
   const newDateISO = document.getElementById('ei-date')?.value || getTodayISO();
   if (!newClientName) return showToast('❌ اسم العميل مطلوب');
   if (!validatePhone(newPhone)) return showToast('❌ رقم الهاتف غير صحيح');
-  const newDateStr = new Date(newDateISO + 'T12:00:00').toLocaleDateString('en-GB');
+  const newDateStr = new Date(newDateISO + 'T12:00:00').toLocaleDateString('en-GB'); // Changed
   const newItems = (window._editItems || []).map((item, idx) => {
     const unit = document.getElementById('ei-unit-' + idx)?.value || item.unit || 'kg';
     const qty = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
@@ -3181,7 +3277,7 @@ window.saveEditPayment = async function(paymentId, clientKey, oldAmount) {
   const newNotes = (document.getElementById('ep-notes')?.value || '').trim();
   if (newAmount <= 0) return showToast('❌ المبلغ يجب أن يكون أكبر من صفر');
   const diff = newAmount - oldAmount;
-  const dateStr = newDate ? new Date(newDate + 'T12:00:00').toLocaleDateString('en-GB') : '';
+  const dateStr = newDate ? new Date(newDate + 'T12:00:00').toLocaleDateString('en-GB') : ''; // Changed
   try {
     await update(ref(db, 'payments/' + paymentId), { amount: newAmount, from: newFrom, customDate: newDate, dateStr, notes: newNotes });
     const clientRef = ref(db, 'clients/' + clientKey);
@@ -3406,8 +3502,17 @@ window.doLogout = function() {
 };
 
 // ============================================================
-// SECTORS REPORT — updated
+// SECTORS REPORT
 // ============================================================
+const SECTORS = [
+  'القطاع الأول',
+  'القطاع الثاني',
+  'القطاع الثالث',
+  'الصرف الوسطاني',
+  'الصرف سكة القطار',
+  'الصرف القنالي',
+  'المغزي'
+];
 window.appState.selectedSector = SECTORS[0];
 
 window.renderSectors = function() {
@@ -3419,19 +3524,20 @@ window.renderSectors = function() {
   if (fromVal) allInvoices = allInvoices.filter(([,i]) => (i.invDateISO||'') >= fromVal);
   if (toVal)   allInvoices = allInvoices.filter(([,i]) => (i.invDateISO||'') <= toVal);
 
+  // Build summary per sector
   const summaryGrid = document.getElementById('sectors-summary-grid');
-  const sectorColors = {
-    'القطاع الأول':  { bg:'rgba(0,180,216,0.12)',  border:'rgba(0,180,216,0.4)',  icon:'🔵' },
-    'القطاع الثاني': { bg:'rgba(0,200,150,0.12)',  border:'rgba(0,200,150,0.4)',  icon:'🟢' },
-    'القطاع الثالث': { bg:'rgba(255,165,0,0.12)',   border:'rgba(255,165,0,0.4)',   icon:'🟠' },
-    'الصرف الوسطاني':{ bg:'rgba(255,71,87,0.12)',   border:'rgba(255,71,87,0.4)',   icon:'🔴' },
-    'الصرف سكة القطار':{ bg:'rgba(255,100,87,0.12)',border:'rgba(255,100,87,0.4)', icon:'🔴' },
-    'الصرف القنالي': { bg:'rgba(255,130,87,0.12)',  border:'rgba(255,130,87,0.4)',  icon:'🔴' },
-    'المغزي':        { bg:'rgba(192,132,252,0.12)', border:'rgba(192,132,252,0.4)', icon:'🟣' },
-  };
+const sectorColors = {
+  'القطاع الأول':      { bg:'rgba(0,180,216,0.12)',  border:'rgba(0,180,216,0.4)',  icon:'🔵' },
+  'القطاع الثاني':     { bg:'rgba(0,200,150,0.12)',  border:'rgba(0,200,150,0.4)',  icon:'🟢' },
+  'القطاع الثالث':     { bg:'rgba(255,165,0,0.12)',  border:'rgba(255,165,0,0.4)',  icon:'🟠' },
+  'الصرف الوسطاني':    { bg:'rgba(255,71,87,0.12)',  border:'rgba(255,71,87,0.4)',  icon:'🔴' },
+  'الصرف سكة القطار': { bg:'rgba(255,71,87,0.12)',  border:'rgba(255,71,87,0.4)',  icon:'🔴' },
+  'الصرف القنالي':    { bg:'rgba(255,71,87,0.12)',  border:'rgba(255,71,87,0.4)',  icon:'🔴' },
+  'المغزي':            { bg:'rgba(192,132,252,0.12)', border:'rgba(192,132,252,0.4)', icon:'🟣' },
+};
 
   summaryGrid.innerHTML = SECTORS.map(sec => {
-    const secInvoices = allInvoices.filter(([,i]) => sectorMatch(i.sector, sec));
+    const secInvoices = allInvoices.filter(([,i]) => (i.sector||'') === sec);
     const total  = secInvoices.reduce((s,[,i]) => s + (i.total||0), 0);
     const fishTotal = secInvoices.reduce((s,[,i]) => s + (i.fishTotal||i.gross||i.total||0), 0);
     const expTotal  = secInvoices.reduce((s,[,i]) => s + (i.expTotal||0), 0);
@@ -3454,9 +3560,10 @@ window.renderSectors = function() {
     `;
   }).join('');
 
+  // Render tabs
   const tabBar = document.getElementById('sectors-tab-bar');
   tabBar.innerHTML = SECTORS.map(sec => {
-    const count = allInvoices.filter(([,i]) => sectorMatch(i.sector, sec)).length;
+    const count = allInvoices.filter(([,i]) => (i.sector||'') === sec).length;
     return `<button class="tab-btn ${window.appState.selectedSector===sec?'active':''}"
       onclick="selectSector('${sec}')">${sec} <span style="font-size:10px;opacity:0.7">(${count})</span></button>`;
   }).join('');
@@ -3473,7 +3580,7 @@ function renderSectorInvoices(allInvoices) {
   const sec = window.appState.selectedSector;
   const container = document.getElementById('sectors-invoices-list');
   const filtered = allInvoices
-    .filter(([,i]) => sectorMatch(i.sector, sec))
+    .filter(([,i]) => (i.sector||'') === sec)
     .sort((a,b) => {
       const da = a[1].invDateISO||'', db = b[1].invDateISO||'';
       return db.localeCompare(da) || (b[1].createdAt||0)-(a[1].createdAt||0);
