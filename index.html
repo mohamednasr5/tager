@@ -1116,6 +1116,7 @@ window.switchPage = function(page, btn) {
   if (page === 'clients') renderClients();
   if (page === 'history') renderHistory();
   if (page === 'sectors') renderSectors();
+  if (page === 'prices') renderPricesPage();
 };
 
 // ============================================================
@@ -1936,7 +1937,7 @@ function setupListeners() {
   });
   onValue(ref(db, 'clients'), snap => {
     window.appState.clients = snap.val() || {};
-    updateDashboard(); renderClients(); updateClientDatalist();
+    updateDashboard(); renderClients(); updateClientDatalist(); updateCompareDropdowns();
   });
 }
 
