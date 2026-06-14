@@ -424,6 +424,16 @@
   .price-table td { font-size: 12px; padding: 8px 6px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .price-table tr:last-child td { border-bottom: none; }
 
+  /* فروق الأسعار */
+  .pricediff-table { width: 100%; border-collapse: collapse; }
+  .pricediff-table th { font-size: 11px; color: var(--text-secondary); padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--glass-border); background: rgba(255,165,0,0.06); }
+  .pricediff-table td { font-size: 12px; padding: 8px 6px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .pricediff-table tr:last-child td { border-bottom: none; }
+  .pricediff-table tr.highest-price-row { background: rgba(255,215,0,0.08); }
+  .pricediff-table tr.highest-price-row td { border-bottom: 1px solid rgba(255,215,0,0.2); }
+  .pricediff-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 10px; margin-bottom: 6px; }
+  .pricediff-total-box { background: linear-gradient(135deg, rgba(255,71,87,0.12), rgba(255,165,0,0.12)); border: 1px solid rgba(255,71,87,0.3); border-radius: 12px; padding: 14px; text-align: center; margin-top: 12px; }
+
   .install-banner {
     background: linear-gradient(135deg, rgba(0,180,216,0.2), rgba(21,101,192,0.2));
     border: 1px solid var(--cyan-glow); border-radius: 14px; padding: 12px 14px;
@@ -943,6 +953,67 @@
         <div id="prices-content"><div class="empty-state"><div class="empty-icon">💹</div><div class="empty-text">لا توجد بيانات بعد</div></div></div>
       </div>
     </div>
+
+    <!-- صفحة فروق الأسعار -->
+    <div class="page" id="page-pricediff">
+      <div class="glass-card" style="margin-bottom:14px;background:rgba(255,165,0,0.05);border-color:rgba(255,165,0,0.3)">
+        <div class="section-title" style="color:var(--warning)">📊 فروق الأسعار</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(255,165,0,0.07);border:1px dashed rgba(255,165,0,0.3);margin-bottom:14px;font-size:12px;color:var(--warning)">
+          <span>💡</span>
+          <span>يتم حساب فرق السعر لكل عميل بناءً على أعلى سعر لنفس الصنف في اليوم المختار</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div>
+            <label class="form-label" style="font-size:10px">📅 التاريخ</label>
+            <input type="date" id="pricediff-date" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderPriceDiff()">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px">🐟 الصنف</label>
+            <select id="pricediff-fish" class="form-select" style="padding:8px" onchange="renderPriceDiff()"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">📋 تفاصيل فروق الأسعار</div>
+        <div id="pricediff-summary" style="display:none;margin-bottom:12px"></div>
+        <div id="pricediff-table-container">
+          <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">اختر التاريخ والصنف لعرض فروق الأسعار</div></div>
+        </div>
+      </div>
+
+      <!-- فرق أسعار عميل واحد -->
+      <div class="glass-card" style="margin-top:14px;background:rgba(156,39,176,0.05);border-color:rgba(156,39,176,0.3)">
+        <div class="section-title" style="color:#ce93d8">👤 فروق أسعار عميل واحد</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(156,39,176,0.07);border:1px dashed rgba(156,39,176,0.3);margin-bottom:14px;font-size:12px;color:#ce93d8">
+          <span>💡</span>
+          <span>اختر فترة زمنية وعميل لعرض فروق أسعاره في كل الأصناف مقارنة بأعلى سعر</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div>
+            <label class="form-label" style="font-size:10px">📅 من تاريخ</label>
+            <input type="date" id="pricediff-client-from" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderClientPriceDiff()">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px">📅 إلى تاريخ</label>
+            <input type="date" id="pricediff-client-to" class="form-input" style="color-scheme:dark;padding:8px" onchange="renderClientPriceDiff()">
+          </div>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:10px">👤 العميل</label>
+          <select id="pricediff-client" class="form-select" style="padding:8px" onchange="renderClientPriceDiff()"></select>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">📋 فروق أسعار العميل حسب الصنف</div>
+        <div id="pricediff-client-summary" style="display:none;margin-bottom:12px"></div>
+        <div id="pricediff-client-table-container">
+          <div class="empty-state"><div class="empty-icon">👤</div><div class="empty-text">اختر الفترة والعميل لعرض فروق الأسعار</div></div>
+        </div>
+      </div>
+    </div>
+
     </div></div>
 
   <nav class="bottom-nav">
@@ -963,6 +1034,9 @@
     </button>
     <button class="nav-item" onclick="switchPage('prices',this)">
       <span class="nav-icon">💹</span><span class="nav-label">الأسعار</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('pricediff',this)">
+      <span class="nav-icon">📊</span><span class="nav-label">فروق الأسعار</span>
     </button>
   </nav>
 </div>
@@ -1117,6 +1191,7 @@ window.switchPage = function(page, btn) {
   if (page === 'history') renderHistory();
   if (page === 'sectors') renderSectors();
   if (page === 'prices') renderPricesPage();
+  if (page === 'pricediff') initPriceDiffPage();
 };
 
 // ============================================================
@@ -2770,6 +2845,366 @@ window.resetPriceDateFilter = function() {
     const fishName = activeFishBtn.textContent;
     showFishPrices(fishName, activeFishBtn);
   }
+};
+
+// ============================================================
+// ★ PRICE DIFFERENCES (فروق الأسعار) ★
+// ============================================================
+window.initPriceDiffPage = function() {
+  const dateEl = document.getElementById('pricediff-date');
+  const fishEl = document.getElementById('pricediff-fish');
+  if (dateEl && !dateEl.value) {
+    dateEl.value = getTodayISO();
+  }
+
+  // جمع كل الأصناف من الفواتير + الأصناف الافتراضية
+  const invoices = Object.values(window.appState.invoices);
+  const fishSet = new Set(FISH_TYPES.filter(f => f !== 'أخرى'));
+  invoices.forEach(inv => {
+    (inv.items || []).forEach(item => {
+      if (item.fish) fishSet.add(item.fish);
+    });
+  });
+  const allFish = [...fishSet].sort((a, b) => {
+    // ترتيب: الأصناف الافتراضية أولاً ثم الباقي
+    const idxA = FISH_TYPES.indexOf(a);
+    const idxB = FISH_TYPES.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b, 'ar');
+  });
+
+  fishEl.innerHTML = '<option value="">-- اختر الصنف --</option>' + allFish.map(f => `<option value="${f}">${f}</option>`).join('');
+
+  renderPriceDiff();
+  initClientPriceDiffDropdowns();
+};
+
+window.renderPriceDiff = function() {
+  const dateVal = document.getElementById('pricediff-date')?.value;
+  const fishVal = document.getElementById('pricediff-fish')?.value;
+  const tableContainer = document.getElementById('pricediff-table-container');
+  const summaryEl = document.getElementById('pricediff-summary');
+
+  if (!dateVal || !fishVal) {
+    if (summaryEl) summaryEl.style.display = 'none';
+    tableContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">اختر التاريخ والصنف لعرض فروق الأسعار</div></div>';
+    return;
+  }
+
+  const invoices = Object.values(window.appState.invoices);
+
+  // فلترة الفواتير بالتاريخ المختار
+  const filtered = invoices.filter(inv => {
+    const invDate = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
+    return invDate === dateVal;
+  });
+
+  // جمع بيانات العملاء الذين اشتروا الصنف المختار في ذلك اليوم
+  // كل عميل: نجمع أعلى سعر له في ذلك اليوم للصنف المختار + إجمالي الكمية
+  const clientMap = {};
+  filtered.forEach(inv => {
+    const clientName = inv.clientName;
+    (inv.items || []).forEach(item => {
+      if (item.fish === fishVal) {
+        const price = item.pricePerKg || 0;
+        const qty = item.kg || 0;
+        if (!clientMap[clientName]) {
+          clientMap[clientName] = { name: clientName, maxPrice: price, totalQty: qty, totalSubtotal: item.subtotal || 0 };
+        } else {
+          // أعلى سعر للعميل
+          if (price > clientMap[clientName].maxPrice) {
+            clientMap[clientName].maxPrice = price;
+          }
+          clientMap[clientName].totalQty += qty;
+          clientMap[clientName].totalSubtotal += (item.subtotal || 0);
+        }
+      }
+    });
+  });
+
+  const clients = Object.values(clientMap);
+  if (clients.length === 0) {
+    if (summaryEl) summaryEl.style.display = 'none';
+    tableContainer.innerHTML = `
+      <div style="text-align:center;padding:20px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:12px">
+        <div style="font-size:32px;margin-bottom:8px">📭</div>
+        <div style="font-size:13px;color:var(--text-secondary)">لا توجد بيانات لهذا الصنف في التاريخ المختار</div>
+      </div>`;
+    return;
+  }
+
+  // ترتيب حسب السعر من الأعلى للأقل
+  clients.sort((a, b) => b.maxPrice - a.maxPrice);
+  const highestPrice = clients[0].maxPrice;
+  const highestClient = clients[0].name;
+
+  // حساب فروق الأسعار
+  let totalDiff = 0;
+  clients.forEach(c => {
+    c.priceDiff = highestPrice - c.maxPrice;
+    c.diffAmount = c.totalQty * c.priceDiff;
+    totalDiff += c.diffAmount;
+  });
+
+  // عرض ملخص
+  if (summaryEl) {
+    summaryEl.style.display = 'block';
+    summaryEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">🏆 أعلى سعر</div>
+          <div style="font-size:18px;font-weight:900;color:var(--gold)">${highestPrice}</div>
+          <div style="font-size:10px;color:var(--text-secondary)">ج.م/ك</div>
+        </div>
+        <div style="background:rgba(0,180,216,0.08);border:1px solid rgba(0,180,216,0.25);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">👤 صاحب أعلى سعر</div>
+          <div style="font-size:14px;font-weight:700;color:var(--cyan-glow)">${highestClient}</div>
+        </div>
+        <div style="background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">📊 عدد العملاء</div>
+          <div style="font-size:18px;font-weight:900;color:var(--danger)">${clients.length}</div>
+          <div style="font-size:10px;color:var(--text-secondary)">عميل</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // عرض الجدول
+  const medals = ['🥇', '🥈', '🥉'];
+  let tableHtml = `
+    <table class="pricediff-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>العميل</th>
+          <th>سعر الصنف<br><span style="font-size:9px">(ج.م/ك)</span></th>
+          <th>العدد<br><span style="font-size:9px">(كيلو)</span></th>
+          <th>فرق السعر<br><span style="font-size:9px">(ج.م)</span></th>
+          <th>قيمة الفرق<br><span style="font-size:9px">(العدد × فرق السعر)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  clients.forEach((c, i) => {
+    const isHighest = i === 0;
+    tableHtml += `
+      <tr class="${isHighest ? 'highest-price-row' : ''}">
+        <td>${medals[i] || (i + 1)}</td>
+        <td style="font-weight:${isHighest ? 900 : 600};color:${isHighest ? 'var(--gold)' : 'var(--text-primary)'}">${c.name}</td>
+        <td style="font-weight:700;color:${isHighest ? 'var(--gold)' : 'var(--cyan-glow)'}">${c.maxPrice}</td>
+        <td>${formatNum(c.totalQty)}</td>
+        <td style="color:${c.priceDiff > 0 ? 'var(--danger)' : 'var(--emerald)'};font-weight:700">
+          ${c.priceDiff > 0 ? '-' + formatNum(c.priceDiff) : '0'}
+        </td>
+        <td style="color:${c.diffAmount > 0 ? 'var(--danger)' : 'var(--emerald)'};font-weight:900">
+          ${c.diffAmount > 0 ? '-' + formatNum(c.diffAmount) : '0'} <span style="font-size:9px;color:var(--text-secondary)">ج.م</span>
+        </td>
+      </tr>
+    `;
+  });
+
+  tableHtml += `
+      </tbody>
+    </table>
+    <div class="pricediff-total-box">
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">💰 إجمالي فروق الأسعار (فرق كل العملاء عن أعلى سعر)</div>
+      <div style="font-size:24px;font-weight:900;color:var(--danger)">${formatNum(totalDiff)} <span style="font-size:12px;color:var(--text-secondary)">ج.م</span></div>
+      <div style="font-size:10px;color:var(--text-secondary);margin-top:4px">
+        💡 المعادلة: لكل عميل = العدد × (أعلى سعر - سعر العميل)
+      </div>
+    </div>
+  `;
+
+  tableContainer.innerHTML = tableHtml;
+};
+
+// ============================================================
+// ★ CLIENT PRICE DIFFERENCES (فروق أسعار عميل واحد) ★
+// ============================================================
+window.initClientPriceDiffDropdowns = function() {
+  const fromEl = document.getElementById('pricediff-client-from');
+  const toEl = document.getElementById('pricediff-client-to');
+  const clientEl = document.getElementById('pricediff-client');
+
+  if (fromEl && !fromEl.value) fromEl.value = getTodayISO();
+  if (toEl && !toEl.value) toEl.value = getTodayISO();
+
+  // جمع العملاء من الفواتير
+  const clientSet = new Map();
+  const invoices = Object.values(window.appState.invoices);
+  invoices.forEach(inv => {
+    if (inv.clientName) clientSet.set(inv.clientName, inv.clientName);
+  });
+  // إضافة العملاء من سجل العملاء أيضاً
+  Object.values(window.appState.clients).forEach(c => {
+    if (c.name) clientSet.set(c.name, c.name);
+  });
+
+  const sortedClients = [...clientSet.values()].sort((a, b) => a.localeCompare(b, 'ar'));
+  clientEl.innerHTML = '<option value="">-- اختر العميل --</option>' + sortedClients.map(c => `<option value="${c}">${c}</option>`).join('');
+};
+
+window.renderClientPriceDiff = function() {
+  const fromVal = document.getElementById('pricediff-client-from')?.value;
+  const toVal = document.getElementById('pricediff-client-to')?.value;
+  const clientVal = document.getElementById('pricediff-client')?.value;
+  const tableContainer = document.getElementById('pricediff-client-table-container');
+  const summaryEl = document.getElementById('pricediff-client-summary');
+
+  if (!fromVal || !toVal || !clientVal) {
+    if (summaryEl) summaryEl.style.display = 'none';
+    tableContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-text">اختر الفترة والعميل لعرض فروق الأسعار</div></div>';
+    return;
+  }
+
+  const invoices = Object.values(window.appState.invoices);
+
+  // فلترة الفواتير بالفترة الزمنية
+  const filtered = invoices.filter(inv => {
+    const invDate = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
+    if (!invDate) return false;
+    if (fromVal && invDate < fromVal) return false;
+    if (toVal && invDate > toVal) return false;
+    return true;
+  });
+
+  // بناء خريطة لكل صنف: أعلى سعر + بيانات العميل المختار
+  const fishMap = {};
+  filtered.forEach(inv => {
+    (inv.items || []).forEach(item => {
+      if (!item.fish) return;
+      const fishName = item.fish;
+      const price = item.pricePerKg || 0;
+      const qty = item.kg || 0;
+      const invDate = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
+
+      if (!fishMap[fishName]) {
+        fishMap[fishName] = { highestPrice: 0, highestClient: '', clientPrice: 0, clientQty: 0, clientSubtotal: 0, dates: new Set() };
+      }
+
+      // تحديث أعلى سعر
+      if (price > fishMap[fishName].highestPrice) {
+        fishMap[fishName].highestPrice = price;
+        fishMap[fishName].highestClient = inv.clientName;
+      }
+
+      // بيانات العميل المختار
+      if (inv.clientName === clientVal) {
+        // لو عنده أكتر من فاتورة لنفس الصنف، ناخد أعلى سعر
+        if (price > fishMap[fishName].clientPrice) {
+          fishMap[fishName].clientPrice = price;
+        }
+        fishMap[fishName].clientQty += qty;
+        fishMap[fishName].clientSubtotal += (item.subtotal || 0);
+        fishMap[fishName].dates.add(invDate);
+      }
+    });
+  });
+
+  // فلترة الأصناف اللي العميل اشتراها فقط
+  const clientFishEntries = Object.entries(fishMap).filter(([, d]) => d.clientQty > 0);
+
+  if (clientFishEntries.length === 0) {
+    if (summaryEl) summaryEl.style.display = 'none';
+    tableContainer.innerHTML = `
+      <div style="text-align:center;padding:20px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:12px">
+        <div style="font-size:32px;margin-bottom:8px">📭</div>
+        <div style="font-size:13px;color:var(--text-secondary)">لا توجد بيانات لهذا العميل في الفترة المختارة</div>
+      </div>`;
+    return;
+  }
+
+  // حساب الفروق
+  let totalDiffAmount = 0;
+  let totalClientQty = 0;
+  const rows = clientFishEntries.map(([fishName, data]) => {
+    const priceDiff = data.highestPrice - data.clientPrice;
+    const diffAmount = data.clientQty * priceDiff;
+    totalDiffAmount += diffAmount;
+    totalClientQty += data.clientQty;
+    return { fishName, ...data, priceDiff, diffAmount };
+  });
+
+  // ترتيب حسب قيمة الفرق من الأعلى
+  rows.sort((a, b) => b.diffAmount - a.diffAmount);
+
+  // عرض ملخص
+  if (summaryEl) {
+    summaryEl.style.display = 'block';
+    summaryEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:rgba(156,39,176,0.08);border:1px solid rgba(156,39,176,0.25);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">👤 العميل</div>
+          <div style="font-size:14px;font-weight:700;color:#ce93d8">${clientVal}</div>
+        </div>
+        <div style="background:rgba(0,180,216,0.08);border:1px solid rgba(0,180,216,0.25);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">🐟 عدد الأصناف</div>
+          <div style="font-size:18px;font-weight:900;color:var(--cyan-glow)">${rows.length}</div>
+          <div style="font-size:10px;color:var(--text-secondary)">صنف</div>
+        </div>
+        <div style="background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">📅 الفترة</div>
+          <div style="font-size:11px;font-weight:600;color:var(--text-primary)">${isoToArabicDate(fromVal)}</div>
+          <div style="font-size:10px;color:var(--text-secondary)">إلى ${isoToArabicDate(toVal)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // عرض الجدول
+  let tableHtml = `
+    <table class="pricediff-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الصنف</th>
+          <th>سعر العميل<br><span style="font-size:9px">(ج.م/ك)</span></th>
+          <th>أعلى سعر<br><span style="font-size:9px">(ج.م/ك)</span></th>
+          <th>صاحب أعلى سعر</th>
+          <th>العدد<br><span style="font-size:9px">(كيلو)</span></th>
+          <th>فرق السعر<br><span style="font-size:9px">(ج.م)</span></th>
+          <th>قيمة الفرق<br><span style="font-size:9px">(العدد × فرق السعر)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  rows.forEach((r, i) => {
+    const isZero = r.priceDiff === 0;
+    tableHtml += `
+      <tr class="${isZero ? 'highest-price-row' : ''}">
+        <td>${i + 1}</td>
+        <td style="font-weight:700;color:${isZero ? 'var(--gold)' : 'var(--text-primary)'}">${r.fishName}</td>
+        <td style="font-weight:600;color:var(--cyan-glow)">${r.clientPrice}</td>
+        <td style="font-weight:700;color:var(--gold)">${r.highestPrice}</td>
+        <td style="font-size:11px;color:var(--text-secondary)">${r.highestClient}</td>
+        <td>${formatNum(r.clientQty)}</td>
+        <td style="color:${r.priceDiff > 0 ? 'var(--danger)' : 'var(--emerald)'};font-weight:700">
+          ${r.priceDiff > 0 ? '-' + formatNum(r.priceDiff) : '0'}
+        </td>
+        <td style="color:${r.diffAmount > 0 ? 'var(--danger)' : 'var(--emerald)'};font-weight:900">
+          ${r.diffAmount > 0 ? '-' + formatNum(r.diffAmount) : '0'} <span style="font-size:9px;color:var(--text-secondary)">ج.م</span>
+        </td>
+      </tr>
+    `;
+  });
+
+  tableHtml += `
+      </tbody>
+    </table>
+    <div class="pricediff-total-box" style="background:linear-gradient(135deg, rgba(156,39,176,0.12), rgba(255,71,87,0.12));border-color:rgba(156,39,176,0.3)">
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">💰 إجمالي فروق الأسعار لـ ${clientVal} في هذه الفترة</div>
+      <div style="font-size:24px;font-weight:900;color:var(--danger)">${formatNum(totalDiffAmount)} <span style="font-size:12px;color:var(--text-secondary)">ج.م</span></div>
+      <div style="font-size:10px;color:var(--text-secondary);margin-top:4px">
+        💡 المعادلة: لكل صنف = العدد × (أعلى سعر للصنف - سعر العميل) | الإجمالي = مجموع فروق كل الأصناف
+      </div>
+    </div>
+  `;
+
+  tableContainer.innerHTML = tableHtml;
 };
 
 window.showFishPrices = function(fishName, btn) {
