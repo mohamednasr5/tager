@@ -2,12 +2,20 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
 <meta name="theme-color" content="#0a1628">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="الحديدي للأسماك">
+<meta name="application-name" content="الحديدي للأسماك">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
 <title>الحاج أحمد الحديدي - تجارة الأسماك</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -629,9 +637,212 @@
     margin-bottom: 8px;
   }
   .ai-grouping-badge .ai-spin { display: inline-block; animation: spin 0.8s linear infinite; }
+
+  /* ═══════════════════════════════════════════════════════════════
+     PWA PROFESSIONAL UPGRADE — Tager
+     • Splash screen
+     • Floating install bar (professional)
+     • Tablet responsive (Rail + Bottom auto-switch)
+     • Master-Detail layout on landscape tablets
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ===================== SPLASH SCREEN ===================== */
+  #pwa-splash {
+    position: fixed; inset: 0; z-index: 99999;
+    background: radial-gradient(ellipse 100% 100% at 50% 0%, #0d2a45 0%, #0a1628 60%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+  #pwa-splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  .splash-logo {
+    width: 110px; height: 110px; border-radius: 28px;
+    background: linear-gradient(135deg, #00b4d8 0%, #0d7fb3 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 56px; box-shadow: 0 16px 60px rgba(0,180,216,0.45);
+    animation: splashPulse 2s ease-in-out infinite;
+    margin-bottom: 24px;
+  }
+  @keyframes splashPulse {
+    0%,100% { transform: scale(1); box-shadow: 0 16px 60px rgba(0,180,216,0.45); }
+    50%     { transform: scale(1.05); box-shadow: 0 16px 80px rgba(0,229,255,0.7); }
+  }
+  .splash-title {
+    font-size: 22px; font-weight: 900; color: #ffd700;
+    text-shadow: 0 2px 12px rgba(255,215,0,0.3);
+    margin-bottom: 6px; text-align: center;
+  }
+  .splash-sub {
+    font-size: 13px; color: #90caf9; font-weight: 500;
+    margin-bottom: 36px;
+  }
+  .splash-loader {
+    width: 44px; height: 44px;
+    border: 3px solid rgba(0,180,216,0.2);
+    border-top-color: #00b4d8;
+    border-radius: 50%;
+    animation: splashSpin 0.9s linear infinite;
+  }
+  @keyframes splashSpin { to { transform: rotate(360deg); } }
+  .splash-bubble {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(0,229,255,0.12), transparent 70%);
+    pointer-events: none;
+  }
+  .splash-bubble.b1 { width: 280px; height: 280px; top: -80px; right: -80px; animation: splashFloat 8s ease-in-out infinite; }
+  .splash-bubble.b2 { width: 180px; height: 180px; bottom: -40px; left: -40px; animation: splashFloat 6s ease-in-out infinite reverse; }
+  @keyframes splashFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-20px)} }
+
+  /* ===================== PROFESSIONAL INSTALL BAR ===================== */
+  #pwa-install-bar {
+    position: fixed; bottom: calc(72px + env(safe-area-inset-bottom) + 12px);
+    left: 50%; transform: translateX(-50%) translateY(140%);
+    width: calc(100% - 24px); max-width: 560px;
+    background: linear-gradient(135deg, rgba(13,33,55,0.97) 0%, rgba(10,22,40,0.97) 100%);
+    border: 1px solid rgba(0,180,216,0.4);
+    border-radius: 20px; padding: 14px 16px;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.05), inset 0 1px 0 rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    display: flex; align-items: center; gap: 12px;
+    z-index: 10001;
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
+    opacity: 0;
+  }
+  #pwa-install-bar.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+  #pwa-install-bar.dismissed { transform: translateX(-50%) translateY(140%); opacity: 0; }
+  .install-bar-icon {
+    width: 44px; height: 44px; flex-shrink: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #00b4d8 0%, #0d7fb3 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; box-shadow: 0 4px 16px rgba(0,180,216,0.4);
+  }
+  .install-bar-content { flex: 1; min-width: 0; }
+  .install-bar-title { font-size: 14px; font-weight: 800; color: #e8f4f8; margin-bottom: 2px; }
+  .install-bar-sub { font-size: 11px; color: #90caf9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .install-bar-cta {
+    background: linear-gradient(135deg, #00b4d8 0%, #00e5ff 100%);
+    color: #0a1628; font-weight: 800; font-size: 13px;
+    padding: 10px 18px; border-radius: 12px; border: none;
+    cursor: pointer; font-family: 'Cairo', sans-serif;
+    white-space: nowrap; flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,180,216,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .install-bar-cta:active { transform: scale(0.96); }
+  .install-bar-close {
+    position: absolute; top: -8px; left: -8px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(10,22,40,0.95); color: #90caf9;
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer; line-height: 1;
+  }
+  .install-bar-close:active { transform: scale(0.9); }
+
+  /* Pulse effect to grab attention */
+  #pwa-install-bar.visible::after {
+    content: ''; position: absolute; inset: -2px;
+    border-radius: 22px; border: 2px solid rgba(0,180,216,0.5);
+    animation: installPulse 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes installPulse {
+    0%,100% { opacity: 0; transform: scale(1); }
+    50%     { opacity: 0.8; transform: scale(1.02); }
+  }
+
+  /* ===================== TABLET LAYOUT (auto-switch) ===================== */
+  /* On wide screens (landscape tablets), convert bottom-nav to right-side Rail */
+  @media (min-width: 900px) and (orientation: landscape) {
+    /* Move nav from bottom to right side (RTL: visually on right) */
+    .bottom-nav {
+      position: fixed; top: 0; bottom: 0; right: 0; left: auto;
+      width: 92px; flex-direction: column;
+      padding: max(16px, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom));
+      border-top: none; border-left: 1px solid var(--glass-border);
+      background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(13,33,55,0.97) 100%);
+      overflow-y: auto;
+    }
+    .bottom-nav::-webkit-scrollbar { width: 0; }
+    .nav-item { padding: 10px 4px; }
+    .nav-item .nav-icon { font-size: 24px; }
+    .nav-item .nav-label { font-size: 9px; }
+
+    /* Push content to the right of the rail */
+    .content { padding-right: 92px; padding-bottom: 24px; }
+    #pwa-install-bar { right: calc(92px + 12px); left: 12px; max-width: none; transform: translateY(140%); width: auto; }
+    #pwa-install-bar.visible { transform: translateY(0); }
+    #pwa-install-bar.dismissed { transform: translateY(140%); }
+
+    /* App header gets wider too */
+    .app-header { padding-right: 92px; }
+
+    /* Better use of wide screen — multi-column grids */
+    .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    .glass-card { max-width: 100%; }
+
+    /* Master-Detail: make some grids side by side on tablet */
+    .content { padding-left: 24px; padding-right: calc(92px + 24px); }
+  }
+
+  /* Portrait tablet — keep bottom nav but make it more spacious */
+  @media (min-width: 600px) and (max-width: 899px) {
+    .bottom-nav { max-width: 560px; left: 50%; transform: translateX(-50%); border-radius: 20px 20px 0 0; margin: 0 auto; }
+    .nav-item .nav-label { font-size: 11px; }
+    .nav-item .nav-icon { font-size: 24px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .content { max-width: 720px; margin: 0 auto; }
+  }
+
+  /* Very wide (desktop / large landscape tablet) — center content card */
+  @media (min-width: 1200px) {
+    .content { max-width: 1100px; margin: 0 auto; padding-right: calc(92px + 32px); padding-left: 32px; }
+    .app-header { max-width: 100%; padding-right: calc(92px + 32px); padding-left: 32px; }
+  }
+
+  /* Standalone PWA tweaks (only when installed) */
+  @media all and (display-mode: standalone) {
+    .app-header { padding-top: max(12px, env(safe-area-inset-top)); }
+    #pwa-install-bar { display: none !important; }
+  }
 </style>
 </head>
 <body>
+
+<!-- ============ PWA SPLASH SCREEN ============ -->
+<div id="pwa-splash">
+  <div class="splash-bubble b1"></div>
+  <div class="splash-bubble b2"></div>
+  <div class="splash-logo">🐟</div>
+  <div class="splash-title">الحديدي للأسماك</div>
+  <div class="splash-sub">جاري التحميل...</div>
+  <div class="splash-loader"></div>
+</div>
+<script>
+/* Splash hide — isolated so other script errors can't block it */
+(function() {
+  var splash = document.getElementById('pwa-splash');
+  if (!splash) return;
+  function hideSplash() {
+    try { splash.classList.add('hidden'); } catch(e) {}
+    setTimeout(function(){ try { if (splash.parentNode) splash.parentNode.removeChild(splash); } catch(e){} }, 1500);
+  }
+  if (document.readyState === 'complete') setTimeout(hideSplash, 600);
+  else window.addEventListener('load', function(){ setTimeout(hideSplash, 600); });
+  setTimeout(hideSplash, 4000); // safety net
+})();
+</script>
+
+<!-- ============ PROFESSIONAL INSTALL BAR ============ -->
+<div id="pwa-install-bar" role="dialog" aria-label="تثبيت التطبيق">
+  <button class="install-bar-close" id="install-close" aria-label="إغلاق">✕</button>
+  <div class="install-bar-icon">📲</div>
+  <div class="install-bar-content">
+    <div class="install-bar-title">ثبّت التطبيق الآن</div>
+    <div class="install-bar-sub">وصول سريع • يعمل بدون إنترنت • تجربة احترافية</div>
+  </div>
+  <button class="install-bar-cta" id="install-cta">تثبيت</button>
+</div>
 
 <div id="login-screen">
   <div class="login-box">
@@ -4012,27 +4223,96 @@ window.confirmDeleteClient = function(clientKey, clientName) {
 };
 
 // ============================================================
-// PWA
+// PWA — Professional install + update flow
+// (splash hide is in an isolated inline script at top of body)
 // ============================================================
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  window.appState.deferredPrompt = e;
-  document.getElementById('install-banner-container').innerHTML = `
-    <div class="install-banner">
-      <div style="font-size:24px">📲</div>
-      <div class="install-banner-text">ثبّت التطبيق على شاشتك الرئيسية!</div>
-      <button class="install-banner-btn" onclick="installPWA()">تثبيت</button>
-    </div>
-  `;
-});
-window.installPWA = async function() {
-  const prompt = window.appState.deferredPrompt;
-  if (!prompt) return;
-  prompt.prompt();
-  const result = await prompt.userChoice;
-  if (result.outcome === 'accepted') { document.getElementById('install-banner-container').innerHTML = ''; showToast('✅ تم تثبيت التطبيق!'); }
-  window.appState.deferredPrompt = null;
-};
+(function() {
+  const installBar = document.getElementById('pwa-install-bar');
+  const installCta = document.getElementById('install-cta');
+  const installClose = document.getElementById('install-close');
+
+  // ----- Standalone detection (already installed) -----
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true ||
+    document.referrer.startsWith('android-app://');
+  if (isStandalone && installBar) installBar.style.display = 'none';
+
+  // ----- beforeinstallprompt: show professional bar -----
+  let deferredPrompt = null;
+  let installDismissed = sessionStorage.getItem('pwa-install-dismissed') === '1';
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    window.appState.deferredPrompt = e;
+    // Don't show if user dismissed recently, or if already installed
+    if (installDismissed || isStandalone) return;
+    setTimeout(() => installBar.classList.add('visible'), 1200);
+  });
+
+  // ----- Install CTA handler -----
+  async function triggerInstall() {
+    if (!deferredPrompt) {
+      // Fallback for iOS Safari / browsers without beforeinstallprompt
+      showToast('ℹ️ من قائمة المتصفح (⋮) اختر: «إضافة إلى الشاشة الرئيسية»');
+      return;
+    }
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === 'accepted') {
+      installBar.classList.remove('visible');
+      installBar.classList.add('dismissed');
+      showToast('✅ جاري تثبيت التطبيق...');
+    }
+    deferredPrompt = null;
+    window.appState.deferredPrompt = null;
+  }
+  if (installCta) installCta.addEventListener('click', triggerInstall);
+  window.installPWA = triggerInstall; // backward compatibility
+
+  // ----- Close (dismiss) install bar -----
+  if (installClose) installClose.addEventListener('click', () => {
+    installBar.classList.remove('visible');
+    installBar.classList.add('dismissed');
+    installDismissed = true;
+    sessionStorage.setItem('pwa-install-dismissed', '1');
+  });
+
+  // ----- appinstalled event -----
+  window.addEventListener('appinstalled', () => {
+    if (installBar) { installBar.classList.remove('visible'); installBar.classList.add('dismissed'); }
+    showToast('🎉 تم تثبيت التطبيق بنجاح!');
+    // Optional: send analytics event
+  });
+
+  // ----- Service worker registration -----
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        // Listen for updates
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version ready — show toast with reload button
+              if (window.showToast) {
+                showToast('🔄 تحديث جديد جاهز — اضغط للتفعيل', 8000);
+                setTimeout(() => {
+                  if (confirm('يتوفر إصدار جديد من التطبيق. إعادة التحميل الآن؟')) {
+                    newWorker.postMessage('SKIP_WAITING');
+                    setTimeout(() => location.reload(), 800);
+                  }
+                }, 1500);
+              }
+            }
+          });
+        });
+      }).catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+})();
 
 // ============================================================
 // EXCEL EXPORT (NEW FUNCTION)
