@@ -890,6 +890,9 @@
 
     <div class="page active" id="page-home">
       <div id="install-banner-container"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn btn-pdf" onclick="exportDashboardPDF()" style="box-shadow:0 4px 15px rgba(231,76,60,0.3);">📄 تصدير تقرير لوحة التحكم (PDF)</button>
+      </div>
       <div class="stats-grid">
         <div class="stat-card highlight">
           <div class="stat-icon">💰</div>
@@ -1056,6 +1059,9 @@
     </div>
 
     <div class="page" id="page-clients">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn btn-pdf" onclick="exportClientsPDF()" style="box-shadow:0 4px 15px rgba(231,76,60,0.3);">📄 تصدير قائمة العملاء (PDF)</button>
+      </div>
       <div class="search-box" style="display:flex;gap:8px;">
         <div style="position:relative;flex:1;">
           <span class="search-icon">🔍</span>
@@ -1076,6 +1082,9 @@
     </div>
 
     <div class="page" id="page-history">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn btn-pdf" onclick="exportHistoryPDF()" style="box-shadow:0 4px 15px rgba(231,76,60,0.3);">📄 تصدير سجل الفواتير (PDF)</button>
+      </div>
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="history-search" class="form-input" placeholder="ابحث في الفواتير..." oninput="renderHistory()" style="padding-right:40px">
@@ -1084,6 +1093,9 @@
     </div>
 
     <div class="page" id="page-sectors">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn btn-pdf" onclick="exportSectorsPDF()" style="box-shadow:0 4px 15px rgba(231,76,60,0.3);">📄 تصدير تقرير القطاعات (PDF)</button>
+      </div>
       <div class="glass-card">
         <div class="section-title">🏢 أرباح وفواتير كل قطاع</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
@@ -1106,6 +1118,10 @@
     </div>
 
     <div class="page" id="page-prices">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn btn-pdf" onclick="exportPricesPDF()" style="box-shadow:0 4px 15px rgba(231,76,60,0.3);">📄 تصدير تقرير الأسعار (PDF)</button>
+        <button class="btn btn-pdf" onclick="exportComparePDF()" style="background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.4);color:var(--cyan-glow);">⚖️ تصدير مقارنة العملاء (PDF)</button>
+      </div>
       <div class="glass-card" style="margin-bottom:14px;background:rgba(0,180,216,0.05);border-color:rgba(0,180,216,0.3)">
         <div class="section-title" style="color:var(--cyan-glow)">⚖️ مقارنة أسعار عميلين</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -4505,6 +4521,699 @@ window.exportAllDataToPDF = async function() {
 
 // اسم بديل (للتوافق مع أي استدعاءات سابقة)
 window.exportAllDataToExcel = function() { return window.exportAllDataToPDF(); };
+
+// ============================================================
+// 📄 دوال مساعدة عامة لتحويل المصفوفات إلى جداول HTML للتصدير PDF
+// ============================================================
+
+// الهروب من حقن HTML
+function _pdfEsc(v) {
+  if (v === null || v === undefined) return '';
+  return String(v)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// تنسيق الأرقام المالية بفواصل العربية
+function _pdfNum(v) {
+  var n = parseFloat(v || 0);
+  if (isNaN(n)) return 0;
+  return n;
+}
+function _pdfFmtMoney(v) {
+  var n = _pdfNum(v);
+  return n.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
+}
+function _pdfFmtInt(v) {
+  return _pdfNum(v).toLocaleString('ar-EG');
+}
+
+// تحويل مصفوفة ثنائية الأبعاد (AOA) إلى جدول HTML مصمم
+// الصف الأول = عنوان القسم، الصف الثاني = رؤوس الأعمدة، الباقي بيانات
+// الصفوف التي تبدأ بـ 📊 أو "إجمالي" تُعتبر صفوف إجماليات (لون مميز)
+function aoaToHTMLTable(rows) {
+  if (!rows || !rows.length) {
+    return '<div style="text-align:center;color:#999;padding:14px">لا توجد بيانات</div>';
+  }
+  var colCount = 0;
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i] && rows[i].length > colCount) colCount = rows[i].length;
+  }
+  if (colCount === 0) return '<div style="text-align:center;color:#999;padding:14px">لا توجد بيانات</div>';
+
+  var titleRow = rows[0] || [];
+  var title = _pdfEsc(String(titleRow[0] || '').trim());
+  var headerRow = rows.length > 1 ? (rows[1] || []) : null;
+  var dataRows = rows.length > 2 ? rows.slice(2) : [];
+
+  var html = '';
+  if (title) html += '<h3 class="sheet-title">' + title + '</h3>';
+  html += '<table class="data-table">';
+  if (headerRow) {
+    html += '<thead><tr>';
+    for (var c = 0; c < colCount; c++) {
+      html += '<th>' + _pdfEsc(headerRow[c] != null ? headerRow[c] : '') + '</th>';
+    }
+    html += '</tr></thead>';
+  }
+  html += '<tbody>';
+  for (var r = 0; r < dataRows.length; r++) {
+    var row = dataRows[r] || [];
+    var firstVal = String(row[0] != null ? row[0] : '').trim();
+    var isTotal = firstVal.indexOf('📊') === 0 ||
+                  firstVal.indexOf('الإجمالي') === 0 ||
+                  firstVal.indexOf('إجمالي') === 0;
+
+    var rowClass = '';
+    if (isTotal) {
+      var lastVal = String(row[colCount - 1] != null ? row[colCount - 1] : '');
+      if (lastVal.indexOf('-') > -1 && /\d/.test(lastVal)) rowClass = 'loss-row';
+      else if (lastVal.indexOf('+') > -1) rowClass = 'profit-row';
+      else rowClass = 'total-row';
+    } else if (r % 2 === 1) {
+      rowClass = 'alt-row';
+    }
+
+    html += '<tr class="' + rowClass + '">';
+    for (var c2 = 0; c2 < colCount; c2++) {
+      var cellVal = row[c2] != null ? row[c2] : '';
+      var display = (isTotal && (cellVal === '' || cellVal === 0)) ? '' : cellVal;
+      html += '<td>' + _pdfEsc(display) + '</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  return html;
+}
+
+// تحويل مجموعة أوراق (sheets) إلى مستند HTML كامل للطباعة كـ PDF
+function sheetsToHTML(sheets, mainTitle, subTitle) {
+  var today = new Date().toLocaleDateString('ar-EG', { day: '2-digit', month: 'long', year: 'numeric' });
+  var timeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+  var sheetsHTML = sheets.map(function (s) {
+    return '<section class="sheet-section">' + aoaToHTMLTable(s.data) + '</section>';
+  }).join('');
+
+  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">' +
+    '<style>' +
+    '* { box-sizing: border-box; }' +
+    'body { font-family: "Cairo", sans-serif; padding: 24px; max-width: 1100px; margin: auto; color: #1a1a2e; background: #fff; line-height: 1.6; }' +
+    '.doc-header { text-align: center; border-bottom: 3px solid #1a3a6b; padding-bottom: 16px; margin-bottom: 24px; }' +
+    '.doc-header h1 { color: #1a3a6b; font-size: 22px; margin: 0 0 4px; font-weight: 900; }' +
+    '.doc-header .sub { color: #b8860b; font-size: 15px; font-weight: 700; margin: 0 0 6px; }' +
+    '.doc-header .meta { color: #555; font-size: 12px; }' +
+    '.sheet-section { margin-bottom: 28px; page-break-inside: avoid; }' +
+    '.sheet-title { background: #4F709C; color: #fff; padding: 9px 14px; border-radius: 8px 8px 0 0; font-size: 14px; font-weight: 900; margin: 0 0 -1px; }' +
+    '.data-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }' +
+    '.data-table th { background: #1a3a6b; color: #fff; padding: 8px 6px; text-align: center; font-weight: 700; border: 1px solid #1a3a6b; font-size: 11.5px; }' +
+    '.data-table td { padding: 6px; border: 1px solid #d8d8d8; text-align: center; vertical-align: middle; }' +
+    '.data-table tbody tr td:first-child { text-align: right; font-weight: 600; }' +
+    '.data-table tbody tr.alt-row { background: #f0f7ff; }' +
+    '.data-table tbody tr.total-row { background: #ffd700; font-weight: 900; color: #1a1a2e; }' +
+    '.data-table tbody tr.profit-row { background: #C1E1C1; font-weight: 900; color: #1E5128; }' +
+    '.data-table tbody tr.loss-row { background: #F8C8DC; font-weight: 900; color: #922B21; }' +
+    '.footer { text-align: center; color: #888; font-size: 11px; margin-top: 28px; border-top: 1px solid #eee; padding-top: 12px; }' +
+    '@media print { .sheet-section { page-break-inside: avoid; } tr { page-break-inside: avoid; } body { padding: 12px; max-width: 100%; } }' +
+    '</style></head><body>' +
+    '<div class="doc-header">' +
+    '<h1>🐟 ' + _pdfEsc(mainTitle) + '</h1>' +
+    (subTitle ? '<div class="sub">' + _pdfEsc(subTitle) + '</div>' : '') +
+    '<div class="meta">📅 تاريخ التصدير: ' + today + ' — 🕒 ' + timeStr + '</div>' +
+    '</div>' +
+    sheetsHTML +
+    '<div class="footer">تم إنشاء هذا التقرير بواسطة تطبيق الحاج أحمد الحديدي لتجارة الأسماك</div>' +
+    '</body></html>';
+}
+
+// ============================================================
+// 📄 تصدير لوحة التحكم (الرئيسية) — إحصائيات + أعلى الأسعار + آخر الفواتير
+// ============================================================
+window.exportDashboardPDF = function() {
+  if (!window.appState) return showToast('❌ لا توجد بيانات');
+  showToast('⏳ جاري تجهيز التقرير...');
+  try {
+    var sheets = [];
+    var inv = window.appState.invoices || {};
+    var clients = window.appState.clients || {};
+
+    // ── ورقة 1: ملخص عام ──
+    var sumData = [];
+    var totalSales = Object.values(inv).reduce(function(s,i){ return s + (i.total||0); }, 0);
+    var totalDebt  = Object.values(clients).reduce(function(s,c){ return s + (c.totalDebt||0); }, 0);
+    var totalPurchases = Object.values(clients).reduce(function(s,c){ return s + (c.totalPurchases||0); }, 0);
+    var totalPaid  = Object.values(clients).reduce(function(s,c){ return s + (c.totalPaid||0); }, 0);
+
+    sumData.push(['📊 ملخص عام للمزرعة', '', '', '']);
+    sumData.push(['البند', 'القيمة', '', '']);
+    sumData.push(['عدد العملاء', _pdfFmtInt(Object.keys(clients).length), '', '']);
+    sumData.push(['عدد الفواتير', _pdfFmtInt(Object.keys(inv).length), '', '']);
+    sumData.push(['إجمالي المبيعات (الصافي)', _pdfFmtMoney(totalSales), '', '']);
+    sumData.push(['إجمالي المشتريات (العملاء)', _pdfFmtMoney(totalPurchases), '', '']);
+    sumData.push(['إجمالي المدفوعات', _pdfFmtMoney(totalPaid), '', '']);
+    sumData.push(['إجمالي الديون المتبقية', _pdfFmtMoney(totalDebt), '', '']);
+    sheets.push({ name: 'ملخص عام', data: sumData });
+
+    // ── ورقة 2: أعلى الأسعار لكل صنف ──
+    var leadersData = [];
+    leadersData.push(['🏆 أعلى الأسعار لكل صنف', '', '', '']);
+    leadersData.push(['#', 'الصنف', 'أعلى سعر (ج.م/ك)', 'العميل']);
+
+    // حساب أعلى الأسعار من كل الأصناف في كل الفواتير
+    var fishMap = {};
+    Object.values(inv).forEach(function(i) {
+      (i.items || []).forEach(function(item) {
+        if (!item.fish && !item.fishName) return;
+        var fish = item.fish || item.fishName;
+        var price = item.pricePerKg || item.price || 0;
+        if (price <= 0) return;
+        if (!fishMap[fish] || price > fishMap[fish].price) {
+          fishMap[fish] = { price: price, client: i.clientName || '-' };
+        }
+      });
+    });
+
+    var leadersArr = Object.entries(fishMap).sort(function(a,b){ return b[1].price - a[1].price; });
+    if (leadersArr.length === 0) {
+      leadersData.push(['لا توجد أسعار مسجلة', '', '', '']);
+    } else {
+      leadersArr.forEach(function(entry, idx) {
+        leadersData.push([
+          _pdfFmtInt(idx + 1),
+          entry[0],
+          _pdfFmtMoney(entry[1].price),
+          entry[1].client
+        ]);
+      });
+    }
+    sheets.push({ name: 'أعلى الأسعار', data: leadersData });
+
+    // ── ورقة 3: آخر الفواتير ──
+    var recentData = [];
+    recentData.push(['🧾 آخر الفواتير', '', '', '', '', '']);
+    recentData.push(['#', 'التاريخ', 'العميل', 'الهاتف', 'عدد الأصناف', 'الصافي (ج.م)']);
+
+    var invList = Object.entries(inv).sort(function(a,b) {
+      var da = (a[1].invDateISO || a[1].date || '').split('T')[0];
+      var db2 = (b[1].invDateISO || b[1].date || '').split('T')[0];
+      if (da !== db2) return da < db2 ? 1 : -1;
+      return (b[1].createdAt||0) - (a[1].createdAt||0);
+    }).slice(0, 50);
+
+    var tNet = 0;
+    if (invList.length === 0) {
+      recentData.push(['لا توجد فواتير', '', '', '', '', '']);
+    } else {
+      invList.forEach(function(entry, idx) {
+        var id = entry[0], i = entry[1];
+        var dateStr = i.dateStr || getDisplayDate(i.invDateISO || i.date);
+        var itemsCount = (i.items || []).length;
+        var net = i.total || 0;
+        tNet += net;
+        recentData.push([
+          _pdfFmtInt(idx + 1),
+          dateStr,
+          i.clientName || '-',
+          i.phone || '-',
+          _pdfFmtInt(itemsCount),
+          _pdfFmtMoney(net)
+        ]);
+      });
+      recentData.push([
+        '📊 الإجمالي العام (مجموع كل الأعمدة)',
+        '',
+        '',
+        '',
+        _pdfFmtInt(invList.length) + ' فاتورة',
+        _pdfFmtMoney(tNet)
+      ]);
+    }
+    sheets.push({ name: 'آخر الفواتير', data: recentData });
+
+    var html = sheetsToHTML(sheets, 'الحاج أحمد الحديدي — تقرير لوحة التحكم', '📊 ملخص عام + أعلى الأسعار + آخر الفواتير');
+    openPrintWindow(html, 'تقرير_لوحة_التحكم_' + new Date().toISOString().split('T')[0]);
+    showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء التصدير');
+  }
+};
+
+// ============================================================
+// 📄 تصدير قائمة العملاء — مع مجاميع الأعمدة
+// ============================================================
+window.exportClientsPDF = function() {
+  if (!window.appState) return showToast('❌ لا توجد بيانات');
+  showToast('⏳ جاري تجهيز قائمة العملاء...');
+  try {
+    var clients = Object.entries(window.appState.clients || {});
+    if (clients.length === 0) return showToast('❌ لا يوجد عملاء');
+
+    // قراءة الفلاتر الحالية
+    var search = (document.getElementById('client-search')?.value || '').toLowerCase();
+    var sortMode = document.getElementById('client-sort')?.value || 'debt';
+    var filter = window.appState.currentFilter || 'all';
+
+    if (search) clients = clients.filter(function(x){ var c = x[1]; return (c.name||'').toLowerCase().includes(search) || (c.phone||'').includes(search); });
+    if (filter === 'debt') clients = clients.filter(function(x){ return (x[1].totalDebt||0) > 0; });
+    if (filter === 'paid') clients = clients.filter(function(x){ return (x[1].totalDebt||0) <= 0; });
+
+    if (sortMode === 'newest') {
+      clients.sort(function(a,b){ return new Date(b[1].lastInvoice||0) - new Date(a[1].lastInvoice||0); });
+    } else if (sortMode === 'oldest') {
+      clients.sort(function(a,b){ return new Date(a[1].lastInvoice||0) - new Date(b[1].lastInvoice||0); });
+    } else {
+      clients.sort(function(a,b){ return (b[1].totalDebt||0) - (a[1].totalDebt||0); });
+    }
+
+    var sheets = [];
+    var data = [];
+    data.push(['👥 قائمة العملاء', '', '', '', '', '', '']);
+    data.push(['#', 'اسم العميل', 'الهاتف', 'المؤسسة', 'إجمالي المشتريات', 'المدفوع', 'الدين المتبقي']);
+
+    var tPur = 0, tPaid = 0, tDebt = 0;
+    clients.forEach(function(entry, idx) {
+      var c = entry[1];
+      var pur = c.totalPurchases || 0, paid = c.totalPaid || 0, debt = c.totalDebt || 0;
+      tPur += pur; tPaid += paid; tDebt += debt;
+      data.push([
+        _pdfFmtInt(idx + 1),
+        c.name || '-',
+        c.phone || '-',
+        c.shopName || '-',
+        _pdfFmtMoney(pur),
+        _pdfFmtMoney(paid),
+        _pdfFmtMoney(debt)
+      ]);
+    });
+    data.push([
+      '📊 الإجمالي العام (مجموع كل الأعمدة)',
+      _pdfFmtInt(clients.length) + ' عميل',
+      '',
+      '',
+      _pdfFmtMoney(tPur),
+      _pdfFmtMoney(tPaid),
+      _pdfFmtMoney(tDebt)
+    ]);
+    sheets.push({ name: 'قائمة العملاء', data: data });
+
+    var filterDesc = 'الكل';
+    if (filter === 'debt') filterDesc = 'عليهم دين';
+    else if (filter === 'paid') filterDesc = 'مسويين';
+    if (search) filterDesc += ' — بحث: ' + search;
+
+    var html = sheetsToHTML(sheets, 'الحاج أحمد الحديدي — قائمة العملاء', '👥 ' + filterDesc);
+    openPrintWindow(html, 'تقرير_العملاء_' + new Date().toISOString().split('T')[0]);
+    showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء التصدير');
+  }
+};
+
+// ============================================================
+// 📄 تصدير سجل الفواتير — مع مجاميع الأعمدة
+// ============================================================
+window.exportHistoryPDF = function() {
+  if (!window.appState) return showToast('❌ لا توجد بيانات');
+  showToast('⏳ جاري تجهيز سجل الفواتير...');
+  try {
+    var search = (document.getElementById('history-search')?.value || '').toLowerCase();
+    var inv = Object.entries(window.appState.invoices || {}).sort(function(a,b) {
+      var da = (a[1].invDateISO || a[1].date || '').split('T')[0] || '0000-00-00';
+      var db2 = (b[1].invDateISO || b[1].date || '').split('T')[0] || '0000-00-00';
+      if (da !== db2) return da < db2 ? 1 : -1;
+      return (b[1].createdAt||0) - (a[1].createdAt||0);
+    });
+
+    if (search) inv = inv.filter(function(x){
+      var i = x[1];
+      return (i.clientName||'').toLowerCase().includes(search) || (i.phone||'').includes(search);
+    });
+
+    if (inv.length === 0) return showToast('❌ لا توجد فواتير');
+
+    var sheets = [];
+    var data = [];
+    data.push(['🧾 سجل الفواتير', '', '', '', '', '', '', '']);
+    data.push(['#', 'رقم الفاتورة', 'التاريخ', 'العميل', 'القطاع', 'إجمالي الأصناف', 'الخصومات', 'الصافي']);
+
+    var tFish = 0, tDeduct = 0, tNet = 0;
+    inv.forEach(function(entry, idx) {
+      var id = entry[0], i = entry[1];
+      var fishTotal = i.fishTotal || i.gross || i.total || 0;
+      var deductions = (i.expTotal || 0) + (i.commissionAmt || 0);
+      var net = i.total || 0;
+      tFish += fishTotal; tDeduct += deductions; tNet += net;
+      data.push([
+        _pdfFmtInt(idx + 1),
+        i.invoiceNumber || generateInvoiceNumber(id),
+        i.dateStr || getDisplayDate(i.invDateISO || i.date),
+        i.clientName || '-',
+        i.sector || '-',
+        _pdfFmtMoney(fishTotal),
+        _pdfFmtMoney(deductions),
+        _pdfFmtMoney(net)
+      ]);
+    });
+    data.push([
+      '📊 الإجمالي العام (مجموع كل الأعمدة)',
+      _pdfFmtInt(inv.length) + ' فاتورة',
+      '',
+      '',
+      '',
+      _pdfFmtMoney(tFish),
+      _pdfFmtMoney(tDeduct),
+      _pdfFmtMoney(tNet)
+    ]);
+    sheets.push({ name: 'سجل الفواتير', data: data });
+
+    var sub = search ? '🔍 بحث: ' + search : 'كل الفواتير مرتبة من الأحدث للأقدم';
+    var html = sheetsToHTML(sheets, 'الحاج أحمد الحديدي — سجل الفواتير', sub);
+    openPrintWindow(html, 'تقرير_الفواتير_' + new Date().toISOString().split('T')[0]);
+    showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء التصدير');
+  }
+};
+
+// ============================================================
+// 📄 تصدير تقرير القطاعات — ملخص + فواتير كل قطاع مع مجاميع
+// ============================================================
+window.exportSectorsPDF = function() {
+  if (!window.appState) return showToast('❌ لا توجد بيانات');
+  showToast('⏳ جاري تجهيز تقرير القطاعات...');
+  try {
+    var from = document.getElementById('sector-date-from')?.value;
+    var to = document.getElementById('sector-date-to')?.value;
+    var allInvs = Object.entries(window.appState.invoices || {});
+
+    var filtered = allInvs.filter(function(x) {
+      var d = x[1].invDateISO || (x[1].date || '').split('T')[0] || '';
+      if (!d) return true;
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) return showToast('❌ لا توجد فواتير في هذه الفترة');
+
+    // تجميع حسب القطاع
+    var sectorsMap = {};
+    filtered.forEach(function(entry) {
+      var id = entry[0], inv = entry[1];
+      var s = inv.sector || 'بدون قطاع';
+      if (!sectorsMap[s]) sectorsMap[s] = { total: 0, count: 0, fishTotal: 0, deductions: 0, invoices: [] };
+      sectorsMap[s].total += (inv.total || 0);
+      sectorsMap[s].fishTotal += (inv.fishTotal || inv.gross || inv.total || 0);
+      sectorsMap[s].deductions += ((inv.expTotal || 0) + (inv.commissionAmt || 0));
+      sectorsMap[s].count++;
+      sectorsMap[s].invoices.push([id, inv]);
+    });
+
+    var sheets = [];
+
+    // ── ورقة 1: ملخص القطاعات ──
+    var sumData = [];
+    sumData.push(['🏢 ملخص أرباح وفواتير كل قطاع', '', '', '', '']);
+    sumData.push(['القطاع', 'عدد الفواتير', 'إجمالي الأصناف', 'الخصومات', 'الصافي']);
+
+    var secEntries = Object.entries(sectorsMap).sort(function(a,b){ return b[1].total - a[1].total; });
+    var tCount = 0, tFish = 0, tDeduct = 0, tTotal = 0;
+    secEntries.forEach(function(entry) {
+      var name = entry[0], d = entry[1];
+      tCount += d.count; tFish += d.fishTotal; tDeduct += d.deductions; tTotal += d.total;
+      sumData.push([
+        name,
+        _pdfFmtInt(d.count),
+        _pdfFmtMoney(d.fishTotal),
+        _pdfFmtMoney(d.deductions),
+        _pdfFmtMoney(d.total)
+      ]);
+    });
+    sumData.push([
+      '📊 الإجمالي العام (مجموع كل الأعمدة)',
+      _pdfFmtInt(tCount),
+      _pdfFmtMoney(tFish),
+      _pdfFmtMoney(tDeduct),
+      _pdfFmtMoney(tTotal)
+    ]);
+    sheets.push({ name: 'ملخص القطاعات', data: sumData });
+
+    // ── ورقة لكل قطاع: فواتيره ──
+    secEntries.forEach(function(entry) {
+      var name = entry[0], d = entry[1];
+      var sd = [];
+      sd.push(['📋 فواتير قطاع: ' + name, '', '', '', '']);
+      sd.push(['#', 'رقم الفاتورة', 'التاريخ', 'العميل', 'الصافي (ج.م)']);
+
+      var sorted = d.invoices.sort(function(a,b) {
+        var da = (a[1].invDateISO || a[1].date || '').split('T')[0] || '';
+        var db2 = (b[1].invDateISO || b[1].date || '').split('T')[0] || '';
+        return da < db2 ? 1 : da > db2 ? -1 : 0;
+      });
+
+      var st = 0;
+      sorted.forEach(function(ie, idx) {
+        var id = ie[0], inv = ie[1];
+        var net = inv.total || 0;
+        st += net;
+        sd.push([
+          _pdfFmtInt(idx + 1),
+          inv.invoiceNumber || generateInvoiceNumber(id),
+          inv.dateStr || getDisplayDate(inv.invDateISO || inv.date),
+          inv.clientName || '-',
+          _pdfFmtMoney(net)
+        ]);
+      });
+      sd.push([
+        '📊 إجمالي قطاع ' + name,
+        '',
+        '',
+        _pdfFmtInt(sorted.length) + ' فاتورة',
+        _pdfFmtMoney(st)
+      ]);
+      // اسم الورقة بحد أقصى 31 حرف (قيد Excel تم رفعه الآن لكن نبقيه للاختصار)
+      var sheetName = name.length > 28 ? name.substring(0, 28) : name;
+      sheets.push({ name: sheetName, data: sd });
+    });
+
+    var sub = '🏢 تقرير شامل لكل القطاعات';
+    if (from || to) sub += ' — من ' + (from || 'البداية') + ' إلى ' + (to || 'اليوم');
+
+    var html = sheetsToHTML(sheets, 'الحاج أحمد الحديدي — تقرير القطاعات', sub);
+    openPrintWindow(html, 'تقرير_القطاعات_' + new Date().toISOString().split('T')[0]);
+    showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء التصدير');
+  }
+};
+
+// ============================================================
+// 📄 تصدير تقرير الأسعار بالصنف — كل صنف في ورقة + مجاميع
+// ============================================================
+window.exportPricesPDF = function() {
+  if (!window.appState) return showToast('❌ لا توجد بيانات');
+  showToast('⏳ جاري تجهيز تقرير الأسعار...');
+  try {
+    var from = window.appState.priceDateFrom || '';
+    var to = window.appState.priceDateTo || '';
+    var invoices = Object.values(window.appState.invoices || {});
+    if (invoices.length === 0) return showToast('❌ لا توجد فواتير');
+
+    // تجميع الأسعار حسب الصنف
+    var fishData = {};
+    invoices.forEach(function(inv) {
+      var d = inv.invDateISO || (inv.date || '').split('T')[0] || '';
+      if (from && d < from) return;
+      if (to && d > to) return;
+      (inv.items || []).forEach(function(item) {
+        if (!item.fish && !item.fishName) return;
+        var fish = item.fish || item.fishName;
+        var price = item.pricePerKg || item.price || 0;
+        var qty = item.kg || 0;
+        var subtotal = item.subtotal || (price * qty);
+        if (!fishData[fish]) fishData[fish] = [];
+        fishData[fish].push({
+          date: d,
+          client: inv.clientName || '-',
+          price: price,
+          qty: qty,
+          subtotal: subtotal
+        });
+      });
+    });
+
+    var fishNames = Object.keys(fishData);
+    if (fishNames.length === 0) return showToast('❌ لا توجد أسعار في هذه الفترة');
+
+    var sheets = [];
+
+    // ── ورقة 0: ملخص عام للأسعار ──
+    var sumData = [];
+    sumData.push(['📈 ملخص الأسعار لكل صنف', '', '', '', '', '']);
+    sumData.push(['الصنف', 'عدد العمليات', 'إجمالي الكمية (كجم)', 'متوسط السعر (ج.م/ك)', 'أعلى سعر (ج.م/ك)', 'أدنى سعر (ج.م/ك)']);
+
+    var tOps = 0, tQty = 0;
+    fishNames.sort().forEach(function(fish) {
+      var entries = fishData[fish];
+      var opsCount = entries.length;
+      var sQty = 0, sPrice = 0, maxP = 0, minP = Infinity;
+      entries.forEach(function(e) {
+        sQty += _pdfNum(e.qty);
+        sPrice += _pdfNum(e.price);
+        if (e.price > maxP) maxP = _pdfNum(e.price);
+        if (e.price > 0 && e.price < minP) minP = _pdfNum(e.price);
+      });
+      var avg = opsCount > 0 ? sPrice / opsCount : 0;
+      tOps += opsCount; tQty += sQty;
+      sumData.push([
+        fish,
+        _pdfFmtInt(opsCount),
+        _pdfFmtInt(sQty),
+        _pdfFmtMoney(avg),
+        _pdfFmtMoney(maxP),
+        minP === Infinity ? '-' : _pdfFmtMoney(minP)
+      ]);
+    });
+    sumData.push([
+      '📊 الإجمالي العام (مجموع كل الأعمدة)',
+      _pdfFmtInt(tOps),
+      _pdfFmtInt(tQty),
+      '',
+      '',
+      ''
+    ]);
+    sheets.push({ name: 'ملخص الأسعار', data: sumData });
+
+    // ── ورقة لكل صنف: تفاصيل العمليات ──
+    fishNames.sort().forEach(function(fish) {
+      var entries = fishData[fish].sort(function(a,b) {
+        return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+      });
+      var fd = [];
+      fd.push(['🐟 تفاصيل سعر صنف: ' + fish, '', '', '', '']);
+      fd.push(['#', 'التاريخ', 'العميل', 'السعر (ج.م/ك)', 'الكمية (كجم)', 'الإجمالي (ج.م)']);
+
+      var sQty = 0, sSub = 0;
+      entries.forEach(function(e, idx) {
+        sQty += _pdfNum(e.qty);
+        sSub += _pdfNum(e.subtotal);
+        fd.push([
+          _pdfFmtInt(idx + 1),
+          e.date || '-',
+          e.client,
+          _pdfFmtMoney(e.price),
+          _pdfFmtInt(e.qty),
+          _pdfFmtMoney(e.subtotal)
+        ]);
+      });
+      fd.push([
+        '📊 الإجمالي العام (مجموع كل الأعمدة)',
+        '',
+        _pdfFmtInt(entries.length) + ' عملية',
+        '',
+        _pdfFmtInt(sQty),
+        _pdfFmtMoney(sSub)
+      ]);
+      var sheetName = fish.length > 28 ? fish.substring(0, 28) : fish;
+      sheets.push({ name: sheetName, data: fd });
+    });
+
+    var sub = '📈 تقرير شامل لأسعار كل الأصناف';
+    if (from || to) sub += ' — من ' + (from || 'البداية') + ' إلى ' + (to || 'اليوم');
+
+    var html = sheetsToHTML(sheets, 'الحاج أحمد الحديدي — تقرير الأسعار', sub);
+    openPrintWindow(html, 'تقرير_الأسعار_' + new Date().toISOString().split('T')[0]);
+    showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء التصدير');
+  }
+};
+
+// ============================================================
+// 📄 تصدير مقارنة أسعار عميلين (إذا تم تنفيذ مقارنة)
+// ============================================================
+window.exportComparePDF = function() {
+  if (!window.appState) return showToast('❌ لا توجد بيانات');
+  try {
+    var from = document.getElementById('comp-date-from')?.value;
+    var to = document.getElementById('comp-date-to')?.value;
+    var fish = document.getElementById('comp-fish')?.value;
+    var c1 = document.getElementById('comp-client1')?.value;
+    var c2 = document.getElementById('comp-client2')?.value;
+
+    if (!fish || !c1 || !c2) return showToast('❌ اختر الصنف والعميلين أولاً');
+    if (c1 === c2) return showToast('❌ اختر عميلين مختلفين');
+
+    var invoices = Object.values(window.appState.invoices || {});
+    var data1 = [], data2 = [];
+    invoices.forEach(function(inv) {
+      var d = inv.invDateISO || (inv.date || '').split('T')[0] || '';
+      if (from && d < from) return;
+      if (to && d > to) return;
+      (inv.items || []).forEach(function(item) {
+        var itemFish = item.fish || item.fishName;
+        if (itemFish !== fish) return;
+        var price = item.pricePerKg || item.price || 0;
+        var qty = item.kg || 0;
+        var entry = { date: d, price: price, qty: qty, subtotal: item.subtotal || (price * qty) };
+        if (inv.clientName === c1) data1.push(entry);
+        if (inv.clientName === c2) data2.push(entry);
+      });
+    });
+
+    if (data1.length === 0 && data2.length === 0) return showToast('❌ لا توجد أسعار مسجلة لأي من العميلين');
+
+    var sheets = [];
+    var data = [];
+    data.push(['⚖️ مقارنة أسعار عميلين — الصنف: ' + fish, '', '', '', '', '']);
+    data.push(['#', 'التاريخ', c1 + ' (سعر)', c1 + ' (كمية)', c2 + ' (سعر)', c2 + ' (كمية)']);
+
+    // تجميع حسب التاريخ
+    var allDates = Array.from(new Set([].concat(data1.map(function(e){return e.date;}), data2.map(function(e){return e.date;})))).sort().reverse();
+    var t1Qty = 0, t1Sub = 0, t2Qty = 0, t2Sub = 0;
+    var t1Price = 0, t2Price = 0;
+    allDates.forEach(function(d, idx) {
+      var e1 = data1.find(function(e){return e.date === d;});
+      var e2 = data2.find(function(e){return e.date === d;});
+      if (e1) { t1Qty += _pdfNum(e1.qty); t1Sub += _pdfNum(e1.subtotal); t1Price += _pdfNum(e1.price); }
+      if (e2) { t2Qty += _pdfNum(e2.qty); t2Sub += _pdfNum(e2.subtotal); t2Price += _pdfNum(e2.price); }
+      data.push([
+        _pdfFmtInt(idx + 1),
+        d || '-',
+        e1 ? _pdfFmtMoney(e1.price) : '-',
+        e1 ? _pdfFmtInt(e1.qty) : '-',
+        e2 ? _pdfFmtMoney(e2.price) : '-',
+        e2 ? _pdfFmtInt(e2.qty) : '-'
+      ]);
+    });
+    data.push([
+      '📊 الإجمالي العام (مجموع كل الأعمدة)',
+      _pdfFmtInt(allDates.length) + ' يوم',
+      data1.length > 0 ? _pdfFmtMoney(t1Price / data1.length) : '-',
+      _pdfFmtInt(t1Qty),
+      data2.length > 0 ? _pdfFmtMoney(t2Price / data2.length) : '-',
+      _pdfFmtInt(t2Qty)
+    ]);
+    sheets.push({ name: 'مقارنة الأسعار', data: data });
+
+    var sub = '⚖️ مقارنة ' + c1 + ' و ' + c2 + ' — صنف: ' + fish;
+    if (from || to) sub += ' — من ' + (from || 'البداية') + ' إلى ' + (to || 'اليوم');
+
+    var html = sheetsToHTML(sheets, 'الحاج أحمد الحديدي — مقارنة أسعار', sub);
+    openPrintWindow(html, 'تقرير_مقارنة_الأسعار_' + new Date().toISOString().split('T')[0]);
+    showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء التصدير');
+  }
+};
 
 // ============================================================
 // RESET DATA (تصفير النظام بكلمة سر 666666)
