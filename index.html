@@ -80,6 +80,10 @@
   .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.15); filter: drop-shadow(0 0 8px var(--cyan-glow)); }
   .nav-item .nav-label { font-size: 10px; font-weight: 600; }
 
+  /* Entered invoice card hover effect */
+  .entered-invoice-card:active { transform: scale(0.98); }
+  .entered-invoice-card button:active { transform: scale(0.95); }
+
   .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 12px 90px; scroll-behavior: smooth; }
   .content::-webkit-scrollbar { width: 3px; }
   .content::-webkit-scrollbar-track { background: transparent; }
@@ -1117,6 +1121,39 @@
       </div>
     </div>
 
+    <div class="page" id="page-entered-invoices">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn btn-pdf" onclick="exportAllEnteredInvoicesPDF()" style="box-shadow:0 4px 15px rgba(231,76,60,0.3);background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;">📄 تصدير كامل الفواتير (PDF)</button>
+        <button class="btn btn-whatsapp" onclick="sendAllEnteredInvoicesWhatsApp()" style="box-shadow:0 4px 15px rgba(37,211,102,0.3);">📲 إرسال كامل الفواتير واتساب (PDF)</button>
+      </div>
+
+      <div class="glass-card" style="margin-bottom:14px;background:rgba(0,180,216,0.05);border-color:rgba(0,180,216,0.3)">
+        <div class="section-title" style="color:var(--cyan-glow)">🔍 بحث وتصفية</div>
+        <div class="home-filter-bar">
+          <div class="hf-search-wrap">
+            <span class="hf-search-icon">🔍</span>
+            <input type="text" class="hf-search" id="entered-search"
+              placeholder="ابحث باسم العميل أو رقم الهاتف..."
+              oninput="renderEnteredInvoices()">
+          </div>
+          <input type="date" class="hf-date" id="entered-date-from"
+            title="من تاريخ"
+            onchange="renderEnteredInvoices()"
+            style="color-scheme:dark;width:125px">
+          <input type="date" class="hf-date" id="entered-date-to"
+            title="إلى تاريخ"
+            onchange="renderEnteredInvoices()"
+            style="color-scheme:dark;width:125px">
+          <button class="hf-clear-btn" onclick="clearEnteredFilters()" title="مسح الفلتر">✕ مسح</button>
+        </div>
+        <div id="entered-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px"></div>
+      </div>
+
+      <div id="entered-invoices-list">
+        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد فواتير مدخلة بعد</div></div>
+      </div>
+    </div>
+
     <div class="page" id="page-prices">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
         <button class="btn btn-pdf" onclick="exportPricesPDF()" style="box-shadow:0 4px 15px rgba(231,76,60,0.3);">📄 تصدير تقرير الأسعار (PDF)</button>
@@ -1270,6 +1307,9 @@
     </button>
     <button class="nav-item" onclick="switchPage('prices',this)">
       <span class="nav-icon">💹</span><span class="nav-label">الأسعار</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('entered-invoices',this)">
+      <span class="nav-icon">📋</span><span class="nav-label">الفواتير المدخلة</span>
     </button>
     <button class="nav-item" onclick="switchPage('pricediff',this)">
       <span class="nav-icon">📊</span><span class="nav-label">فروق الأسعار</span>
@@ -1428,6 +1468,7 @@ window.switchPage = function(page, btn) {
   if (page === 'sectors') renderSectors();
   if (page === 'prices') renderPricesPage();
   if (page === 'pricediff') initPriceDiffPage();
+  if (page === 'entered-invoices') { if (typeof renderEnteredInvoices === 'function') renderEnteredInvoices(); }
 };
 
 // ============================================================
@@ -2245,6 +2286,7 @@ function setupListeners() {
   onValue(ref(db, 'invoices'), snap => {
     window.appState.invoices = snap.val() || {};
     updateDashboard(); renderHistory(); renderPricesPage();
+    if (typeof renderEnteredInvoices === 'function') renderEnteredInvoices();
   });
   onValue(ref(db, 'clients'), snap => {
     window.appState.clients = snap.val() || {};
@@ -2753,6 +2795,665 @@ window.showInvoiceDetail = function(id) {
   const inv = window.appState.invoices[id];
   if (!inv) return;
   showInvoicePreview(inv, id);
+};
+
+// ============================================================
+// ★ ENTERED INVOICES PAGE (الفواتير المدخلة) ★
+// ============================================================
+window.renderEnteredInvoices = function() {
+  const searchVal = (document.getElementById('entered-search')?.value || '').toLowerCase().trim();
+  const dateFrom = document.getElementById('entered-date-from')?.value || '';
+  const dateTo = document.getElementById('entered-date-to')?.value || '';
+
+  let invoices = Object.entries(window.appState.invoices).sort((a, b) => {
+    const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
+    const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
+    if (dateB !== dateA) return dateB.localeCompare(dateA);
+    return (b[1].createdAt || 0) - (a[1].createdAt || 0);
+  });
+
+  // Search filter
+  if (searchVal) {
+    invoices = invoices.filter(([, i]) =>
+      (i.clientName || '').toLowerCase().includes(searchVal) ||
+      (i.phone || '').includes(searchVal) ||
+      (i.shopName || '').toLowerCase().includes(searchVal) ||
+      (i.invoiceNumber || '').toLowerCase().includes(searchVal)
+    );
+  }
+
+  // Date range filter
+  if (dateFrom || dateTo) {
+    invoices = invoices.filter(([, i]) => {
+      const d = i.invDateISO || i.date?.split('T')[0] || '';
+      if (!d) return false;
+      if (dateFrom && d < dateFrom) return false;
+      if (dateTo && d > dateTo) return false;
+      return true;
+    });
+  }
+
+  const totalFound = invoices.length;
+  const totalAmount = invoices.reduce((s, [, i]) => s + (i.total || 0), 0);
+  const totalFishAmount = invoices.reduce((s, [, i]) => s + (i.fishTotal || i.gross || i.total || 0), 0);
+
+  // Stats
+  const statsEl = document.getElementById('entered-stats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">📋 عدد الفواتير</div>
+        <div style="font-size:18px;font-weight:900;color:var(--cyan-glow)">${totalFound}</div>
+      </div>
+      <div style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">📦 إجمالي الأصناف</div>
+        <div style="font-size:18px;font-weight:900;color:var(--gold)">${formatNum(totalFishAmount)}</div>
+        <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
+      </div>
+      <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">💰 إجمالي الصافي</div>
+        <div style="font-size:18px;font-weight:900;color:var(--emerald)">${formatNum(totalAmount)}</div>
+        <div style="font-size:9px;color:var(--text-secondary)">ج.م</div>
+      </div>
+    `;
+  }
+
+  const container = document.getElementById('entered-invoices-list');
+  if (totalFound === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${dateFrom || dateTo || searchVal ? '🔍' : '📋'}</div>
+        <div class="empty-text">${dateFrom || dateTo || searchVal ? 'لا توجد فواتير بهذه المعايير' : 'لا توجد فواتير مدخلة بعد'}</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = invoices.map(([id, inv]) => {
+    const fishTotal = inv.fishTotal || inv.gross || inv.total;
+    const expTotal = inv.expTotal || 0;
+    const hasDeductions = expTotal > 0 || (inv.commissionPct || 0) > 0;
+    const invNum = inv.invoiceNumber || generateInvoiceNumber(id);
+    const itemsCount = (inv.items || []).length;
+    const itemsPreview = (inv.items || []).slice(0, 3).map(i => i.fish).join(' • ');
+    const moreItems = itemsCount > 3 ? ` +${itemsCount - 3} أصناف أخرى` : '';
+
+    return `
+      <div class="glass-card entered-invoice-card" style="margin-bottom:10px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(0,180,216,0.25),rgba(21,101,192,0.15));border:2px solid var(--cyan-glow);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👤</div>
+              <div style="min-width:0">
+                <div style="font-size:15px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${inv.clientName}</div>
+                <div style="font-size:11px;color:var(--cyan-glow)">📱 ${inv.phone}</div>
+              </div>
+            </div>
+            ${inv.shopName ? `<div style="font-size:11px;color:var(--text-secondary);margin-bottom:2px">🏪 ${inv.shopName}</div>` : ''}
+            ${inv.sector ? `<div style="font-size:11px;color:var(--emerald);margin-bottom:2px">🏢 ${inv.sector}</div>` : ''}
+          </div>
+          <div style="text-align:left;min-width:90px">
+            <div style="font-size:18px;font-weight:900;color:var(--gold)">${formatNum(inv.total)}</div>
+            <div style="font-size:10px;color:var(--text-secondary)">ج.م صافي</div>
+            ${hasDeductions ? `<div style="font-size:10px;color:var(--danger);margin-top:2px">قبل الخصم: ${formatNum(fishTotal)}</div>` : ''}
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-border)">
+          <span style="font-size:11px;color:var(--text-secondary)">📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}</span>
+          <span style="font-size:10px;color:rgba(0,180,216,0.7);background:rgba(0,180,216,0.08);padding:2px 8px;border-radius:12px;font-weight:700">📋 ${invNum}</span>
+        </div>
+
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.02)">
+          🐟 <span style="color:var(--cyan-glow);font-weight:600">${itemsCount} صنف</span>
+          <span style="margin:0 4px">—</span>
+          <span>${itemsPreview}${moreItems}</span>
+        </div>
+
+        ${(inv.expenses || []).filter(e => e.amount > 0).length > 0 ? `
+        <div style="font-size:10px;color:var(--danger);margin-bottom:8px;padding:5px 10px;border-radius:8px;background:rgba(255,71,87,0.05);border:1px solid rgba(255,71,87,0.15)">
+          ⬇️ مصاريف مخصومة: ${inv.expenses.filter(e => e.amount > 0).map(e => e.desc + ' (' + formatNum(e.amount) + ')').join(' • ')} = ${formatNum(expTotal)} ج.م
+        </div>` : ''}
+
+        ${(inv.commissionPct || 0) > 0 ? `
+        <div style="font-size:10px;color:var(--warning);margin-bottom:8px;padding:5px 10px;border-radius:8px;background:rgba(255,165,0,0.05);border:1px solid rgba(255,165,0,0.15)">
+          🤝 عمولة ${inv.commissionPct}% = ${formatNum(inv.commissionAmt || 0)} ج.م
+        </div>` : ''}
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
+          <button onclick="showInvoiceDetail('${id}')" style="padding:8px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(0,180,216,0.1);color:var(--cyan-glow);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:4px">👁️ عرض</button>
+          <button onclick="exportInvoicePDF('${id}')" style="padding:8px;border-radius:10px;border:1px solid rgba(231,76,60,0.4);background:rgba(231,76,60,0.1);color:#e74c3c;font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:4px">📄 PDF</button>
+          <button onclick="sendInvoicePDFWhatsApp('${id}')" style="padding:8px;border-radius:10px;border:1px solid rgba(37,211,102,0.4);background:rgba(37,211,102,0.1);color:#25d366;font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:4px">📲 واتساب</button>
+          <button onclick="editInvoiceModal('${id}')" style="padding:8px;border-radius:10px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.1);color:var(--warning);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:4px">✏️ تعديل</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+window.clearEnteredFilters = function() {
+  const searchEl = document.getElementById('entered-search');
+  const fromEl = document.getElementById('entered-date-from');
+  const toEl = document.getElementById('entered-date-to');
+  if (searchEl) searchEl.value = '';
+  if (fromEl) fromEl.value = '';
+  if (toEl) toEl.value = '';
+  renderEnteredInvoices();
+};
+
+// ============================================================
+// ★ EXPORT ALL ENTERED INVOICES AS PDF ★
+// ============================================================
+window.exportAllEnteredInvoicesPDF = function() {
+  if (!window.appState) return showToast('❌ لا توجد بيانات');
+  showToast('⏳ جاري تجهيز كامل الفواتير المدخلة...');
+
+  try {
+    const searchVal = (document.getElementById('entered-search')?.value || '').toLowerCase().trim();
+    const dateFrom = document.getElementById('entered-date-from')?.value || '';
+    const dateTo = document.getElementById('entered-date-to')?.value || '';
+
+    let invoices = Object.entries(window.appState.invoices).sort((a, b) => {
+      const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
+      const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
+      if (dateB !== dateA) return dateB.localeCompare(dateA);
+      return (b[1].createdAt || 0) - (a[1].createdAt || 0);
+    });
+
+    if (searchVal) {
+      invoices = invoices.filter(([, i]) =>
+        (i.clientName || '').toLowerCase().includes(searchVal) ||
+        (i.phone || '').includes(searchVal) ||
+        (i.shopName || '').toLowerCase().includes(searchVal) ||
+        (i.invoiceNumber || '').toLowerCase().includes(searchVal)
+      );
+    }
+
+    if (dateFrom || dateTo) {
+      invoices = invoices.filter(([, i]) => {
+        const d = i.invDateISO || i.date?.split('T')[0] || '';
+        if (!d) return false;
+        if (dateFrom && d < dateFrom) return false;
+        if (dateTo && d > dateTo) return false;
+        return true;
+      });
+    }
+
+    if (invoices.length === 0) return showToast('❌ لا توجد فواتير للتصدير');
+
+    // Build full PDF with all invoices
+    let allInvoicesHTML = '';
+    let totalNet = 0;
+    let totalFish = 0;
+    let totalDeduct = 0;
+
+    invoices.forEach(([invoiceId, inv], idx) => {
+      const invNum = inv.invoiceNumber || generateInvoiceNumber(invoiceId);
+      const fishTotal = inv.fishTotal || inv.gross || inv.total;
+      const expTotal = inv.expTotal || 0;
+      const hasComm = (inv.commissionPct || 0) > 0;
+      const hasExp = expTotal > 0;
+      totalNet += (inv.total || 0);
+      totalFish += fishTotal;
+      totalDeduct += expTotal + (inv.commissionAmt || 0);
+
+      const itemsRows = (inv.items || []).map((item, iIdx) => {
+        const unit = item.unit || 'kg';
+        const uDef = UNITS[unit] || UNITS.kg;
+        const qty = item.qty !== undefined ? item.qty : item.kg;
+        const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+        const bg = iIdx % 2 === 0 ? '#f0f7ff' : '#ffffff';
+        return `<tr style="background:${bg}">
+          <td style="text-align:right;padding:6px 8px;border-bottom:1px solid #e0e8f0">${item.fish}</td>
+          <td style="text-align:center;padding:6px 5px;border-bottom:1px solid #e0e8f0">${qty} ${uDef.label}${unit !== 'kg' ? '<br><small style="color:#e67e00;font-size:9px">' + (item.kg||0).toFixed(unit==='wqa'?2:0) + ' كيلو</small>' : ''}</td>
+          <td style="text-align:center;padding:6px 5px;border-bottom:1px solid #e0e8f0">${prc} ج.م</td>
+          <td style="text-align:center;padding:6px 5px;border-bottom:1px solid #e0e8f0;font-weight:700;color:#1a5276">${formatNum(item.subtotal)} ج.م</td>
+        </tr>`;
+      }).join('');
+
+      const expRows = (inv.expenses || []).filter(e => e.amount > 0).map(e => `
+        <tr style="background:#fff0f0">
+          <td style="text-align:right;padding:6px 8px;border-bottom:1px solid #ffc0c0;color:#c0392b">⬇️ خصم: ${e.desc}</td>
+          <td colspan="2" style="text-align:center;padding:6px 5px;border-bottom:1px solid #ffc0c0;color:#c0392b;font-size:10px">مصروف</td>
+          <td style="text-align:center;padding:6px 5px;border-bottom:1px solid #ffc0c0;font-weight:700;color:#c0392b">- ${formatNum(e.amount)} ج.م</td>
+        </tr>
+      `).join('');
+
+      allInvoicesHTML += `
+        <div style="page-break-inside:avoid;margin-bottom:20px;border:2px solid #1a3a6b;border-radius:12px;overflow:hidden">
+          <div style="background:#1a3a6b;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:16px;font-weight:900;color:#ffd700">🐟 فاتورة #${idx + 1}</div>
+              <div style="font-size:11px;color:#90caf9">📋 ${invNum}</div>
+            </div>
+            <div style="text-align:left">
+              <div style="font-size:11px;color:#cce5ff">📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}</div>
+            </div>
+          </div>
+          <div style="padding:12px 18px;background:#e8f4fd;border-bottom:1px solid #d0e8f7">
+            <div style="display:flex;gap:20px;flex-wrap:wrap">
+              <div style="font-size:12px;color:#2c3e50"><b>👤 العميل:</b> ${inv.clientName}</div>
+              <div style="font-size:12px;color:#2c3e50"><b>📱 الهاتف:</b> ${inv.phone}</div>
+              ${inv.shopName ? `<div style="font-size:12px;color:#2c3e50"><b>🏪 المؤسسة:</b> ${inv.shopName}</div>` : ''}
+              ${inv.sector ? `<div style="font-size:12px;color:#2c3e50"><b>🏢 القطاع:</b> ${inv.sector}</div>` : ''}
+            </div>
+          </div>
+          <div style="padding:8px 18px">
+            <table style="width:100%;border-collapse:collapse">
+              <thead><tr style="background:#1a3a6b"><th style="color:#fff;padding:7px 6px;font-size:11px">البيان</th><th style="color:#fff;padding:7px 6px;font-size:11px">الكمية</th><th style="color:#fff;padding:7px 6px;font-size:11px">السعر</th><th style="color:#fff;padding:7px 6px;font-size:11px">الإجمالي</th></tr></thead>
+              <tbody>${itemsRows}${expRows}</tbody>
+            </table>
+          </div>
+          <div style="padding:8px 18px;border-top:1px solid #e0e8f0">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:11px;color:#5d6d7e">📦 إجمالي الأصناف</span>
+              <span style="font-size:12px;font-weight:700;color:#1a5276">${formatNum(fishTotal)} ج.م</span>
+            </div>
+            ${hasExp ? `<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:#c0392b">⬇️ مصاريف مخصومة</span><span style="font-size:12px;font-weight:700;color:#c0392b">- ${formatNum(expTotal)} ج.م</span></div>` : ''}
+            ${hasComm ? `<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:#c0392b">🤝 عمولة (${inv.commissionPct}%)</span><span style="font-size:12px;font-weight:700;color:#c0392b">- ${formatNum(inv.commissionAmt||0)} ج.م</span></div>` : ''}
+            <div style="display:flex;justify-content:space-between;padding-top:6px;border-top:2px solid #1a3a6b;margin-top:6px">
+              <span style="font-size:13px;font-weight:900;color:#1a3a6b">💰 المتبقى على التاجر</span>
+              <span style="font-size:18px;font-weight:900;color:#ffd700;background:#1a3a6b;padding:2px 14px;border-radius:6px">${formatNum(inv.total)} ج.م</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    // Grand totals footer
+    const grandTotalsHTML = `
+      <div style="background:#1a3a6b;border-radius:12px;padding:18px 24px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:#90caf9;margin-bottom:4px">📋 عدد الفواتير</div>
+          <div style="font-size:20px;font-weight:900;color:#fff">${invoices.length}</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:#90caf9;margin-bottom:4px">📦 إجمالي الأصناف</div>
+          <div style="font-size:20px;font-weight:900;color:#ffd700">${formatNum(totalFish)} ج.م</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:#90caf9;margin-bottom:4px">⬇️ إجمالي الخصومات</div>
+          <div style="font-size:20px;font-weight:900;color:#ff6b6b">${formatNum(totalDeduct)} ج.م</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:#90caf9;margin-bottom:4px">💰 إجمالي الصافي</div>
+          <div style="font-size:24px;font-weight:900;color:#ffd700">${formatNum(totalNet)} ج.م</div>
+        </div>
+      </div>
+    `;
+
+    const filterDesc = [];
+    if (searchVal) filterDesc.push('بحث: ' + searchVal);
+    if (dateFrom) filterDesc.push('من ' + isoToArabicDate(dateFrom));
+    if (dateTo) filterDesc.push('إلى ' + isoToArabicDate(dateTo));
+
+    const html = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Cairo', 'Arial', sans-serif; background: #fff; color: #1a1a2e; direction: rtl; font-size: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { max-width: 794px; margin: 0 auto; background: #fff; padding: 0 0 20px; }
+  .header { background: #1a3a6b; padding: 22px 28px 18px; text-align: center; }
+  .header-fish { font-size: 32px; margin-bottom: 4px; }
+  .shop-name { font-size: 24px; font-weight: 900; color: #ffd700; margin-bottom: 3px; }
+  .shop-sub { font-size: 12px; color: #90caf9; margin-bottom: 10px; }
+  .doc-title { font-size: 15px; font-weight: 700; color: #fff; background: rgba(255,255,255,0.15); display: inline-block; padding: 5px 20px; border-radius: 20px; margin-top: 6px; }
+  .doc-date { font-size: 10px; color: #cce5ff; margin-top: 5px; }
+  .footer { text-align: center; padding: 14px 20px; border-top: 2px solid #e0e8f0; margin: 20px 20px 0; }
+  .footer-main { font-size: 11px; color: #5d6d7e; }
+  @media print { @page { margin: 10mm; size: A4; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="header-fish">🐟</div>
+    <div class="shop-name">الحاج أحمد الحديدي</div>
+    <div class="shop-sub">تجارة الأسماك — كامل الفواتير المدخلة</div>
+    <div class="doc-title">📋 كامل الفواتير المدخلة (${invoices.length} فاتورة)</div>
+    <div class="doc-date">📅 تاريخ التصدير: ${new Date().toLocaleDateString('en-GB')} ${filterDesc.length > 0 ? ' | 🔍 ' + filterDesc.join(' | ') : ''}</div>
+  </div>
+  ${allInvoicesHTML}
+  ${grandTotalsHTML}
+  <div class="footer">
+    <div class="footer-main">شكراً لتعاملكم معنا 🙏 — الحاج أحمد الحديدي لتجارة الأسماك</div>
+  </div>
+</div>
+</body>
+</html>`;
+
+    const fileName = `كامل_الفواتير_المدخلة_${invoices.length}_فاتورة_${getTodayISO().replace(/-/g, '')}`;
+    openPrintWindow(html, fileName);
+    showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء تصدير الفواتير');
+  }
+};
+
+// ============================================================
+// ★ SEND INVOICE PDF VIA WHATSAPP ★
+// ============================================================
+window.sendInvoicePDFWhatsApp = async function(invoiceId) {
+  const inv = window.appState.invoices[invoiceId];
+  if (!inv) return showToast('❌ الفاتورة غير موجودة');
+  showToast('⏳ جاري تجهيز الفاتورة للإرسال...');
+
+  try {
+    const pdfHTML = buildInvoicePDFHTML(inv, invoiceId);
+    const invNum = inv.invoiceNumber || generateInvoiceNumber(invoiceId);
+    const clientName = (inv.clientName || 'عميل').replace(/\s+/g, '_');
+    const fileName = `فاتورة_${clientName}_${invNum}.pdf`;
+
+    // Create a temporary container for PDF generation
+    const tempDiv = document.createElement('div');
+    tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:794px;';
+    tempDiv.innerHTML = pdfHTML;
+    document.body.appendChild(tempDiv);
+
+    const opt = {
+      margin: 0,
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const pdfBlob = await html2pdf().from(tempDiv.firstElementChild || tempDiv).set(opt).outputPdf('blob');
+    document.body.removeChild(tempDiv);
+
+    // Build WhatsApp text message
+    const waText = buildInvoiceText(inv);
+    const waNum = '2' + inv.phone;
+
+    // Try Web Share API first (works on mobile for sharing files)
+    if (navigator.share && navigator.canShare) {
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      const shareData = {
+        text: waText,
+        files: [file]
+      };
+      if (navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+          showToast('✅ تم فتح مشاركة الفاتورة');
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') {
+            showToast('ℹ️ تم إلغاء المشاركة');
+            return;
+          }
+        }
+      }
+    }
+
+    // Fallback: Download PDF + Open WhatsApp with text
+    const url = URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+    // Open WhatsApp with the invoice text
+    setTimeout(() => {
+      window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(waText)}`, '_blank');
+      showToast('📲 تم تحميل PDF وفتح واتساب — أرفق الملف من التنزيلات');
+    }, 800);
+
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء تجهيز الفاتورة');
+  }
+};
+
+// ============================================================
+// ★ SEND ALL ENTERED INVOICES PDF VIA WHATSAPP ★
+// ============================================================
+window.sendAllEnteredInvoicesWhatsApp = async function() {
+  if (!window.appState) return showToast('❌ لا توجد بيانات');
+  showToast('⏳ جاري تجهيز كامل الفواتير للإرسال...');
+
+  try {
+    const searchVal = (document.getElementById('entered-search')?.value || '').toLowerCase().trim();
+    const dateFrom = document.getElementById('entered-date-from')?.value || '';
+    const dateTo = document.getElementById('entered-date-to')?.value || '';
+
+    let invoices = Object.entries(window.appState.invoices).sort((a, b) => {
+      const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
+      const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
+      if (dateB !== dateA) return dateB.localeCompare(dateA);
+      return (b[1].createdAt || 0) - (a[1].createdAt || 0);
+    });
+
+    if (searchVal) {
+      invoices = invoices.filter(([, i]) =>
+        (i.clientName || '').toLowerCase().includes(searchVal) ||
+        (i.phone || '').includes(searchVal) ||
+        (i.shopName || '').toLowerCase().includes(searchVal) ||
+        (i.invoiceNumber || '').toLowerCase().includes(searchVal)
+      );
+    }
+
+    if (dateFrom || dateTo) {
+      invoices = invoices.filter(([, i]) => {
+        const d = i.invDateISO || i.date?.split('T')[0] || '';
+        if (!d) return false;
+        if (dateFrom && d < dateFrom) return false;
+        if (dateTo && d > dateTo) return false;
+        return true;
+      });
+    }
+
+    if (invoices.length === 0) return showToast('❌ لا توجد فواتير للإرسال');
+
+    // Build PDF HTML (reuse the same structure as exportAllEnteredInvoicesPDF)
+    let allInvoicesHTML = '';
+    let totalNet = 0;
+    let totalFish = 0;
+    let totalDeduct = 0;
+
+    invoices.forEach(([invoiceId, inv], idx) => {
+      const invNum = inv.invoiceNumber || generateInvoiceNumber(invoiceId);
+      const fishTotal = inv.fishTotal || inv.gross || inv.total;
+      const expTotal = inv.expTotal || 0;
+      const hasComm = (inv.commissionPct || 0) > 0;
+      const hasExp = expTotal > 0;
+      totalNet += (inv.total || 0);
+      totalFish += fishTotal;
+      totalDeduct += expTotal + (inv.commissionAmt || 0);
+
+      const itemsRows = (inv.items || []).map((item, iIdx) => {
+        const unit = item.unit || 'kg';
+        const uDef = UNITS[unit] || UNITS.kg;
+        const qty = item.qty !== undefined ? item.qty : item.kg;
+        const prc = item.pricePerUnit !== undefined ? item.pricePerUnit : item.pricePerKg;
+        const bg = iIdx % 2 === 0 ? '#f0f7ff' : '#ffffff';
+        return `<tr style="background:${bg}">
+          <td style="text-align:right;padding:6px 8px;border-bottom:1px solid #e0e8f0">${item.fish}</td>
+          <td style="text-align:center;padding:6px 5px;border-bottom:1px solid #e0e8f0">${qty} ${uDef.label}${unit !== 'kg' ? '<br><small style="color:#e67e00;font-size:9px">' + (item.kg||0).toFixed(unit==='wqa'?2:0) + ' كيلو</small>' : ''}</td>
+          <td style="text-align:center;padding:6px 5px;border-bottom:1px solid #e0e8f0">${prc} ج.م</td>
+          <td style="text-align:center;padding:6px 5px;border-bottom:1px solid #e0e8f0;font-weight:700;color:#1a5276">${formatNum(item.subtotal)} ج.م</td>
+        </tr>`;
+      }).join('');
+
+      const expRows = (inv.expenses || []).filter(e => e.amount > 0).map(e => `
+        <tr style="background:#fff0f0">
+          <td style="text-align:right;padding:6px 8px;border-bottom:1px solid #ffc0c0;color:#c0392b">⬇️ خصم: ${e.desc}</td>
+          <td colspan="2" style="text-align:center;padding:6px 5px;border-bottom:1px solid #ffc0c0;color:#c0392b;font-size:10px">مصروف</td>
+          <td style="text-align:center;padding:6px 5px;border-bottom:1px solid #ffc0c0;font-weight:700;color:#c0392b">- ${formatNum(e.amount)} ج.م</td>
+        </tr>
+      `).join('');
+
+      allInvoicesHTML += `
+        <div style="page-break-inside:avoid;margin-bottom:20px;border:2px solid #1a3a6b;border-radius:12px;overflow:hidden">
+          <div style="background:#1a3a6b;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:16px;font-weight:900;color:#ffd700">🐟 فاتورة #${idx + 1}</div>
+              <div style="font-size:11px;color:#90caf9">📋 ${invNum}</div>
+            </div>
+            <div style="text-align:left">
+              <div style="font-size:11px;color:#cce5ff">📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)}</div>
+            </div>
+          </div>
+          <div style="padding:12px 18px;background:#e8f4fd;border-bottom:1px solid #d0e8f7">
+            <div style="display:flex;gap:20px;flex-wrap:wrap">
+              <div style="font-size:12px;color:#2c3e50"><b>👤 العميل:</b> ${inv.clientName}</div>
+              <div style="font-size:12px;color:#2c3e50"><b>📱 الهاتف:</b> ${inv.phone}</div>
+              ${inv.shopName ? `<div style="font-size:12px;color:#2c3e50"><b>🏪 المؤسسة:</b> ${inv.shopName}</div>` : ''}
+              ${inv.sector ? `<div style="font-size:12px;color:#2c3e50"><b>🏢 القطاع:</b> ${inv.sector}</div>` : ''}
+            </div>
+          </div>
+          <div style="padding:8px 18px">
+            <table style="width:100%;border-collapse:collapse">
+              <thead><tr style="background:#1a3a6b"><th style="color:#fff;padding:7px 6px;font-size:11px">البيان</th><th style="color:#fff;padding:7px 6px;font-size:11px">الكمية</th><th style="color:#fff;padding:7px 6px;font-size:11px">السعر</th><th style="color:#fff;padding:7px 6px;font-size:11px">الإجمالي</th></tr></thead>
+              <tbody>${itemsRows}${expRows}</tbody>
+            </table>
+          </div>
+          <div style="padding:8px 18px;border-top:1px solid #e0e8f0">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:11px;color:#5d6d7e">📦 إجمالي الأصناف</span>
+              <span style="font-size:12px;font-weight:700;color:#1a5276">${formatNum(fishTotal)} ج.م</span>
+            </div>
+            ${hasExp ? `<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:#c0392b">⬇️ مصاريف مخصومة</span><span style="font-size:12px;font-weight:700;color:#c0392b">- ${formatNum(expTotal)} ج.م</span></div>` : ''}
+            ${hasComm ? `<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:#c0392b">🤝 عمولة (${inv.commissionPct}%)</span><span style="font-size:12px;font-weight:700;color:#c0392b">- ${formatNum(inv.commissionAmt||0)} ج.م</span></div>` : ''}
+            <div style="display:flex;justify-content:space-between;padding-top:6px;border-top:2px solid #1a3a6b;margin-top:6px">
+              <span style="font-size:13px;font-weight:900;color:#1a3a6b">💰 المتبقى على التاجر</span>
+              <span style="font-size:18px;font-weight:900;color:#ffd700;background:#1a3a6b;padding:2px 14px;border-radius:6px">${formatNum(inv.total)} ج.م</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    const grandTotalsHTML = `
+      <div style="background:#1a3a6b;border-radius:12px;padding:18px 24px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:#90caf9;margin-bottom:4px">📋 عدد الفواتير</div>
+          <div style="font-size:20px;font-weight:900;color:#fff">${invoices.length}</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:#90caf9;margin-bottom:4px">📦 إجمالي الأصناف</div>
+          <div style="font-size:20px;font-weight:900;color:#ffd700">${formatNum(totalFish)} ج.م</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:#90caf9;margin-bottom:4px">⬇️ إجمالي الخصومات</div>
+          <div style="font-size:20px;font-weight:900;color:#ff6b6b">${formatNum(totalDeduct)} ج.م</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:#90caf9;margin-bottom:4px">💰 إجمالي الصافي</div>
+          <div style="font-size:24px;font-weight:900;color:#ffd700">${formatNum(totalNet)} ج.م</div>
+        </div>
+      </div>
+    `;
+
+    const fullHTML = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Cairo', 'Arial', sans-serif; background: #fff; color: #1a1a2e; direction: rtl; font-size: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { max-width: 794px; margin: 0 auto; background: #fff; padding: 0 0 20px; }
+  .header { background: #1a3a6b; padding: 22px 28px 18px; text-align: center; }
+  .header-fish { font-size: 32px; margin-bottom: 4px; }
+  .shop-name { font-size: 24px; font-weight: 900; color: #ffd700; margin-bottom: 3px; }
+  .shop-sub { font-size: 12px; color: #90caf9; margin-bottom: 10px; }
+  .doc-title { font-size: 15px; font-weight: 700; color: #fff; background: rgba(255,255,255,0.15); display: inline-block; padding: 5px 20px; border-radius: 20px; margin-top: 6px; }
+  .doc-date { font-size: 10px; color: #cce5ff; margin-top: 5px; }
+  .footer { text-align: center; padding: 14px 20px; border-top: 2px solid #e0e8f0; margin: 20px 20px 0; }
+  .footer-main { font-size: 11px; color: #5d6d7e; }
+  @media print { @page { margin: 10mm; size: A4; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="header-fish">🐟</div>
+    <div class="shop-name">الحاج أحمد الحديدي</div>
+    <div class="shop-sub">تجارة الأسماك — كامل الفواتير المدخلة</div>
+    <div class="doc-title">📋 كامل الفواتير المدخلة (${invoices.length} فاتورة)</div>
+    <div class="doc-date">📅 تاريخ التصدير: ${new Date().toLocaleDateString('en-GB')}</div>
+  </div>
+  ${allInvoicesHTML}
+  ${grandTotalsHTML}
+  <div class="footer">
+    <div class="footer-main">شكراً لتعاملكم معنا 🙏 — الحاج أحمد الحديدي لتجارة الأسماك</div>
+  </div>
+</div>
+</body>
+</html>`;
+
+    const fileName = `كامل_الفواتير_${invoices.length}_فاتورة.pdf`;
+
+    // Create temp container for PDF generation
+    const tempDiv = document.createElement('div');
+    tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:794px;';
+    tempDiv.innerHTML = fullHTML;
+    document.body.appendChild(tempDiv);
+
+    const opt = {
+      margin: 0,
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const pdfBlob = await html2pdf().from(tempDiv.firstElementChild || tempDiv).set(opt).outputPdf('blob');
+    document.body.removeChild(tempDiv);
+
+    // Build summary text for WhatsApp
+    let waSummary = `🐟 *كامل الفواتير المدخلة — الحاج أحمد الحديدي*\n━━━━━━━━━━━━━━━━━━\n📋 عدد الفواتير: *${invoices.length}*\n📦 إجمالي الأصناف: *${formatNum(totalFish)} ج.م*\n⬇️ إجمالي الخصومات: *${formatNum(totalDeduct)} ج.م*\n💰 إجمالي الصافي: *${formatNum(totalNet)} ج.م*\n━━━━━━━━━━━━━━━━━━\n`;
+    waSummary += `\n📋 *تفاصيل الفواتير:*\n`;
+    invoices.forEach(([, inv], idx) => {
+      const invNum = inv.invoiceNumber || generateInvoiceNumber('—');
+      waSummary += `\n${idx + 1}. 👤 ${inv.clientName} | 📅 ${getDisplayDate(inv.invDateISO || inv.date, inv.dateStr)} | 💰 ${formatNum(inv.total)} ج.م | 📋 ${invNum}`;
+    });
+    waSummary += `\n━━━━━━━━━━━━━━━━━━\n📄 ملف PDF مرفق بالتفاصيل الكاملة\nشكراً لتعاملكم معنا 🙏`;
+
+    // Try Web Share API first
+    if (navigator.share && navigator.canShare) {
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      const shareData = {
+        text: waSummary,
+        files: [file]
+      };
+      if (navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+          showToast('✅ تم فتح مشاركة الفواتير');
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') {
+            showToast('ℹ️ تم إلغاء المشاركة');
+            return;
+          }
+        }
+      }
+    }
+
+    // Fallback: Download PDF + Open WhatsApp with text
+    const url = URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+    // Open WhatsApp with summary text
+    setTimeout(() => {
+      window.open(`https://wa.me/?text=${encodeURIComponent(waSummary)}`, '_blank');
+      showToast('📲 تم تحميل PDF وفتح واتساب — أرفق الملف من التنزيلات');
+    }, 800);
+
+  } catch (e) {
+    console.error(e);
+    showToast('❌ حدث خطأ أثناء تجهيز الفواتير');
+  }
 };
 
 // ============================================================
