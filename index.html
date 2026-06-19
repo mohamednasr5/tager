@@ -916,7 +916,7 @@
       <div class="glass-card" id="admin-tools-card" style="display:none; border: 1px solid rgba(255,215,0,0.3); background: rgba(255,215,0,0.05);">
         <div class="section-title" style="color: var(--gold);">⚙️ لوحة الإدارة (أدوات النظام)</div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button class="btn btn-success" onclick="exportAllDataToExcel()" style="box-shadow: 0 4px 15px rgba(0,200,150,0.3);">📊 تصدير جميع البيانات (Excel)</button>
+          <button class="btn btn-pdf" onclick="exportAllDataToPDF()" style="box-shadow: 0 4px 15px rgba(231,76,60,0.3);">📄 تصدير جميع البيانات (PDF)</button>
           <button class="btn btn-danger" onclick="showResetDataModal()" style="box-shadow: 0 4px 15px rgba(255,71,87,0.3);">🗑️ تصفير كامل النظام</button>
         </div>
       </div>
@@ -4315,148 +4315,196 @@ window.confirmDeleteClient = function(clientKey, clientName) {
 })();
 
 // ============================================================
-// EXCEL EXPORT (NEW FUNCTION)
+// PDF EXPORT — ALL DATA (بدلاً من الإكسيل)
+// يصدّر كل البيانات (العملاء، الفواتير، الأصناف، المدفوعات)
+// في ملف PDF واحد عبر نافذة الطباعة (نفس آلية فروق الأسعار)
 // ============================================================
-window.exportAllDataToExcel = async function() {
+window.exportAllDataToPDF = async function() {
   if (window.currentUser?.role !== 'admin') return showToast('🔒 ليس لديك صلاحية لهذا الإجراء');
-  
-  showToast('⏳ جاري تجهيز وتحميل ملف الإكسيل...');
-  
+
+  showToast('⏳ جاري تجهيز ملف PDF...');
+
   try {
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'تطبيق الحديدي للأسماك';
-    workbook.created = new Date();
+    // --- جمع البيانات ---
+    const clientsArr = Object.values(window.appState.clients || {});
+    const invoicesArr = Object.entries(window.appState.invoices || {});
 
-    const styleSheet = (worksheet, headers) => {
-      worksheet.columns = headers;
-      const headerRow = worksheet.getRow(1);
-      headerRow.eachCell((cell) => {
-        cell.fill = { type: 'pattern', pattern:'solid', fgColor:{argb:'FF1A3A6B'} };
-        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 12, name: 'Cairo' };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-      });
-      worksheet.views = [ { rightToLeft: true } ]; 
-    };
+    let paymentsArr = [];
+    try {
+      const snap = await get(ref(db, 'payments'));
+      const all = snap.val() || {};
+      paymentsArr = Object.values(all);
+    } catch (e) { console.error(e); }
 
-    const addBordersAndStyle = (worksheet) => {
-      worksheet.eachRow((row, rowNum) => {
-        if (rowNum > 1) {
-          row.eachCell((cell) => {
-            cell.font = { name: 'Cairo', size: 11 };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-          });
-        }
-      });
-    };
+    if (!clientsArr.length && !invoicesArr.length && !paymentsArr.length) {
+      return showToast('❌ لا توجد بيانات للتصدير');
+    }
 
-    // Sheet 1: Clients
-    const wsClients = workbook.addWorksheet('العملاء');
-    styleSheet(wsClients, [
-      { header: 'اسم العميل', key: 'name', width: 25 },
-      { header: 'رقم الهاتف', key: 'phone', width: 15 },
-      { header: 'المؤسسة', key: 'shop', width: 20 },
-      { header: 'إجمالي المشتريات', key: 'purchases', width: 18 },
-      { header: 'المدفوع', key: 'paid', width: 15 },
-      { header: 'الديون المتبقية', key: 'debt', width: 18 }
-    ]);
-    Object.values(window.appState.clients || {}).forEach(c => {
-      wsClients.addRow({
-        name: c.name, phone: c.phone, shop: c.shopName || '-',
-        purchases: c.totalPurchases || 0, paid: c.totalPaid || 0, debt: c.totalDebt || 0
-      });
-    });
-    addBordersAndStyle(wsClients);
+    // --- حساب الإجماليات للرأس ---
+    const totalPurchases = clientsArr.reduce((s, c) => s + (c.totalPurchases || 0), 0);
+    const totalPaid      = clientsArr.reduce((s, c) => s + (c.totalPaid || 0), 0);
+    const totalDebt      = clientsArr.reduce((s, c) => s + (c.totalDebt || 0), 0);
+    const totalInvoices  = invoicesArr.reduce((s, [, inv]) => s + (inv.total || 0), 0);
+    const totalPayments  = paymentsArr.reduce((s, p) => s + (p.amount || 0), 0);
 
-    // Sheet 2: Invoices
-    const wsInvoices = workbook.addWorksheet('الفواتير');
-    styleSheet(wsInvoices, [
-      { header: 'رقم الفاتورة', key: 'invNum', width: 15 },
-      { header: 'التاريخ', key: 'date', width: 15 },
-      { header: 'العميل', key: 'client', width: 25 },
-      { header: 'القطاع', key: 'sector', width: 15 },
-      { header: 'إجمالي الأصناف', key: 'fishTotal', width: 15 },
-      { header: 'المصاريف المخصومة', key: 'exp', width: 18 },
-      { header: 'العمولة المخصومة', key: 'comm', width: 18 },
-      { header: 'الصافي (المتبقي)', key: 'net', width: 18 }
-    ]);
-    Object.entries(window.appState.invoices || {}).forEach(([id, inv]) => {
-      wsInvoices.addRow({
-        invNum: inv.invoiceNumber || generateInvoiceNumber(id),
-        date: inv.dateStr || getDisplayDate(inv.invDateISO || inv.date),
-        client: inv.clientName,
-        sector: inv.sector || '-',
-        fishTotal: inv.fishTotal || inv.gross || 0,
-        exp: inv.expTotal || 0,
-        comm: inv.commissionAmt || 0,
-        net: inv.total || 0
-      });
-    });
-    addBordersAndStyle(wsInvoices);
+    // --- أدوات مساعدة ---
+    const esc = (v) => String(v == null ? '' : v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
 
-    // Sheet 3: Sold Items
-    const wsItems = workbook.addWorksheet('الأصناف المباعة');
-    styleSheet(wsItems, [
-      { header: 'رقم الفاتورة', key: 'invNum', width: 15 },
-      { header: 'التاريخ', key: 'date', width: 15 },
-      { header: 'العميل', key: 'client', width: 25 },
-      { header: 'الصنف', key: 'fish', width: 20 },
-      { header: 'الكمية (وحدة)', key: 'qty', width: 15 },
-      { header: 'الكيلو', key: 'kg', width: 12 },
-      { header: 'السعر', key: 'price', width: 12 },
-      { header: 'الإجمالي', key: 'subtotal', width: 15 }
-    ]);
-    Object.entries(window.appState.invoices || {}).forEach(([id, inv]) => {
+    // --- 1) جدول العملاء ---
+    const clientsRows = clientsArr.length ? clientsArr.map((c, i) => `
+      <tr style="background:${i % 2 === 0 ? '#f0f7ff' : '#ffffff'}">
+        <td style="text-align:center;padding:7px;border:1px solid #ddd">${i + 1}</td>
+        <td style="text-align:right;padding:7px;border:1px solid #ddd;font-weight:700">${esc(c.name || '-')}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd" dir="ltr">${esc(c.phone || '-')}</td>
+        <td style="text-align:right;padding:7px;border:1px solid #ddd">${esc(c.shopName || '-')}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;font-weight:700;color:#1565c0">${formatNum(c.totalPurchases || 0)}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;color:#27ae60;font-weight:700">${formatNum(c.totalPaid || 0)}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;color:${(c.totalDebt || 0) > 0 ? '#e74c3c' : '#888'};font-weight:700">${formatNum(c.totalDebt || 0)}</td>
+      </tr>`).join('') : `
+      <tr><td colspan="7" style="text-align:center;padding:14px;border:1px solid #ddd;color:#999">لا يوجد عملاء</td></tr>`;
+
+    // --- 2) جدول الفواتير ---
+    const invoicesRows = invoicesArr.length ? invoicesArr.map(([id, inv], i) => {
+      const invNum = inv.invoiceNumber || generateInvoiceNumber(id);
+      const dateStr = inv.dateStr || getDisplayDate(inv.invDateISO || inv.date);
+      return `
+      <tr style="background:${i % 2 === 0 ? '#f0f7ff' : '#ffffff'}">
+        <td style="text-align:center;padding:7px;border:1px solid #ddd">${i + 1}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;font-weight:700">${esc(invNum)}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd">${esc(dateStr)}</td>
+        <td style="text-align:right;padding:7px;border:1px solid #ddd;font-weight:700">${esc(inv.clientName || '-')}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd">${esc(inv.sector || '-')}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;font-weight:700;color:#1565c0">${formatNum(inv.fishTotal || inv.gross || 0)}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;color:#e67e22">${formatNum(inv.expTotal || 0)}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;color:#e67e22">${formatNum(inv.commissionAmt || 0)}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;color:#27ae60;font-weight:900">${formatNum(inv.total || 0)}</td>
+      </tr>`;
+    }).join('') : `
+      <tr><td colspan="9" style="text-align:center;padding:14px;border:1px solid #ddd;color:#999">لا توجد فواتير</td></tr>`;
+
+    // --- 3) جدول الأصناف المباعة ---
+    const itemsRowsArr = [];
+    invoicesArr.forEach(([id, inv]) => {
       const invNum = inv.invoiceNumber || generateInvoiceNumber(id);
       const dateStr = inv.dateStr || getDisplayDate(inv.invDateISO || inv.date);
       (inv.items || []).forEach(item => {
-        wsItems.addRow({
-          invNum, date: dateStr, client: inv.clientName,
-          fish: item.fish,
-          qty: `${item.qty || item.kg} ${item.unitLabel || 'كيلو'}`,
-          kg: item.kg || 0,
-          price: item.pricePerUnit || item.pricePerKg || 0,
-          subtotal: item.subtotal || 0
-        });
+        itemsRowsArr.push({ invNum, dateStr, client: inv.clientName, item });
       });
     });
-    addBordersAndStyle(wsItems);
+    const itemsRows = itemsRowsArr.length ? itemsRowsArr.map((r, i) => `
+      <tr style="background:${i % 2 === 0 ? '#f0f7ff' : '#ffffff'}">
+        <td style="text-align:center;padding:6px;border:1px solid #ddd">${i + 1}</td>
+        <td style="text-align:center;padding:6px;border:1px solid #ddd">${esc(r.invNum)}</td>
+        <td style="text-align:center;padding:6px;border:1px solid #ddd">${esc(r.dateStr)}</td>
+        <td style="text-align:right;padding:6px;border:1px solid #ddd">${esc(r.client || '-')}</td>
+        <td style="text-align:right;padding:6px;border:1px solid #ddd;font-weight:700">${esc(r.item.fish || '-')}</td>
+        <td style="text-align:center;padding:6px;border:1px solid #ddd">${esc(r.item.qty || r.item.kg || 0)} ${esc(r.item.unitLabel || 'كيلو')}</td>
+        <td style="text-align:center;padding:6px;border:1px solid #ddd">${formatNum(r.item.kg || 0)}</td>
+        <td style="text-align:center;padding:6px;border:1px solid #ddd">${formatNum(r.item.pricePerUnit || r.item.pricePerKg || 0)}</td>
+        <td style="text-align:center;padding:6px;border:1px solid #ddd;font-weight:700;color:#1565c0">${formatNum(r.item.subtotal || 0)}</td>
+      </tr>`).join('') : `
+      <tr><td colspan="9" style="text-align:center;padding:14px;border:1px solid #ddd;color:#999">لا توجد أصناف مباعة</td></tr>`;
 
-    // Sheet 4: Payments
-    const snap = await get(ref(db, 'payments'));
-    const payments = snap.val() || {};
-    const wsPayments = workbook.addWorksheet('المدفوعات');
-    styleSheet(wsPayments, [
-      { header: 'التاريخ', key: 'date', width: 15 },
-      { header: 'العميل', key: 'client', width: 25 },
-      { header: 'المبلغ', key: 'amount', width: 15 },
-      { header: 'استلم من', key: 'from', width: 20 },
-      { header: 'ملاحظات', key: 'notes', width: 25 }
-    ]);
-    Object.values(payments).forEach(p => {
-      wsPayments.addRow({
-        date: p.dateStr || getDisplayDate(p.customDate || p.date),
-        client: p.clientName || '-',
-        amount: p.amount || 0,
-        from: p.from || '-',
-        notes: p.notes || '-'
-      });
+    // --- 4) جدول المدفوعات ---
+    const paymentsSorted = paymentsArr.slice().sort((a, b) => {
+      const da = a.customDate || (a.date ? a.date.split('T')[0] : '');
+      const db = b.customDate || (b.date ? b.date.split('T')[0] : '');
+      return da < db ? 1 : da > db ? -1 : 0;
     });
-    addBordersAndStyle(wsPayments);
+    const paymentsRows = paymentsSorted.length ? paymentsSorted.map((p, i) => `
+      <tr style="background:${i % 2 === 0 ? '#f0f7ff' : '#ffffff'}">
+        <td style="text-align:center;padding:7px;border:1px solid #ddd">${i + 1}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd">${esc(p.dateStr || getDisplayDate(p.customDate || p.date))}</td>
+        <td style="text-align:right;padding:7px;border:1px solid #ddd;font-weight:700">${esc(p.clientName || '-')}</td>
+        <td style="text-align:center;padding:7px;border:1px solid #ddd;color:#27ae60;font-weight:900">${formatNum(p.amount || 0)}</td>
+        <td style="text-align:right;padding:7px;border:1px solid #ddd">${esc(p.from || '-')}</td>
+        <td style="text-align:right;padding:7px;border:1px solid #ddd;color:#555">${esc(p.notes || '-')}</td>
+      </tr>`).join('') : `
+      <tr><td colspan="6" style="text-align:center;padding:14px;border:1px solid #ddd;color:#999">لا توجد مدفوعات</td></tr>`;
 
-    // Save File
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    // --- بناء صفحة PDF الكاملة ---
     const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-    saveAs(blob, `نسخة_بيانات_الحديدي_${today}.xlsx`);
-    
-    showToast('✅ تم تحميل ملف الإكسيل بنجاح');
+    const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+      <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; padding: 24px; max-width: 1100px; margin: auto; color: #1a1a2e; background: #fff; }
+        h1 { color: #1a3a6b; text-align: center; font-size: 22px; margin: 0 0 4px; }
+        h2 { color: #b8860b; text-align: center; font-size: 15px; margin: 0 0 14px; }
+        .meta { text-align: center; color: #555; font-size: 12px; margin-bottom: 18px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 18px 0; }
+        .summary-card { background: #f0f7ff; border: 1px solid #cfe0f5; border-radius: 10px; padding: 10px; text-align: center; }
+        .summary-card .lbl { font-size: 11px; color: #555; margin-bottom: 4px; }
+        .summary-card .val { font-size: 17px; font-weight: 900; color: #1a3a6b; }
+        .summary-card.green .val { color: #27ae60; }
+        .summary-card.red   .val { color: #e74c3c; }
+        .summary-card.gold  .val { color: #b8860b; }
+        .section-title { background: #1a3a6b; color: #fff; padding: 10px 14px; border-radius: 8px 8px 0 0; font-size: 15px; font-weight: 900; margin-top: 22px; display: flex; justify-content: space-between; align-items: center; }
+        .section-title .count { background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin: 0 0 8px; }
+        th { background: #1a3a6b; color: #fff; padding: 9px; text-align: center; font-size: 12px; border: 1px solid #1a3a6b; }
+        td { font-size: 12px; }
+        .footer { text-align: center; color: #888; font-size: 11px; margin-top: 24px; border-top: 1px solid #eee; padding-top: 12px; }
+        @media print { .section-title { break-inside: avoid; } tr { break-inside: avoid; } }
+      </style></head><body>
+      <h1>🐟 الحاج أحمد الحديدي - تجارة الأسماك</h1>
+      <h2>📋 تقرير شامل لجميع البيانات</h2>
+      <div class="meta">📅 تاريخ التصدير: ${isoToArabicDate(getTodayISO())} | 🕒 ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</div>
+
+      <div class="summary-grid">
+        <div class="summary-card"><div class="lbl">عدد العملاء</div><div class="val">${formatNum(clientsArr.length)}</div></div>
+        <div class="summary-card gold"><div class="lbl">عدد الفواتير</div><div class="val">${formatNum(invoicesArr.length)}</div></div>
+        <div class="summary-card"><div class="lbl">إجمالي المشتريات</div><div class="val">${formatNum(totalPurchases)}</div></div>
+        <div class="summary-card green"><div class="lbl">إجمالي المدفوع</div><div class="val">${formatNum(totalPaid)}</div></div>
+        <div class="summary-card red"><div class="lbl">إجمالي الديون</div><div class="val">${formatNum(totalDebt)}</div></div>
+      </div>
+      <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="summary-card"><div class="lbl">إجمالي الفواتير (الصافي)</div><div class="val">${formatNum(totalInvoices)}</div></div>
+        <div class="summary-card green"><div class="lbl">إجمالي المدفوعات</div><div class="val">${formatNum(totalPayments)}</div></div>
+        <div class="summary-card"><div class="lbl">عدد المدفوعات</div><div class="val">${formatNum(paymentsArr.length)}</div></div>
+      </div>
+
+      <div class="section-title">👥 العملاء <span class="count">${clientsArr.length}</span></div>
+      <table><thead><tr>
+        <th>#</th><th>اسم العميل</th><th>الهاتف</th><th>المؤسسة</th>
+        <th>إجمالي المشتريات</th><th>المدفوع</th><th>الديون المتبقية</th>
+      </tr></thead><tbody>${clientsRows}</tbody></table>
+
+      <div class="section-title">🧾 الفواتير <span class="count">${invoicesArr.length}</span></div>
+      <table><thead><tr>
+        <th>#</th><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>القطاع</th>
+        <th>إجمالي الأصناف</th><th>المصاريف</th><th>العمولة</th><th>الصافي</th>
+      </tr></thead><tbody>${invoicesRows}</tbody></table>
+
+      <div class="section-title">🐟 الأصناف المباعة <span class="count">${itemsRowsArr.length}</span></div>
+      <table><thead><tr>
+        <th>#</th><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الصنف</th>
+        <th>الكمية</th><th>الكيلو</th><th>السعر</th><th>الإجمالي</th>
+      </tr></thead><tbody>${itemsRows}</tbody></table>
+
+      <div class="section-title">💵 المدفوعات <span class="count">${paymentsArr.length}</span></div>
+      <table><thead><tr>
+        <th>#</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>استلم من</th><th>ملاحظات</th>
+      </tr></thead><tbody>${paymentsRows}</tbody></table>
+
+      <div class="footer">
+        تم إنشاء هذا التقرير بواسطة تطبيق الحاج أحمد الحديدي لتجارة الأسماك
+      </div>
+      </body></html>`;
+
+    const fileName = `تقرير_شامل_الحديدي_${today}`;
+    openPrintWindow(html, fileName);
+    showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
   } catch (error) {
     console.error(error);
-    showToast('❌ حدث خطأ أثناء تصدير الإكسيل');
+    showToast('❌ حدث خطأ أثناء تصدير PDF');
   }
 };
+
+// اسم بديل (للتوافق مع أي استدعاءات سابقة)
+window.exportAllDataToExcel = function() { return window.exportAllDataToPDF(); };
 
 // ============================================================
 // RESET DATA (تصفير النظام بكلمة سر 666666)
@@ -4570,7 +4618,7 @@ window.doLogin = function() {
   if (pwd === '123456' || pwd === '666666') { 
     // تسجيل دخول بصلاحيات الأدمن
     window.currentUser = { role: 'admin', name: 'أحمد الحديدي' };
-    document.getElementById('admin-tools-card').style.display = 'block'; // إظهار أزرار الإكسيل والتصفير
+    document.getElementById('admin-tools-card').style.display = 'block'; // إظهار أزرار التصدير PDF والتصفير
   } else if (pwd === '111111') {
     // تسجيل دخول بصلاحيات مشاهد
     window.currentUser = { role: 'viewer', name: 'مستخدم' };
