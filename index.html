@@ -2955,8 +2955,8 @@ window.exportAllEnteredInvoicesPDF = function() {
     let invoices = Object.entries(window.appState.invoices).sort((a, b) => {
       const dateA = a[1].invDateISO || a[1].date?.split('T')[0] || '0000-00-00';
       const dateB = b[1].invDateISO || b[1].date?.split('T')[0] || '0000-00-00';
-      if (dateB !== dateA) return dateB.localeCompare(dateA);
-      return (b[1].createdAt || 0) - (a[1].createdAt || 0);
+      if (dateA !== dateB) return dateA.localeCompare(dateB);
+      return (a[1].createdAt || 0) - (b[1].createdAt || 0);
     });
 
     if (searchVal) {
@@ -5044,7 +5044,12 @@ window.exportAllDataToPDF = async function() {
   try {
     // --- جمع البيانات ---
     const clientsArr = Object.values(window.appState.clients || {});
-    const invoicesArr = Object.entries(window.appState.invoices || {});
+    const invoicesArr = Object.entries(window.appState.invoices || {}).sort((a, b) => {
+      const da = a[1].invDateISO || (a[1].date || '').split('T')[0] || '0000-00-00';
+      const db = b[1].invDateISO || (b[1].date || '').split('T')[0] || '0000-00-00';
+      if (da !== db) return da.localeCompare(db);
+      return (a[1].createdAt || 0) - (b[1].createdAt || 0);
+    });
 
     let paymentsArr = [];
     try {
@@ -5128,7 +5133,7 @@ window.exportAllDataToPDF = async function() {
     const paymentsSorted = paymentsArr.slice().sort((a, b) => {
       const da = a.customDate || (a.date ? a.date.split('T')[0] : '');
       const db = b.customDate || (b.date ? b.date.split('T')[0] : '');
-      return da < db ? 1 : da > db ? -1 : 0;
+      return da < db ? -1 : da > db ? 1 : 0;
     });
     const paymentsRows = paymentsSorted.length ? paymentsSorted.map((p, i) => `
       <tr style="background:${i % 2 === 0 ? '#f0f7ff' : '#ffffff'}">
@@ -5419,8 +5424,8 @@ window.exportDashboardPDF = function() {
     var invList = Object.entries(inv).sort(function(a,b) {
       var da = (a[1].invDateISO || a[1].date || '').split('T')[0];
       var db2 = (b[1].invDateISO || b[1].date || '').split('T')[0];
-      if (da !== db2) return da < db2 ? 1 : -1;
-      return (b[1].createdAt||0) - (a[1].createdAt||0);
+      if (da !== db2) return da < db2 ? -1 : 1;
+      return (a[1].createdAt||0) - (b[1].createdAt||0);
     }).slice(0, 50);
 
     var tNet = 0;
@@ -5545,8 +5550,8 @@ window.exportHistoryPDF = function() {
     var inv = Object.entries(window.appState.invoices || {}).sort(function(a,b) {
       var da = (a[1].invDateISO || a[1].date || '').split('T')[0] || '0000-00-00';
       var db2 = (b[1].invDateISO || b[1].date || '').split('T')[0] || '0000-00-00';
-      if (da !== db2) return da < db2 ? 1 : -1;
-      return (b[1].createdAt||0) - (a[1].createdAt||0);
+      if (da !== db2) return da < db2 ? -1 : 1;
+      return (a[1].createdAt||0) - (b[1].createdAt||0);
     });
 
     if (search) inv = inv.filter(function(x){
@@ -5591,7 +5596,7 @@ window.exportHistoryPDF = function() {
     ]);
     sheets.push({ name: 'سجل الفواتير', data: data });
 
-    var sub = search ? '🔍 بحث: ' + search : 'كل الفواتير مرتبة من الأحدث للأقدم';
+    var sub = search ? '🔍 بحث: ' + search : 'كل الفواتير مرتبة من الأقدم للأحدث';
     var html = sheetsToHTML(sheets, 'الحاج أحمد الحديدي — سجل الفواتير', sub);
     openPrintWindow(html, 'تقرير_الفواتير_' + new Date().toISOString().split('T')[0]);
     showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
@@ -5674,7 +5679,7 @@ window.exportSectorsPDF = function() {
       var sorted = d.invoices.sort(function(a,b) {
         var da = (a[1].invDateISO || a[1].date || '').split('T')[0] || '';
         var db2 = (b[1].invDateISO || b[1].date || '').split('T')[0] || '';
-        return da < db2 ? 1 : da > db2 ? -1 : 0;
+        return da < db2 ? -1 : da > db2 ? 1 : 0;
       });
 
       var st = 0;
@@ -5794,7 +5799,7 @@ window.exportPricesPDF = function() {
     // ── ورقة لكل صنف: تفاصيل العمليات ──
     fishNames.sort().forEach(function(fish) {
       var entries = fishData[fish].sort(function(a,b) {
-        return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+        return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
       });
       var fd = [];
       fd.push(['🐟 تفاصيل سعر صنف: ' + fish, '', '', '', '']);
@@ -5877,7 +5882,7 @@ window.exportComparePDF = function() {
     data.push(['#', 'التاريخ', c1 + ' (سعر)', c1 + ' (كمية)', c2 + ' (سعر)', c2 + ' (كمية)']);
 
     // تجميع حسب التاريخ
-    var allDates = Array.from(new Set([].concat(data1.map(function(e){return e.date;}), data2.map(function(e){return e.date;})))).sort().reverse();
+    var allDates = Array.from(new Set([].concat(data1.map(function(e){return e.date;}), data2.map(function(e){return e.date;})))).sort();
     var t1Qty = 0, t1Sub = 0, t2Qty = 0, t2Sub = 0;
     var t1Price = 0, t2Price = 0;
     allDates.forEach(function(d, idx) {
