@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#040d1a">
+    <title>404 - الصفحة تم اصطيادها!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap');
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #040d1a;
+            color: #e8f4f8;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Ocean BG */
+        .ocean {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(180deg, #040d1a 0%, #0a1628 20%, #0f2847 50%, #0d3b66 80%, #1a5276 100%);
+            z-index: 0;
+        }
+
+        /* Light rays */
+        .rays {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .ray {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(144,224,239,0.5), transparent);
+            animation: rayFlicker 5s ease-in-out infinite;
+        }
+        @keyframes rayFlicker {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Bubbles */
+        .bubbles {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .bub {
+            position: absolute;
+            bottom: -40px;
+            border-radius: 50%;
+            border: 1px solid rgba(144,224,239,0.25);
+            background: radial-gradient(circle at 30% 30%, rgba(144,224,239,0.1), transparent);
+            animation: bubUp linear infinite;
+        }
+        @keyframes bubUp {
+            0% { transform: translateY(0) scale(1); opacity: 0.6; }
+            100% { transform: translateY(-120vh) scale(0.5); opacity: 0; }
+        }
+
+        /* ===== MAIN SCENE ===== */
+        .scene {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* ===== SVG ANIMATION CONTAINER ===== */
+        .animation-container {
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        /* ===== TEXT OVERLAY ===== */
+        .text-overlay {
+            position: relative;
+            z-index: 20;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: textAppear 0.8s ease-out 6.5s forwards;
+        }
+
+        @keyframes textAppear {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-code {
+            font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00b4d8, #d4a853, #48cae4);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradShift 3s ease-in-out infinite;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        @keyframes gradShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .caught-msg {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #e8f4f8;
+            margin-bottom: 6px;
+        }
+
+        .sub-msg {
+            font-size: 0.85rem;
+            color: rgba(144,224,239,0.7);
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .redirect-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(0,180,216,0.15);
+            border-radius: 4px;
+            margin: 0 auto 12px;
+            overflow: hidden;
+        }
+
+        .redirect-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00b4d8, #d4a853);
+            border-radius: 4px;
+            animation: fillBar 10s linear 6.5s forwards;
+        }
+
+        @keyframes fillBar {
+            to { width: 100%; }
+        }
+
+        .countdown {
+            font-size: 0.8rem;
+            color: rgba(144,224,239,0.5);
+        }
+
+        .countdown span {
+            color: #d4a853;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .go-home {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 30px;
+            background: linear-gradient(135deg, rgba(0,180,216,0.2), rgba(0,180,216,0.05));
+            border: 1px solid rgba(0,180,216,0.4);
+            border-radius: 30px;
+            color: #90e0ef;
+            text-decoration: none;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: textAppear 0.5s ease-out 7s forwards;
+        }
+
+        .go-home:hover {
+            background: rgba(0,180,216,0.3);
+            border-color: rgba(0,180,216,0.7);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,180,216,0.2);
+        }
+
+        /* ===== SMALL SWIMMING FISH BG ===== */
+        .bg-fish {
+            position: fixed;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+        .bg-fish-1 { top: 15%; animation: swimBg 20s linear infinite; }
+        .bg-fish-2 { top: 75%; animation: swimBg 28s linear infinite reverse; animation-delay: -10s; }
+        .bg-fish-3 { top: 50%; animation: swimBg 24s linear infinite; animation-delay: -5s; }
+
+        @keyframes swimBg {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        /* Waves bottom */
+        .wave-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .wave-bottom svg { width: 100%; height: 100%; }
+        .wb1 { animation: waveFlow 10s linear infinite; }
+        .wb2 { animation: waveFlow 15s linear infinite reverse; opacity: 0.3; bottom: -8px; }
+        @keyframes waveFlow {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        /* ===== SPLASH EFFECT ===== */
+        .splash-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(144,224,239,0.5);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .splash-1 {
+            width: 60px; height: 60px;
+            top: 35%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: splashRing 1s ease-out 4.2s forwards;
+        }
+        .splash-2 {
+            width: 100px; height: 100px;
+            top: 35%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: splashRing 1.2s ease-out 4.4s forwards;
+        }
+        .splash-3 {
+            width: 140px; height: 140px;
+            top: 35%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: splashRing 1.4s ease-out 4.6s forwards;
+        }
+        @keyframes splashRing {
+            0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.3); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(2.5); }
+        }
+
+        /* Screen shake on catch */
+        .shake {
+            animation: screenShake 0.4s ease-out 4.3s;
+        }
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0); }
+            15% { transform: translate(-4px, 2px); }
+            30% { transform: translate(4px, -2px); }
+            45% { transform: translate(-3px, -1px); }
+            60% { transform: translate(3px, 1px); }
+            75% { transform: translate(-1px, 1px); }
+        }
+
+        /* Water droplets on catch */
+        .droplet {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(144,224,239,0.6);
+            top: 35%;
+            left: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (max-width: 400px) {
+            .error-code { font-size: 3.5rem; }
+            .caught-msg { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body class="shake">
+
+    <!-- Ocean BG -->
+    <div class="ocean"></div>
+
+    <!-- Light rays -->
+    <div class="rays" id="rays"></div>
+
+    <!-- Bubbles -->
+    <div class="bubbles" id="bubbles"></div>
+
+    <!-- BG Fish -->
+    <div class="bg-fish bg-fish-1">
+        <svg width="50" height="30" viewBox="0 0 50 30"><ellipse cx="24" cy="15" rx="18" ry="10" fill="rgba(0,180,216,0.6)"/><polygon points="6,15 -6,5 -6,25" fill="rgba(0,180,216,0.4)"/></svg>
+    </div>
+    <div class="bg-fish bg-fish-2">
+        <svg width="40" height="25" viewBox="0 0 40 25"><ellipse cx="20" cy="12" rx="15" ry="8" fill="rgba(72,202,228,0.5)"/><polygon points="5,12 -4,4 -4,20" fill="rgba(72,202,228,0.35)"/></svg>
+    </div>
+    <div class="bg-fish bg-fish-3">
+        <svg width="35" height="22" viewBox="0 0 35 22"><ellipse cx="17" cy="11" rx="13" ry="7" fill="rgba(0,150,199,0.5)"/><polygon points="4,11 -4,4 -4,18" fill="rgba(0,150,199,0.35)"/></svg>
+    </div>
+
+    <!-- Waves -->
+    <div class="wave-bottom">
+        <svg class="wb1" viewBox="0 0 1440 100" preserveAspectRatio="none"><path d="M0,60 C180,100 360,20 540,60 C720,100 900,20 1080,60 C1260,100 1440,20 1440,60 L1440,100 L0,100Z" fill="rgba(0,119,182,0.12)"/><path d="M1440,60 C1620,100 1800,20 1980,60 C2160,100 2340,20 2520,60 C2700,100 2880,20 2880,60 L2880,100 L1440,100Z" fill="rgba(0,119,182,0.12)"/></svg>
+    </div>
+    <div class="wave-bottom">
+        <svg class="wb2" viewBox="0 0 1440 100" preserveAspectRatio="none"><path d="M0,70 C200,40 400,90 600,60 C800,30 1000,80 1200,60 C1350,45 1440,70 1440,70 L1440,100 L0,100Z" fill="rgba(0,180,216,0.06)"/><path d="M1440,70 C1640,40 1840,90 2040,60 C2240,30 2440,80 2640,60 C2790,45 2880,70 2880,70 L2880,100 L1440,100Z" fill="rgba(0,180,216,0.06)"/></svg>
+    </div>
+
+    <!-- ===== MAIN SCENE ===== -->
+    <div class="scene">
+
+        <!-- SVG ANIMATION -->
+        <div class="animation-container">
+            <svg id="mainSVG" viewBox="0 0 420 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <!-- Fish gradient -->
+                    <linearGradient id="fishBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00b4d8"/>
+                        <stop offset="100%" stop-color="#0077b6"/>
+                    </linearGradient>
+                    <linearGradient id="fishBelly" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#00b4d8" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#48cae4" stop-opacity="0.6"/>
+                    </linearGradient>
+                    <!-- Hook metal -->
+                    <linearGradient id="hookMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#c0c0c0"/>
+                        <stop offset="100%" stop-color="#808080"/>
+                    </linearGradient>
+                    <!-- Bait -->
+                    <radialGradient id="baitGrad" cx="50%" cy="50%">
+                        <stop offset="0%" stop-color="#ff8c42"/>
+                        <stop offset="100%" stop-color="#d4532a"/>
+                    </radialGradient>
+                    <!-- Fishing line gradient -->
+                    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(200,220,230,0.8)"/>
+                        <stop offset="100%" stop-color="rgba(200,220,230,0.2)"/>
+                    </linearGradient>
+                    <!-- Glow filter -->
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="blur"/>
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    <filter id="bigGlow">
+                        <feGaussianBlur stdDeviation="6" result="blur"/>
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    <!-- Water surface -->
+                    <linearGradient id="waterSurface" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(144,224,239,0.15)"/>
+                        <stop offset="100%" stop-color="transparent"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- ===== FISHING LINE (from top to hook) ===== -->
+                <line id="fishingLine" x1="210" y1="0" x2="210" y2="0" stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                
+                <!-- ===== HOOK GROUP (will be animated) ===== -->
+                <g id="hookGroup" transform="translate(210, 40)">
+                    <!-- Hook -->
+                    <path d="M0,0 L0,35 C0,55 -18,65 -25,55 C-32,45 -18,38 -10,45" 
+                          stroke="url(#hookMetal)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <!-- Hook point/barb -->
+                    <path d="M-10,45 L-15,40 M-10,45 L-7,50" 
+                          stroke="url(#hookMetal)" stroke-width="2" stroke-linecap="round"/>
+                    
+                    <!-- BAIT on hook -->
+                    <g id="baitGroup" opacity="1">
+                        <ellipse cx="-12" cy="48" rx="8" ry="5" fill="url(#baitGrad)" transform="rotate(-20, -12, 48)"/>
+                        <!-- Bait shine -->
+                        <ellipse cx="-14" cy="46" rx="3" ry="2" fill="rgba(255,255,255,0.3)" transform="rotate(-20, -14, 46)"/>
+                        <!-- Bait wiggle parts -->
+                        <path d="M-4,45 Q2,42 5,46" stroke="#d4532a" stroke-width="1.5" fill="none" opacity="0.6"/>
+                        <path d="M-18,52 Q-22,56 -20,60" stroke="#d4532a" stroke-width="1.2" fill="none" opacity="0.5"/>
+                    </g>
+                </g>
+
+                <!-- ===== FISH GROUP ===== -->
+                <g id="fishGroup" transform="translate(-120, 180)">
+                    <!-- Fish shadow -->
+                    <ellipse cx="52" cy="42" rx="45" ry="16" fill="rgba(0,0,0,0.15)" filter="url(#bigGlow)"/>
+                    
+                    <!-- Fish tail -->
+                    <path id="fishTail" d="M0,20 C-15,5 -30,-5 -35,0 C-40,5 -30,15 -25,20 C-30,25 -40,35 -35,40 C-30,45 -15,35 0,20Z" 
+                          fill="url(#fishBody)" opacity="0.85">
+                        <animateTransform attributeName="transform" type="rotate" 
+                            values="-5 0 20; 5 0 20; -5 0 20" dur="0.8s" repeatCount="indefinite"/>
+                    </path>
+                    
+                    <!-- Fish body -->
+                    <ellipse cx="35" cy="20" rx="40" ry="22" fill="url(#fishBody)"/>
+                    
+                    <!-- Fish belly (lighter underside) -->
+                    <ellipse cx="38" cy="28" rx="30" ry="12" fill="url(#fishBelly)" opacity="0.5"/>
+                    
+                    <!-- Dorsal fin -->
+                    <path id="dorsalFin" d="M20,-2 Q35,-22 50,-2" fill="rgba(0,150,190,0.7)">
+                        <animateTransform attributeName="transform" type="rotate" 
+                            values="-2 35 -2; 2 35 -2; -2 35 -2" dur="1.2s" repeatCount="indefinite"/>
+                    </path>
+                    
+                    <!-- Pectoral fin -->
+                    <path d="M40,30 Q50,45 35,42" fill="rgba(0,160,200,0.5)">
+                        <animateTransform attributeName="transform" type="rotate" 
+                            values="0 40 30; 8 40 30; 0 40 30" dur="1s" repeatCount="indefinite"/>
+                    </path>
+                    
+                    <!-- Ventral fin -->
+                    <path d="M30,38 Q38,50 25,45" fill="rgba(0,160,200,0.4)"/>
+                    
+                    <!-- Scale pattern -->
+                    <g opacity="0.12">
+                        <path d="M25,12 Q32,16 25,20" stroke="white" stroke-width="1" fill="none"/>
+                        <path d="M33,10 Q40,14 33,18" stroke="white" stroke-width="1" fill="none"/>
+                        <path d="M41,12 Q48,16 41,20" stroke="white" stroke-width="1" fill="none"/>
+                        <path d="M28,22 Q35,26 28,30" stroke="white" stroke-width="1" fill="none"/>
+                        <path d="M36,22 Q43,26 36,30" stroke="white" stroke-width="1" fill="none"/>
+                        <path d="M44,20 Q51,24 44,28" stroke="white" stroke-width="1" fill="none"/>
+                        <path d="M22,20 Q29,24 22,28" stroke="white" stroke-width="1" fill="none"/>
+                    </g>
+                    
+                    <!-- Eye -->
+                    <circle cx="62" cy="14" r="7" fill="white"/>
+                    <circle cx="63.5" cy="14" r="4" fill="#0a1628"/>
+                    <circle cx="65" cy="12.5" r="1.5" fill="white"/>
+                    <!-- Eye glow -->
+                    <circle cx="62" cy="14" r="7" fill="none" stroke="rgba(144,224,239,0.3)" stroke-width="1"/>
+                    
+                    <!-- Mouth (opens when biting) -->
+                    <ellipse id="fishMouth" cx="75" cy="20" rx="2" ry="3" fill="#005f80" opacity="0"/>
+                    
+                    <!-- Gill line -->
+                    <path d="M52,8 Q48,20 52,32" stroke="rgba(0,80,120,0.3)" stroke-width="1.5" fill="none"/>
+                </g>
+
+                <!-- Splash effects (hidden initially, shown by JS) -->
+                <g id="splashGroup" opacity="0">
+                    <circle cx="210" cy="120" r="5" fill="rgba(144,224,239,0.6)"/>
+                    <circle cx="195" cy="115" r="3" fill="rgba(144,224,239,0.4)"/>
+                    <circle cx="225" cy="118" r="4" fill="rgba(144,224,239,0.5)"/>
+                    <circle cx="200" cy="125" r="3.5" fill="rgba(144,224,239,0.3)"/>
+                    <circle cx="220" cy="128" r="2.5" fill="rgba(144,224,239,0.4)"/>
+                    <circle cx="210" cy="110" r="3" fill="rgba(144,224,239,0.5)"/>
+                </g>
+
+                <!-- Exclamation marks (shown after catch) -->
+                <g id="exclaimGroup" opacity="0">
+                    <text x="300" y="170" font-family="Cairo" font-size="28" font-weight="900" fill="#d4a853" filter="url(#glow)">!</text>
+                    <text x="130" y="160" font-family="Cairo" font-size="22" font-weight="900" fill="#ff6b6b" filter="url(#glow)">!</text>
+                    <text x="280" y="140" font-family="Cairo" font-size="18" font-weight="700" fill="#48cae4">!</text>
+                </g>
+
+                <!-- Small stars/sparkles on catch -->
+                <g id="starGroup" opacity="0">
+                    <text x="170" y="150" font-size="16" fill="#d4a853">✦</text>
+                    <text x="260" y="145" font-size="12" fill="#90e0ef">✦</text>
+                    <text x="230" y="165" font-size="14" fill="#d4a853">✦</text>
+                    <text x="190" y="135" font-size="10" fill="#48cae4">✦</text>
+                </g>
+            </svg>
+
+            <!-- Splash ring effects (CSS) -->
+            <div class="splash-circle splash-1"></div>
+            <div class="splash-circle splash-2"></div>
+            <div class="splash-circle splash-3"></div>
+        </div>
+
+        <!-- TEXT (appears after catch) -->
+        <div class="text-overlay">
+            <div class="error-code">404</div>
+            <div class="caught-msg">بالتأكيد آكلت الطعم! 🐟</div>
+            <div class="sub-msg">
+                يبدو أن هذه الصفحة وقعت في الشبكة وتم اصطيادها<br>
+                لا تقلق، هنعيدك للرئيسية دلوقتي...
+            </div>
+            <div class="redirect-bar"><div class="redirect-fill"></div></div>
+            <div class="countdown">العودة للرئيسية خلال <span id="timer">10</span> ثواني</div>
+            <a href="https://mohamednasr5.github.io/tager/home/index.html" class="go-home">العودة للرئيسية الآن</a>
+        </div>
+
+    </div>
+
+    <script>
+        // ===== GENERATE RAYS =====
+        (function() {
+            const c = document.getElementById('rays');
+            for (let i = 0; i < 6; i++) {
+                const r = document.createElement('div');
+                r.className = 'ray';
+                r.style.left = (8 + Math.random() * 84) + '%';
+                r.style.animationDelay = (Math.random() * 5) + 's';
+                r.style.animationDuration = (4 + Math.random() * 3) + 's';
+                c.appendChild(r);
+            }
+        })();
+
+        // ===== GENERATE BUBBLES =====
+        (function() {
+            const c = document.getElementById('bubbles');
+            for (let i = 0; i < 10; i++) {
+                const b = document.createElement('div');
+                b.className = 'bub';
+                const s = 6 + Math.random() * 20;
+                b.style.width = s + 'px';
+                b.style.height = s + 'px';
+                b.style.left = (Math.random() * 100) + '%';
+                b.style.animationDuration = (10 + Math.random() * 15) + 's';
+                b.style.animationDelay = (Math.random() * 8) + 's';
+                c.appendChild(b);
+            }
+        })();
+
+        // ===== MAIN FISH & HOOK ANIMATION =====
+        (function() {
+            const fishGroup = document.getElementById('fishGroup');
+            const hookGroup = document.getElementById('hookGroup');
+            const fishingLine = document.getElementById('fishingLine');
+            const baitGroup = document.getElementById('baitGroup');
+            const fishMouth = document.getElementById('fishMouth');
+            const splashGroup = document.getElementById('splashGroup');
+            const exclaimGroup = document.getElementById('exclaimGroup');
+            const starGroup = document.getElementById('starGroup');
+            const timerEl = document.getElementById('timer');
+
+            // Phase timings (seconds)
+            const PHASE = {
+                SWIM_START: 0,      // Fish enters from left
+                APPROACH: 2.5,       // Fish notices bait, slows
+                BITE: 4.2,           // Fish bites!
+                CAUGHT: 4.5,         // Hooked, splash
+                PULL_UP: 5.5,        // Gets pulled up
+                GONE: 6.5,           // Fish gone up
+            };
+
+            let startTime = null;
+            let currentPhase = 'swim';
+
+            // Keyframe positions for the fish
+            function getFishTransform(t) {
+                if (t < PHASE.APPROACH) {
+                    // Swimming from left toward the hook area
+                    const progress = t / PHASE.APPROACH;
+                    const ease = progress < 0.7 
+                        ? (progress / 0.7) * 0.6  // Fast swim to 60%
+                        : 0.6 + ((progress - 0.7) / 0.3) * 0.15; // Slow approach
+                    const x = -120 + ease * 295; // -120 -> 175
+                    const y = 180 + Math.sin(t * 3) * 8; // Gentle bobbing
+                    return { x, y, mouthOpen: false, tailSpeed: 0.8 };
+                }
+                else if (t < PHASE.BITE) {
+                    // Carefully approaching bait
+                    const progress = (t - PHASE.APPROACH) / (PHASE.BITE - PHASE.APPROACH);
+                    const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                    const x = 175 + ease * 22; // 175 -> 197
+                    const y = 180 - ease * 60 + Math.sin(t * 5) * 3; // 180 -> 120
+                    return { x, y, mouthOpen: progress > 0.7, tailSpeed: 1.2 };
+                }
+                else if (t < PHASE.CAUGHT) {
+                    // BITE! Quick snap to hook
+                    const progress = (t - PHASE.BITE) / (PHASE.CAUGHT - PHASE.BITE);
+                    const x = 197 + progress * 5;
+                    const y = 120 - progress * 5;
+                    return { x, y, mouthOpen: true, tailSpeed: 2 };
+                }
+                else if (t < PHASE.PULL_UP) {
+                    // Caught - being pulled up while struggling
+                    const progress = (t - PHASE.CAUGHT) / (PHASE.PULL_UP - PHASE.CAUGHT);
+                    const x = 202 + Math.sin(t * 15) * 12 * (1 - progress); // Struggle
+                    const y = 115 - progress * 80; // Pulled up
+                    return { x, y, mouthOpen: true, tailSpeed: 3 };
+                }
+                else if (t < PHASE.GONE) {
+                    // Disappearing up
+                    const progress = (t - PHASE.PULL_UP) / (PHASE.GONE - PHASE.PULL_UP);
+                    const x = 202 + Math.sin(t * 20) * 5 * (1 - progress);
+                    const y = 35 - progress * 50;
+                    const opacity = 1 - progress;
+                    return { x, y, mouthOpen: true, tailSpeed: 4, opacity };
+                }
+                else {
+                    return { x: 202, y: -20, mouthOpen: false, tailSpeed: 0, opacity: 0 };
+                }
+            }
+
+            // Hook animation
+            function getHookTransform(t) {
+                if (t < PHASE.BITE) {
+                    // Gentle sway
+                    const sway = Math.sin(t * 1.5) * 3;
+                    const y = 40 + Math.sin(t * 0.8) * 5;
+                    return { x: 210 + sway, y, baitVisible: true };
+                }
+                else if (t < PHASE.CAUGHT) {
+                    // Snagged! Jolt
+                    const progress = (t - PHASE.BITE) / (PHASE.CAUGHT - PHASE.BITE);
+                    return { x: 210, y: 40 + progress * 5, baitVisible: true };
+                }
+                else {
+                    // Pull up with fish
+                    const progress = Math.min((t - PHASE.CAUGHT) / 3, 1);
+                    const y = 45 - progress * 60;
+                    return { x: 210 + Math.sin(t * 15) * 3 * (1 - progress), y, baitVisible: progress < 0.5 };
+                }
+            }
+
+            // Countdown timer
+            let countdown = 10;
+            const countdownInterval = setInterval(() => {
+                if (countdown > 0) {
+                    countdown--;
+                    if (timerEl) timerEl.textContent = countdown;
+                } else {
+                    clearInterval(countdownInterval);
+                    window.location.href = 'https://mohamednasr5.github.io/tager/home/index.html';
+                }
+            }, 1000);
+
+            // Splash sound effect
+            function playSplashSound() {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // White noise burst for splash
+                    const bufferSize = ctx.sampleRate * 0.5;
+                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.1));
+                    }
+                    
+                    const source = ctx.createBufferSource();
+                    source.buffer = buffer;
+                    
+                    const bandpass = ctx.createBiquadFilter();
+                    bandpass.type = 'bandpass';
+                    bandpass.frequency.value = 2000;
+                    bandpass.Q.value = 0.8;
+                    
+                    const gain = ctx.createGain();
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                    
+                    source.connect(bandpass);
+                    bandpass.connect(gain);
+                    gain.connect(ctx.destination);
+                    source.start();
+                    
+                    // Bubble sounds
+                    setTimeout(() => {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(800, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.3);
+                        const g = ctx.createGain();
+                        g.gain.setValueAtTime(0.1, ctx.currentTime);
+                        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                        osc.connect(g);
+                        g.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.3);
+                    }, 200);
+                } catch(e) {}
+            }
+
+            // Animation loop
+            let splashTriggered = false;
+            let exclaimTriggered = false;
+
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const t = (timestamp - startTime) / 1000; // seconds
+
+                // Fish
+                const fish = getFishTransform(t);
+                fishGroup.setAttribute('transform', `translate(${fish.x}, ${fish.y})`);
+                if (fish.opacity !== undefined) {
+                    fishGroup.style.opacity = fish.opacity;
+                }
+                
+                // Mouth
+                fishMouth.setAttribute('opacity', fish.mouthOpen ? '1' : '0');
+                fishMouth.setAttribute('rx', fish.mouthOpen ? '4' : '2');
+                fishMouth.setAttribute('ry', fish.mouthOpen ? '5' : '3');
+
+                // Tail animation speed
+                const tail = document.getElementById('fishTail');
+                if (tail) {
+                    const dur = (0.8 / (fish.tailSpeed || 0.8)).toFixed(2);
+                    tail.querySelector('animateTransform').setAttribute('dur', dur + 's');
+                }
+
+                // Hook
+                const hook = getHookTransform(t);
+                hookGroup.setAttribute('transform', `translate(${hook.x}, ${hook.y})`);
+                
+                // Fishing line
+                const hookCenterY = hook.y + 50;
+                fishingLine.setAttribute('x2', hook.x);
+                fishingLine.setAttribute('y2', Math.max(0, hookCenterY));
+
+                // Bait
+                baitGroup.setAttribute('opacity', hook.baitVisible ? '1' : '0');
+
+                // Splash effect at bite
+                if (t >= PHASE.BITE && !splashTriggered) {
+                    splashTriggered = true;
+                    splashGroup.setAttribute('opacity', '1');
+                    playSplashSound();
+                    
+                    setTimeout(() => {
+                        splashGroup.setAttribute('opacity', '0');
+                    }, 800);
+                }
+
+                // Exclamation marks
+                if (t >= PHASE.CAUGHT && !exclaimTriggered) {
+                    exclaimTriggered = true;
+                    exclaimGroup.setAttribute('opacity', '1');
+                    starGroup.setAttribute('opacity', '1');
+                    
+                    // Animate exclaim and star
+                    let flashCount = 0;
+                    const flashInterval = setInterval(() => {
+                        flashCount++;
+                        const op = flashCount % 2 === 0 ? '1' : '0.3';
+                        exclaimGroup.setAttribute('opacity', op);
+                        starGroup.setAttribute('opacity', op);
+                        if (flashCount > 8) {
+                            clearInterval(flashInterval);
+                            exclaimGroup.setAttribute('opacity', '0');
+                            starGroup.setAttribute('opacity', '0');
+                        }
+                    }, 200);
+                }
+
+                if (t < 10) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            // Start after a brief pause
+            setTimeout(() => {
+                requestAnimationFrame(animate);
+            }, 300);
+        })();
+    </script>
+</body>
+</html>

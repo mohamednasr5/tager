@@ -1,1 +1,1307 @@
-1
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a1628">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="الأسماك">
+    <meta name="description" content="إدارة زراعة وتجارة الأسماك للنائب أحمد الحديدي عضو مجلس النواب">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
+    <title>إدارة زراعة وتجارة الأسماك - النائب أحمد الحديدي</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap');
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --ocean-deep: #040d1a;
+            --ocean-dark: #0a1628;
+            --ocean-mid: #0f2847;
+            --ocean-light: #1a4a7a;
+            --ocean-glow: #00b4d8;
+            --ocean-accent: #48cae4;
+            --ocean-foam: #90e0ef;
+            --gold: #d4a853;
+            --gold-light: #f0d78c;
+            --card-bg: rgba(15, 40, 71, 0.45);
+            --card-border: rgba(0, 180, 216, 0.25);
+            --text-primary: #e8f4f8;
+            --text-secondary: rgba(144, 224, 239, 0.8);
+        }
+
+        html {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--ocean-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ===== OCEAN BACKGROUND ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(
+                180deg,
+                #040d1a 0%,
+                #0a1628 15%,
+                #0f2847 40%,
+                #0d3b66 65%,
+                #1a5276 85%,
+                #1a6e8e 100%
+            );
+        }
+
+        /* Light rays from surface */
+        .light-rays {
+            position: fixed;
+            top: -20%;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .light-ray {
+            position: absolute;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(144, 224, 239, 0.6), transparent);
+            transform-origin: top center;
+            animation: rayShimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes rayShimmer {
+            0%, 100% { opacity: 0.3; transform: scaleX(1) skewX(0deg); }
+            50% { opacity: 0.7; transform: scaleX(2) skewX(2deg); }
+        }
+
+        /* Floating particles (plankton) */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(144, 224, 239, 0.6), transparent);
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+            10% { opacity: 1; transform: translateY(90vh) translateX(10px) scale(1); }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-10vh) translateX(-20px) scale(0.3); opacity: 0; }
+        }
+
+        /* Bubbles */
+        .bubbles-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(144, 224, 239, 0.3);
+            background: radial-gradient(circle at 30% 30%, rgba(144, 224, 239, 0.15), transparent);
+            animation: bubbleRise ease-in infinite;
+        }
+
+        @keyframes bubbleRise {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.7; }
+            25% { transform: translateY(-25vh) translateX(15px) scale(1.05); }
+            50% { transform: translateY(-50vh) translateX(-10px) scale(1.1); }
+            75% { transform: translateY(-75vh) translateX(20px) scale(0.95); }
+            100% { transform: translateY(-110vh) translateX(-5px) scale(0.8); opacity: 0; }
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+
+        /* ===== HEADER SECTION ===== */
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(212, 168, 83, 0.2), rgba(212, 168, 83, 0.05));
+            border: 1px solid rgba(212, 168, 83, 0.4);
+            border-radius: 30px;
+            padding: 6px 20px;
+            font-size: 0.75rem;
+            color: var(--gold-light);
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .mp-photo-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 18px;
+        }
+
+        .mp-photo-ring {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            right: -6px;
+            bottom: -6px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                var(--ocean-glow),
+                var(--gold),
+                var(--ocean-accent),
+                var(--gold-light),
+                var(--ocean-glow)
+            );
+            animation: ringRotate 6s linear infinite;
+        }
+
+        @keyframes ringRotate {
+            to { transform: rotate(360deg); }
+        }
+
+        .mp-photo-ring::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            border-radius: 50%;
+            background: var(--ocean-dark);
+        }
+
+        .mp-photo {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            z-index: 2;
+            border: 3px solid var(--ocean-dark);
+        }
+
+        .mp-name {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            text-shadow: 0 2px 20px rgba(0, 180, 216, 0.3);
+        }
+
+        .mp-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* ===== NAVIGATION CARDS ===== */
+        .nav-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 25px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 16px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 180, 216, 0.08) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .nav-card:hover::before,
+        .nav-card:active::before {
+            opacity: 1;
+        }
+
+        .nav-card:hover, .nav-card:active {
+            transform: translateY(-5px) scale(1.03);
+            border-color: rgba(0, 180, 216, 0.5);
+            box-shadow: 
+                0 10px 40px rgba(0, 180, 216, 0.2),
+                0 0 60px rgba(0, 180, 216, 0.08),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .nav-card:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        .card-icon-wrapper {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 14px;
+            position: relative;
+        }
+
+        .card-icon-wrapper svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 12px rgba(0, 180, 216, 0.3));
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Card 1 specific */
+        .nav-card.trade .card-icon-wrapper svg {
+            animation: fishSwim 3s ease-in-out infinite;
+        }
+
+        @keyframes fishSwim {
+            0%, 100% { transform: translateX(0) scaleX(-1); }
+            50% { transform: translateX(6px) scaleX(-1); }
+        }
+
+        /* Card 2 specific */
+        .nav-card.farm .card-icon-wrapper svg {
+            animation: waterPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes waterPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+
+        /* ===== SVG WAVE ANIMATION (BOTTOM) ===== */
+        .wave-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .wave-svg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+        }
+
+        .wave1 { animation: waveFlow 8s linear infinite; opacity: 0.6; }
+        .wave2 { animation: waveFlow 12s linear infinite reverse; opacity: 0.3; bottom: -5px; }
+        .wave3 { animation: waveFlow 6s linear infinite; opacity: 0.15; bottom: -10px; }
+
+        @keyframes waveFlow {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* ===== SWIMMING FISH SVG ===== */
+        .swimming-fish {
+            position: fixed;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .fish-1 {
+            top: 20%;
+            animation: fishSwimAcross 18s linear infinite;
+        }
+
+        .fish-2 {
+            top: 45%;
+            animation: fishSwimAcross 25s linear infinite reverse;
+            animation-delay: -8s;
+        }
+
+        .fish-3 {
+            top: 70%;
+            animation: fishSwimAcross 22s linear infinite;
+            animation-delay: -14s;
+        }
+
+        @keyframes fishSwimAcross {
+            0% { transform: translateX(-150px) scaleX(1); }
+            49% { transform: translateX(calc(100vw + 150px)) scaleX(1); }
+            50% { transform: translateX(calc(100vw + 150px)) scaleX(-1); }
+            100% { transform: translateX(-150px) scaleX(-1); }
+        }
+
+        /* ===== INSTALL BANNER ===== */
+        .install-banner {
+            position: fixed;
+            bottom: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(15, 40, 71, 0.95), rgba(10, 22, 40, 0.98));
+            border: 1px solid rgba(0, 180, 216, 0.4);
+            border-radius: 20px;
+            padding: 16px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 180, 216, 0.1);
+            transition: bottom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 380px;
+            width: calc(100% - 40px);
+        }
+
+        .install-banner.show {
+            bottom: 24px;
+        }
+
+        .install-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--ocean-glow), var(--ocean-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .install-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .install-text {
+            flex: 1;
+        }
+
+        .install-text h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .install-text p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .install-btn {
+            background: linear-gradient(135deg, var(--ocean-glow), #0096c7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .install-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 180, 216, 0.4);
+        }
+
+        .install-dismiss {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 80, 80, 0.8);
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .install-dismiss:hover {
+            transform: scale(1.2);
+            background: rgba(255, 60, 60, 1);
+        }
+
+        /* ===== SOUND TOGGLE ===== */
+        .sound-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 100;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(15, 40, 71, 0.6);
+            border: 1px solid rgba(0, 180, 216, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle:hover {
+            background: rgba(0, 180, 216, 0.2);
+            border-color: rgba(0, 180, 216, 0.6);
+        }
+
+        .sound-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--ocean-accent);
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle.muted svg {
+            opacity: 0.4;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .footer-line {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 0 auto 14px;
+        }
+
+        .footer-text {
+            font-size: 0.72rem;
+            color: rgba(144, 224, 239, 0.5);
+            line-height: 1.8;
+        }
+
+        .footer-text a {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .footer-text a:hover {
+            color: var(--gold-light);
+            text-shadow: 0 0 10px rgba(212, 168, 83, 0.4);
+        }
+
+        .footer-heart {
+            color: #ff6b8a;
+            display: inline-block;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.2); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+        }
+
+        /* ===== LOADING SPLASH ===== */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: var(--ocean-deep);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .splash-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-icon {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 24px;
+            animation: splashPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes splashPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(0, 180, 216, 0.3)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 40px rgba(0, 180, 216, 0.6)); }
+        }
+
+        .splash-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .splash-loader {
+            width: 120px;
+            height: 3px;
+            background: rgba(0, 180, 216, 0.15);
+            border-radius: 3px;
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .splash-loader-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--ocean-glow), var(--gold));
+            border-radius: 3px;
+            animation: loadBar 2s ease-out forwards;
+        }
+
+        @keyframes loadBar {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        /* ===== RIPPLE EFFECT ON CARDS ===== */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(0, 180, 216, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 400px) {
+            .nav-cards {
+                gap: 12px;
+            }
+            .nav-card {
+                padding: 22px 12px;
+                border-radius: 16px;
+            }
+            .card-icon-wrapper {
+                width: 58px;
+                height: 58px;
+            }
+            .card-title {
+                font-size: 0.9rem;
+            }
+            .mp-name {
+                font-size: 1.35rem;
+            }
+            .mp-photo-wrapper {
+                width: 120px;
+                height: 120px;
+            }
+            .mp-photo {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        @media (min-width: 600px) {
+            .nav-cards {
+                gap: 24px;
+                max-width: 560px;
+            }
+            .nav-card {
+                padding: 36px 24px;
+                border-radius: 24px;
+            }
+            .card-icon-wrapper {
+                width: 85px;
+                height: 85px;
+            }
+            .mp-photo-wrapper {
+                width: 170px;
+                height: 170px;
+            }
+            .mp-photo {
+                width: 170px;
+                height: 170px;
+            }
+            .mp-name {
+                font-size: 2rem;
+            }
+        }
+
+        /* Safe area for notched phones */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .main-content {
+                padding-top: calc(20px + env(safe-area-inset-top));
+            }
+            .sound-toggle {
+                top: calc(16px + env(safe-area-inset-top));
+            }
+            .install-banner.show {
+                bottom: calc(24px + env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div class="splash-screen" id="splashScreen">
+        <svg class="splash-icon" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="45" stroke="url(#splashGrad)" stroke-width="2" fill="none" opacity="0.3"/>
+            <g transform="translate(50,48) scale(0.7)">
+                <ellipse cx="0" cy="0" rx="28" ry="16" fill="url(#fishGradSplash)"/>
+                <polygon points="-28,0 -42,-16 -42,16" fill="url(#fishGradSplash)"/>
+                <circle cx="12" cy="-3" r="4" fill="white"/>
+                <circle cx="13" cy="-3" r="2" fill="#0a1628"/>
+                <polygon points="-8,-14 5,-28 18,-14" fill="rgba(0,180,216,0.6)"/>
+                <polygon points="0,12 8,24 18,12" fill="rgba(0,180,216,0.6)"/>
+            </g>
+            <defs>
+                <linearGradient id="fishGradSplash" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#00b4d8"/>
+                    <stop offset="100%" stop-color="#0077b6"/>
+                </linearGradient>
+                <linearGradient id="splashGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#00b4d8"/>
+                    <stop offset="50%" stop-color="#d4a853"/>
+                    <stop offset="100%" stop-color="#00b4d8"/>
+                </linearGradient>
+            </defs>
+        </svg>
+        <div class="splash-title">إدارة زراعة وتجارة الأسماك</div>
+        <div class="splash-loader">
+            <div class="splash-loader-bar"></div>
+        </div>
+    </div>
+
+    <!-- ===== OCEAN BACKGROUND ===== -->
+    <div class="ocean-bg"></div>
+
+    <!-- Light Rays -->
+    <div class="light-rays" id="lightRays"></div>
+
+    <!-- Particles -->
+    <div class="particles-container" id="particles"></div>
+
+    <!-- Bubbles -->
+    <div class="bubbles-container" id="bubbles"></div>
+
+    <!-- Swimming Fish -->
+    <div class="swimming-fish fish-1">
+        <svg width="60" height="35" viewBox="0 0 60 35" fill="none">
+            <ellipse cx="28" cy="17" rx="22" ry="12" fill="rgba(0,180,216,0.25)"/>
+            <polygon points="6,17 -8,5 -8,29" fill="rgba(0,180,216,0.2)"/>
+            <circle cx="38" cy="14" r="2.5" fill="rgba(144,224,239,0.5)"/>
+            <circle cx="39" cy="14" r="1.2" fill="rgba(10,22,40,0.8)"/>
+        </svg>
+    </div>
+    <div class="swimming-fish fish-2">
+        <svg width="45" height="28" viewBox="0 0 45 28" fill="none">
+            <ellipse cx="22" cy="14" rx="17" ry="10" fill="rgba(72,202,228,0.2)"/>
+            <polygon points="5,14 -5,4 -5,24" fill="rgba(72,202,228,0.15)"/>
+            <circle cx="30" cy="11" r="2" fill="rgba(144,224,239,0.4)"/>
+            <circle cx="31" cy="11" r="1" fill="rgba(10,22,40,0.8)"/>
+        </svg>
+    </div>
+    <div class="swimming-fish fish-3">
+        <svg width="50" height="30" viewBox="0 0 50 30" fill="none">
+            <ellipse cx="24" cy="15" rx="19" ry="11" fill="rgba(0,150,199,0.2)"/>
+            <polygon points="5,15 -7,3 -7,27" fill="rgba(0,150,199,0.15)"/>
+            <circle cx="34" cy="12" r="2.2" fill="rgba(144,224,239,0.4)"/>
+            <circle cx="35" cy="12" r="1" fill="rgba(10,22,40,0.8)"/>
+        </svg>
+    </div>
+
+    <!-- Wave Animation (Bottom) -->
+    <div class="wave-section">
+        <svg class="wave-svg wave1" viewBox="0 0 1440 180" preserveAspectRatio="none">
+            <path d="M0,120 C180,180 360,60 540,120 C720,180 900,60 1080,120 C1260,180 1440,60 1440,120 L1440,180 L0,180 Z" fill="rgba(0,119,182,0.15)"/>
+            <path d="M1440,120 C1620,180 1800,60 1980,120 C2160,180 2340,60 2520,120 C2700,180 2880,60 2880,120 L2880,180 L1440,180 Z" fill="rgba(0,119,182,0.15)"/>
+        </svg>
+        <svg class="wave-svg wave2" viewBox="0 0 1440 180" preserveAspectRatio="none">
+            <path d="M0,140 C200,100 400,170 600,130 C800,90 1000,160 1200,130 C1350,110 1440,140 1440,140 L1440,180 L0,180 Z" fill="rgba(0,180,216,0.08)"/>
+            <path d="M1440,140 C1640,100 1840,170 2040,130 C2240,90 2440,160 2640,130 C2790,110 2880,140 2880,140 L2880,180 L1440,180 Z" fill="rgba(0,180,216,0.08)"/>
+        </svg>
+        <svg class="wave-svg wave3" viewBox="0 0 1440 180" preserveAspectRatio="none">
+            <path d="M0,150 C240,130 480,165 720,145 C960,125 1200,160 1440,150 L1440,180 L0,180 Z" fill="rgba(144,224,239,0.05)"/>
+            <path d="M1440,150 C1680,130 1920,165 2160,145 C2400,125 2640,160 2880,150 L2880,180 L1440,180 Z" fill="rgba(144,224,239,0.05)"/>
+        </svg>
+    </div>
+
+    <!-- Sound Toggle -->
+    <button class="sound-toggle" id="soundToggle" aria-label="تشغيل/إيقاف الصوت">
+        <svg id="soundOnIcon" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <svg id="soundOffIcon" viewBox="0 0 24 24" style="display:none;">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
+    </button>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <header class="header-section">
+            <div class="header-badge">عضو مجلس النواب</div>
+            <div class="mp-photo-wrapper">
+                <div class="mp-photo-ring"></div>
+                <!-- Replace with your photo path -->
+                <img class="mp-photo" src="./images/mp-photo.jpeg" alt="النائب أحمد الحديدي" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display:none; width:140px; height:140px; border-radius:50%; background:linear-gradient(135deg,#0f2847,#1a4a7a); align-items:center; justify-content:center; position:relative; z-index:2;">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(144,224,239,0.6)">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="mp-name">أحمد الحديدي</h1>
+            <p class="mp-title">إدارة زراعة وتجارة الأسماك</p>
+        </header>
+
+        <!-- Navigation Cards -->
+        <div class="nav-cards">
+            <!-- Fish Trade Card -->
+            <a href="https://mohamednasr5.github.io/tager/" class="nav-card trade" id="cardTrade">
+                <div class="card-icon-wrapper">
+                    <svg viewBox="0 0 100 100" fill="none">
+                        <defs>
+                            <linearGradient id="fishTradeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00b4d8"/>
+                                <stop offset="100%" stop-color="#0077b6"/>
+                            </linearGradient>
+                            <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#d4a853"/>
+                                <stop offset="100%" stop-color="#f0d78c"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Fish -->
+                        <g transform="translate(25,30)">
+                            <ellipse cx="25" cy="20" rx="22" ry="14" fill="url(#fishTradeGrad)"/>
+                            <polygon points="3,20 -10,7 -10,33" fill="url(#fishTradeGrad)" opacity="0.8"/>
+                            <circle cx="37" cy="15" r="4" fill="white"/>
+                            <circle cx="38.5" cy="15" r="2" fill="#0a1628"/>
+                            <polygon points="15,6 25,-5 38,6" fill="rgba(0,180,216,0.5)"/>
+                            <polygon points="18,34 28,45 40,34" fill="rgba(0,180,216,0.5)"/>
+                            <!-- Scales hint -->
+                            <path d="M20,14 Q25,18 20,22" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
+                            <path d="M28,12 Q33,16 28,20" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
+                            <path d="M24,20 Q29,24 24,28" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
+                        </g>
+                        <!-- Coin symbols -->
+                        <g transform="translate(60,10)">
+                            <circle cx="12" cy="12" r="10" fill="url(#coinGrad)" opacity="0.9"/>
+                            <text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="#0a1628">$</text>
+                        </g>
+                        <g transform="translate(68,58)">
+                            <circle cx="10" cy="10" r="8" fill="url(#coinGrad)" opacity="0.7"/>
+                            <text x="10" y="14" text-anchor="middle" font-size="9" font-weight="bold" fill="#0a1628">$</text>
+                        </g>
+                        <!-- Arrow indicating trade -->
+                        <g transform="translate(5, 60)" opacity="0.4">
+                            <path d="M0,15 L15,15 M10,10 L15,15 L10,20" stroke="#48cae4" stroke-width="2" fill="none"/>
+                            <path d="M30,15 L15,15 M20,10 L15,15 L20,20" stroke="#48cae4" stroke-width="2" fill="none"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="card-title">تجارة الأسماك</div>
+                <div class="card-subtitle">منصة التداول والإدارة</div>
+            </a>
+
+            <!-- Fish Farm Card -->
+            <a href="https://mohamednasr5.github.io/fish/" class="nav-card farm" id="cardFarm">
+                <div class="card-icon-wrapper">
+                    <svg viewBox="0 0 100 100" fill="none">
+                        <defs>
+                            <linearGradient id="farmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#48cae4"/>
+                                <stop offset="100%" stop-color="#0096c7"/>
+                            </linearGradient>
+                            <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="rgba(0,180,216,0.3)"/>
+                                <stop offset="100%" stop-color="rgba(0,119,182,0.6)"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Pond/Base -->
+                        <ellipse cx="50" cy="65" rx="42" ry="18" fill="url(#waterGrad)"/>
+                        <ellipse cx="50" cy="65" rx="42" ry="18" stroke="rgba(144,224,239,0.3)" stroke-width="1.5" fill="none"/>
+                        <!-- Water ripples -->
+                        <ellipse cx="50" cy="65" rx="30" ry="12" stroke="rgba(144,224,239,0.15)" stroke-width="1" fill="none"/>
+                        <ellipse cx="50" cy="65" rx="18" ry="7" stroke="rgba(144,224,239,0.1)" stroke-width="1" fill="none"/>
+                        <!-- Fish in pond -->
+                        <g transform="translate(30, 55)">
+                            <ellipse cx="12" cy="8" rx="10" ry="6" fill="rgba(0,180,216,0.5)"/>
+                            <polygon points="2,8 -4,2 -4,14" fill="rgba(0,180,216,0.4)"/>
+                            <circle cx="18" cy="6" r="1.8" fill="white" opacity="0.7"/>
+                        </g>
+                        <g transform="translate(55, 60)" opacity="0.7">
+                            <ellipse cx="8" cy="5" rx="7" ry="4.5" fill="rgba(72,202,228,0.5)"/>
+                            <polygon points="1,5 -3,1 -3,9" fill="rgba(72,202,228,0.4)"/>
+                        </g>
+                        <!-- Fence posts -->
+                        <g stroke="#d4a853" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="15" y1="30" x2="15" y2="52"/>
+                            <line x1="35" y1="28" x2="35" y2="50"/>
+                            <line x1="65" y1="28" x2="65" y2="50"/>
+                            <line x1="85" y1="30" x2="85" y2="52"/>
+                        </g>
+                        <!-- Fence rails -->
+                        <g stroke="#d4a853" stroke-width="2" stroke-linecap="round" opacity="0.8">
+                            <line x1="15" y1="36" x2="85" y2="36"/>
+                            <line x1="15" y1="46" x2="85" y2="46"/>
+                        </g>
+                        <!-- Bubbles -->
+                        <circle cx="45" cy="50" r="2" stroke="rgba(144,224,239,0.5)" stroke-width="0.8" fill="none"/>
+                        <circle cx="58" cy="48" r="1.5" stroke="rgba(144,224,239,0.4)" stroke-width="0.8" fill="none"/>
+                        <circle cx="52" cy="44" r="1" stroke="rgba(144,224,239,0.3)" stroke-width="0.8" fill="none"/>
+                        <!-- Sun/leaf decoration -->
+                        <g transform="translate(75, 12)" opacity="0.6">
+                            <path d="M8,0 Q16,8 8,16 Q0,8 8,0Z" fill="#48cae4"/>
+                            <line x1="8" y1="4" x2="8" y2="12" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="card-title">المزرعة السمكية</div>
+                <div class="card-subtitle">إدارة المزارع والإنتاج</div>
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-line"></div>
+            <p class="footer-text">
+                برمجة وتطوير <span class="footer-heart">&#10084;</span> بكل حب بواسطة<br>
+                <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank" rel="noopener">المهندس محمد حماد</a>
+            </p>
+        </footer>
+
+    </main>
+
+    <!-- ===== INSTALL BANNER ===== -->
+    <div class="install-banner" id="installBanner">
+        <button class="install-dismiss" id="installDismiss" aria-label="إغلاق">&#10005;</button>
+        <div class="install-icon">
+            <svg viewBox="0 0 24 24" fill="white">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+        </div>
+        <div class="install-text">
+            <h4>تثبيت التطبيق</h4>
+            <p>ثبّت التطبيق على جهازك لتجربة أفضل</p>
+        </div>
+        <button class="install-btn" id="installBtn">تثبيت</button>
+    </div>
+
+    <script>
+        // ===== SPLASH SCREEN =====
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splashScreen').classList.add('hidden');
+            }, 2200);
+        });
+
+        // ===== GENERATE LIGHT RAYS =====
+        (function createLightRays() {
+            const container = document.getElementById('lightRays');
+            for (let i = 0; i < 8; i++) {
+                const ray = document.createElement('div');
+                ray.className = 'light-ray';
+                ray.style.left = (10 + Math.random() * 80) + '%';
+                ray.style.width = (1 + Math.random() * 3) + 'px';
+                ray.style.animationDelay = (Math.random() * 4) + 's';
+                ray.style.animationDuration = (3 + Math.random() * 4) + 's';
+                container.appendChild(ray);
+            }
+        })();
+
+        // ===== GENERATE PARTICLES =====
+        (function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = 2 + Math.random() * 4;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = (Math.random() * 100) + '%';
+                p.style.animationDuration = (10 + Math.random() * 20) + 's';
+                p.style.animationDelay = (Math.random() * 15) + 's';
+                container.appendChild(p);
+            }
+        })();
+
+        // ===== GENERATE BUBBLES =====
+        (function createBubbles() {
+            const container = document.getElementById('bubbles');
+            for (let i = 0; i < 12; i++) {
+                const b = document.createElement('div');
+                b.className = 'bubble';
+                const size = 8 + Math.random() * 30;
+                b.style.width = size + 'px';
+                b.style.height = size + 'px';
+                b.style.left = (Math.random() * 100) + '%';
+                b.style.animationDuration = (8 + Math.random() * 15) + 's';
+                b.style.animationDelay = (Math.random() * 10) + 's';
+                container.appendChild(b);
+            }
+        })();
+
+        // ===== CARD RIPPLE EFFECT =====
+        document.querySelectorAll('.nav-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // ===== OCEAN AMBIENT SOUND (Web Audio API) =====
+        class OceanSound {
+            constructor() {
+                this.ctx = null;
+                this.playing = false;
+                this.nodes = [];
+            }
+
+            init() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create noise source for ocean waves
+                const bufferSize = 2 * this.ctx.sampleRate;
+                const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                // White noise -> lowpass filter -> gain (ocean wave simulation)
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = noiseBuffer;
+                noise.loop = true;
+
+                // Bandpass to get ocean-like frequencies
+                const bandpass = this.ctx.createBiquadFilter();
+                bandpass.type = 'bandpass';
+                bandpass.frequency.value = 400;
+                bandpass.Q.value = 0.5;
+
+                // Lowpass for smoothness
+                const lowpass = this.ctx.createBiquadFilter();
+                lowpass.type = 'lowpass';
+                lowpass.frequency.value = 800;
+
+                // LFO for wave-like volume modulation
+                const lfo = this.ctx.createOscillator();
+                lfo.type = 'sine';
+                lfo.frequency.value = 0.15; // Slow wave cycle
+
+                const lfoGain = this.ctx.createGain();
+                lfoGain.gain.value = 0.3;
+
+                // Main volume
+                const mainGain = this.ctx.createGain();
+                mainGain.gain.value = 0;
+
+                // Second noise layer (deeper)
+                const noise2 = this.ctx.createBufferSource();
+                noise2.buffer = noiseBuffer;
+                noise2.loop = true;
+
+                const lowpass2 = this.ctx.createBiquadFilter();
+                lowpass2.type = 'lowpass';
+                lowpass2.frequency.value = 300;
+
+                const lfo2 = this.ctx.createOscillator();
+                lfo2.type = 'sine';
+                lfo2.frequency.value = 0.1;
+
+                const lfoGain2 = this.ctx.createGain();
+                lfoGain2.gain.value = 0.2;
+
+                const gain2 = this.ctx.createGain();
+                gain2.gain.value = 0;
+
+                // Connections - Layer 1
+                noise.connect(bandpass);
+                bandpass.connect(lowpass);
+                lowpass.connect(mainGain);
+
+                lfo.connect(lfoGain);
+                lfoGain.connect(mainGain.gain);
+                mainGain.connect(this.ctx.destination);
+
+                // Connections - Layer 2
+                noise2.connect(lowpass2);
+                lowpass2.connect(gain2);
+
+                lfo2.connect(lfoGain2);
+                lfoGain2.connect(gain2.gain);
+                gain2.connect(this.ctx.destination);
+
+                // Start
+                noise.start();
+                noise2.start();
+                lfo.start();
+                lfo2.start();
+
+                this.nodes = { mainGain, gain2, noise, noise2, lfo, lfo2 };
+                this.playing = true;
+            }
+
+            start() {
+                if (!this.ctx) this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                
+                const t = this.ctx.currentTime;
+                this.nodes.mainGain.gain.cancelScheduledValues(t);
+                this.nodes.mainGain.gain.setValueAtTime(this.nodes.mainGain.gain.value, t);
+                this.nodes.mainGain.gain.linearRampToValueAtTime(0.08, t + 2);
+
+                this.nodes.gain2.gain.cancelScheduledValues(t);
+                this.nodes.gain2.gain.setValueAtTime(this.nodes.gain2.gain.value, t);
+                this.nodes.gain2.gain.linearRampToValueAtTime(0.05, t + 2.5);
+
+                this.playing = true;
+            }
+
+            stop() {
+                if (!this.ctx) return;
+                const t = this.ctx.currentTime;
+                this.nodes.mainGain.gain.cancelScheduledValues(t);
+                this.nodes.mainGain.gain.setValueAtTime(this.nodes.mainGain.gain.value, t);
+                this.nodes.mainGain.gain.linearRampToValueAtTime(0, t + 1);
+
+                this.nodes.gain2.gain.cancelScheduledValues(t);
+                this.nodes.gain2.gain.setValueAtTime(this.nodes.gain2.gain.value, t);
+                this.nodes.gain2.gain.linearRampToValueAtTime(0, t + 1.5);
+
+                this.playing = false;
+            }
+
+            toggle() {
+                if (this.playing) {
+                    this.stop();
+                } else {
+                    this.start();
+                }
+                return this.playing;
+            }
+        }
+
+        const oceanSound = new OceanSound();
+        let soundMuted = true; // Start muted
+
+        document.getElementById('soundToggle').addEventListener('click', function() {
+            soundMuted = !soundMuted;
+            const soundOn = document.getElementById('soundOnIcon');
+            const soundOff = document.getElementById('soundOffIcon');
+            
+            if (soundMuted) {
+                oceanSound.stop();
+                soundOn.style.display = 'none';
+                soundOff.style.display = 'block';
+                this.classList.add('muted');
+            } else {
+                oceanSound.start();
+                soundOn.style.display = 'block';
+                soundOff.style.display = 'none';
+                this.classList.remove('muted');
+            }
+        });
+
+        // ===== PWA INSTALL LOGIC =====
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+        const installBtn = document.getElementById('installBtn');
+        const installDismiss = document.getElementById('installDismiss');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show banner after splash screen
+            setTimeout(() => {
+                installBanner.classList.add('show');
+            }, 3000);
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                installBanner.classList.remove('show');
+            }
+            deferredPrompt = null;
+        });
+
+        installDismiss.addEventListener('click', () => {
+            installBanner.classList.remove('show');
+            localStorage.setItem('installDismissed', 'true');
+        });
+
+        // Don't show banner if previously dismissed
+        if (localStorage.getItem('installDismissed') === 'true') {
+            installBanner.style.display = 'none';
+        }
+
+        // Check if already installed
+        window.addEventListener('appinstalled', () => {
+            installBanner.classList.remove('show');
+            deferredPrompt = null;
+        });
+
+        // ===== REGISTER SERVICE WORKER =====
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => {
+                        console.log('SW registered:', reg.scope);
+                    })
+                    .catch(err => {
+                        console.log('SW registration failed:', err);
+                    });
+            });
+        }
+
+        // ===== iOS PWA INSTALL HINT =====
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isStandalone = window.navigator.standalone === true;
+        
+        if (isIOS && !isStandalone) {
+            setTimeout(() => {
+                if (localStorage.getItem('installDismissed') !== 'true') {
+                    installBanner.classList.add('show');
+                    installBtn.textContent = 'المزيد';
+                    installBtn.onclick = () => {
+                        alert('للتثبيت على iPhone:\n1. اضغط على زر المشاركة  في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية"\n3. اضغط "إضافة"');
+                    };
+                }
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
