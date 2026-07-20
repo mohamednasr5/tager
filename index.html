@@ -2,8 +2,13 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<!-- PWA Professional Meta Tags -->
+<!-- PWA Professional Meta Tags - Tablet Optimized -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
+<!-- Force tablet to use full viewport width -->
+<meta name="x-ua-compatible" content="ie=edge">
+<!-- Prevent iOS/Android from emulating phone layout on tablets -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="screen-orientation" content="any">
 <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: light)">
 <meta name="color-scheme" content="dark">
@@ -784,8 +789,102 @@
   }
 
   /* ===================== TABLET LAYOUT (auto-switch) ===================== */
-  /* On wide screens (landscape tablets), convert bottom-nav to right-side Rail */
-  @media (min-width: 900px) and (orientation: landscape) {
+  
+  /*
+   * ╔══════════════════════════════════════════════════════════════════╗
+   * ║  TABLET-FIRST RESPONSIVE DESIGN                                 ║
+   * ║  ✅ Works on ANY tablet orientation (portrait/landscape)         ║
+   * ║  ✅ Detects screen width, not just orientation                  ║
+   * ║  ✅ Uses full viewport width immediately on tablets             ║
+   * ╚══════════════════════════════════════════════════════════════════╝
+   */
+
+  /* 
+   * 📱 SMALL TABLETS & LARGE PHONES (600px - 767px)
+   * Keep bottom nav but make it more spacious
+   */
+  @media (min-width: 600px) and (max-width: 767px) {
+    .bottom-nav { max-width: 560px; left: 50%; transform: translateX(-50%); border-radius: 20px 20px 0 0; margin: 0 auto; }
+    .nav-item .nav-label { font-size: 11px; }
+    .nav-item .nav-icon { font-size: 24px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .content { max-width: 720px; margin: 0 auto; }
+  }
+
+  /* 
+   * 📱📱 MEDIUM TABLETS (768px - 1023px) - THE KEY FIX!
+   * This is where most tablets live (iPad, Galaxy Tab, etc.)
+   * Works in BOTH portrait AND landscape - no orientation lock!
+   * Converts to side-rail navigation for better space usage
+   */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    /* Move nav from bottom to right side (RTL: visually on right) */
+    .bottom-nav {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: auto;
+      width: 80px;
+      flex-direction: column;
+      padding: max(12px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom));
+      border-top: none;
+      border-left: 1px solid var(--glass-border);
+      background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(13,33,55,0.97) 100%);
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    .bottom-nav::-webkit-scrollbar { width: 0; }
+    .nav-item { 
+      padding: 10px 4px; 
+      justify-content: center;
+    }
+    .nav-item .nav-icon { font-size: 22px; }
+    .nav-item .nav-label { font-size: 9px; }
+
+    /* Push content to the right of the rail - USE FULL WIDTH! */
+    .content { 
+      padding-right: 80px; 
+      padding-left: 16px;
+      padding-bottom: 24px;
+      max-width: none !important;
+      width: auto !important;
+    }
+    
+    #pwa-install-bar { 
+      right: calc(80px + 12px); 
+      left: 12px; 
+      max-width: none; 
+      transform: translateY(140%); 
+      width: auto; 
+    }
+    #pwa-install-bar.visible { transform: translateY(0); }
+    #pwa-install-bar.dismissed { transform: translateY(140%); }
+
+    /* App header spans full width */
+    .app-header { 
+      padding-right: 80px; 
+      padding-left: 16px;
+      max-width: none !important;
+    }
+
+    /* Better use of tablet screen — multi-column grids */
+    .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    .glass-card { max-width: 100%; }
+
+    /* Unit grid - show all 4 columns on tablet */
+    .unit-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    
+    /* Fish inputs - wider layout */
+    .fish-inputs-row { grid-template-columns: 1fr 1fr 1fr 1fr !important; gap: 6px; }
+  }
+
+  /* 
+   * 💻 LARGE TABLETS & SMALL DESKTOPS (1024px+)
+   * Full side-rail navigation with more spacing
+   * Works in BOTH orientations
+   */
+  @media (min-width: 1024px) {
     /* Move nav from bottom to right side (RTL: visually on right) */
     .bottom-nav {
       position: fixed; top: 0; bottom: 0; right: 0; left: auto;
@@ -794,41 +893,44 @@
       border-top: none; border-left: 1px solid var(--glass-border);
       background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(13,33,55,0.97) 100%);
       overflow-y: auto;
+      z-index: 1000;
     }
     .bottom-nav::-webkit-scrollbar { width: 0; }
     .nav-item { padding: 10px 4px; }
     .nav-item .nav-icon { font-size: 24px; }
     .nav-item .nav-label { font-size: 9px; }
 
-    /* Push content to the right of the rail */
-    .content { padding-right: 92px; padding-bottom: 24px; }
+    /* Push content to the right of the rail - FULL WIDTH USAGE */
+    .content { 
+      padding-right: 92px; 
+      padding-left: 24px; 
+      padding-bottom: 24px;
+      max-width: none !important;
+      width: auto !important;
+    }
     #pwa-install-bar { right: calc(92px + 12px); left: 12px; max-width: none; transform: translateY(140%); width: auto; }
     #pwa-install-bar.visible { transform: translateY(0); }
     #pwa-install-bar.dismissed { transform: translateY(140%); }
 
     /* App header gets wider too */
-    .app-header { padding-right: 92px; }
+    .app-header { 
+      padding-right: 92px; 
+      padding-left: 24px;
+      max-width: none !important;
+    }
 
     /* Better use of wide screen — multi-column grids */
     .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
     .glass-card { max-width: 100%; }
 
     /* Master-Detail: make some grids side by side on tablet */
-    .content { padding-left: 24px; padding-right: calc(92px + 24px); }
+    .unit-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    .fish-inputs-row { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
   }
 
-  /* Portrait tablet — keep bottom nav but make it more spacious */
-  @media (min-width: 600px) and (max-width: 899px) {
-    .bottom-nav { max-width: 560px; left: 50%; transform: translateX(-50%); border-radius: 20px 20px 0 0; margin: 0 auto; }
-    .nav-item .nav-label { font-size: 11px; }
-    .nav-item .nav-icon { font-size: 24px; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .content { max-width: 720px; margin: 0 auto; }
-  }
-
-  /* Very wide (desktop / large landscape tablet) — center content card */
-  @media (min-width: 1200px) {
-    .content { max-width: 1100px; margin: 0 auto; padding-right: calc(92px + 32px); padding-left: 32px; }
+  /* Very wide (desktop / large landscape tablet) — optional centering */
+  @media (min-width: 1400px) {
+    .content { max-width: 1300px; margin: 0 auto; padding-right: calc(92px + 32px); padding-left: 32px; }
     .app-header { max-width: 100%; padding-right: calc(92px + 32px); padding-left: 32px; }
   }
 
@@ -875,6 +977,36 @@
       padding-right: max(12px, env(safe-area-inset-right));
     }
   }
+
+  /* 
+   * 📱 TABLET-SPECIFIC ENHANCEMENTS (via .device-tablet class)
+   * Applied via JavaScript when tablet is detected
+   */
+  html.device-tablet body,
+  body.device-tablet {
+    /* Prevent any mobile-specific zoom/transform issues */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+  
+  /* Ensure full viewport usage on tablets */
+  html.device-tablet,
+  body.device-tablet {
+    width: 100vw;
+    min-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Force content to use available width on tablet */
+  body.device-tablet .content {
+    max-width: none !important;
+    width: calc(100vw - var(--nav-width, 92px)) !important;
+  }
+
+  body.device-tablet .app-header {
+    max-width: none !important;
+    width: 100% !important;
+  }
 </style>
 </head>
 <body>
@@ -900,6 +1032,68 @@
   if (document.readyState === 'complete') setTimeout(hideSplash, 600);
   else window.addEventListener('load', function(){ setTimeout(hideSplash, 600); });
   setTimeout(hideSplash, 4000); // safety net
+})();
+</script>
+
+<!-- ============ TABLET DETECTION & OPTIMIZATION ============ -->
+<script>
+/**
+ * Tablet Detection & Viewport Optimization
+ * Detects tablets and ensures full-width layout immediately
+ */
+(function() {
+  'use strict';
+  
+  // Tablet detection function
+  function isTablet() {
+    const ua = navigator.userAgent.toLowerCase();
+    const width = window.screen.width || window.innerWidth;
+    const height = window.screen.height || window.innerHeight;
+    const minDimension = Math.min(width, height);
+    
+    // Check for common tablet indicators
+    const isTabletUA = /(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua);
+    // Check screen size (tablets typically have min dimension >= 600px)
+    const isTabletSize = minDimension >= 600 && minDimension <= 1366;
+    // Check for touch support + larger screen
+    const isTouchTablet = navigator.maxTouchPoints > 1 && minDimension >= 768;
+    
+    return isTabletUA || (isTabletSize && ('ontouchstart' in window)) || isTouchTablet;
+  }
+  
+  // Apply tablet optimizations
+  function applyTabletOptimizations() {
+    if (!isTablet()) return;
+    
+    // Add tablet class to body for CSS targeting
+    document.documentElement.classList.add('device-tablet');
+    document.body.classList.add('device-tablet');
+    
+    // Force viewport to use full width - prevent mobile emulation
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+      viewport.setAttribute('content', 
+        'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'
+      );
+    }
+    
+    // Log for debugging
+    console.log('[PWA] Tablet detected - applying optimized layout');
+    console.log('[PWA] Screen:', window.screen.width + 'x' + window.screen.height);
+  }
+  
+  // Run on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyTabletOptimizations);
+  } else {
+    applyTabletOptimizations();
+  }
+  
+  // Also run on window load (for PWA standalone mode)
+  window.addEventListener('load', applyTabletOptimizations);
+  
+  // Expose function globally for debugging
+  window.isTabletDevice = isTablet;
 })();
 </script>
 
