@@ -4,6 +4,69 @@
 <meta charset="UTF-8">
 <!-- PWA Professional Meta Tags -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
+<!-- Tablet Detection Meta -->
+<meta name="x-ua-compatible" content="ie=edge">
+<script>
+// ===== TABLET DETECTION & LAYOUT SWITCHER =====
+// This script runs BEFORE the page renders to prevent layout shift
+(function() {
+  'use strict';
+  
+  function isTabletDevice() {
+    const ua = navigator.userAgent.toLowerCase();
+    const platform = navigator.platform?.toLowerCase() || '';
+    const maxWidth = screen.width || window.innerWidth;
+    const maxHeight = screen.height || window.innerHeight;
+    const minDimension = Math.min(maxWidth, maxHeight);
+    
+    // Check for tablet patterns in user agent
+    const tabletPatterns = [
+      'ipad', 'tablet', 'playbook', 'silk', 'kindle',
+      'android(?!.*mobile)', 'p1000', 'p5100', 'p7300',
+      'sm-t', 'sm-p', 'tab-', 'gt-p', 'sch-i800',
+      'a100', 'a101', 'a200', 'a210', 'a211', 'a500',
+      'a501', 'a510', 'a511', 'a700', 'a701'
+    ];
+    
+    const isTabletUA = tabletPatterns.some(p => new RegExp(p).test(ua));
+    
+    // Check for iPad on iOS 13+ (no longer identifies as iPad in UA)
+    const isIPad = /macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+    
+    // Screen size based detection (tablets typically 768px+)
+    const isTabletScreen = minDimension >= 768 && minDimension < 1366;
+    
+    // Android tablets with large screens
+    const isAndroidTablet = /android/.test(ua) && !/mobile/.test(ua);
+    
+    return isTabletUA || isIPad || isAndroidTablet || (isTabletScreen && !/mobile/.test(ua));
+  }
+  
+  // Apply detection immediately
+  if (isTabletDevice()) {
+    document.documentElement.classList.add('is-tablet');
+    
+    // Store for later use
+    window.__isTablet = true;
+    
+    // Force full-width viewport behavior
+    const meta = document.querySelector('meta[name="viewport"]');
+    if (meta) {
+      meta.setAttribute('content', 
+        'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes'
+      );
+    }
+    
+    // Add data attribute for CSS targeting
+    document.documentElement.setAttribute('data-device-type', 'tablet');
+  } else {
+    document.documentElement.setAttribute('data-device-type', 'phone');
+  }
+  
+  // Expose detection function globally
+  window.isTabletDevice = isTabletDevice;
+})();
+</script>
 <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: light)">
 <meta name="color-scheme" content="dark">
@@ -784,6 +847,93 @@
   }
 
   /* ===================== TABLET LAYOUT (auto-switch) ===================== */
+  
+  /* ===== TABLET DETECTION VIA JS CLASS ===== */
+  /* When JavaScript detects a tablet device, apply tablet-optimized layout */
+  html.is-tablet,
+  html[data-device-type="tablet"] {
+    /* Force full-width rendering on tablets */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+  
+  /* Tablet - Always use wide layout regardless of orientation */
+  html.is-tablet .bottom-nav,
+  html[data-device-type="tablet"] .bottom-nav {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: auto;
+    width: 92px;
+    flex-direction: column;
+    padding: max(16px, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom));
+    border-top: none;
+    border-left: 1px solid var(--glass-border);
+    background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(13,33,55,0.97) 100%);
+    overflow-y: auto;
+    border-radius: 0;
+    transform: none !important;
+    left: auto !important;
+    max-width: none !important;
+  }
+  
+  html.is-tablet .bottom-nav::-webkit-scrollbar,
+  html[data-device-type="tablet"] .bottom-nav::-webkit-scrollbar {
+    width: 0;
+  }
+  
+  html.is-tablet .nav-item,
+  html[data-device-type="tablet"] .nav-item {
+    padding: 10px 4px;
+  }
+  
+  html.is-tablet .nav-item .nav-icon,
+  html[data-device-type="tablet"] .nav-item .nav-icon {
+    font-size: 24px;
+  }
+  
+  html.is-tablet .nav-item .nav-label,
+  html[data-device-type="tablet"] .nav-item .nav-label {
+    font-size: 9px;
+  }
+  
+  /* Tablet content area - push to the right of nav rail */
+  html.is-tablet .content,
+  html[data-device-type="tablet"] .content {
+    padding-right: 92px;
+    padding-bottom: 24px;
+    padding-left: 24px;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+  
+  html.is-tablet #pwa-install-bar,
+  html[data-device-type="tablet"] #pwa-install-bar {
+    right: calc(92px + 12px);
+    left: 12px;
+    max-width: none;
+    width: auto;
+  }
+  
+  html.is-tablet .app-header,
+  html[data-device-type="tablet"] .app-header {
+    padding-right: 92px;
+    padding-left: 24px;
+    max-width: none !important;
+  }
+  
+  /* Better use of wide screen — multi-column grids on tablet */
+  html.is-tablet .stats-grid,
+  html[data-device-type="tablet"] .stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  html.is-tablet .glass-card,
+  html[data-device-type="tablet"] .glass-card {
+    max-width: 100%;
+  }
+
   /* On wide screens (landscape tablets), convert bottom-nav to right-side Rail */
   @media (min-width: 900px) and (orientation: landscape) {
     /* Move nav from bottom to right side (RTL: visually on right) */

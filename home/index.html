@@ -2,7 +2,48 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
+    <!-- Tablet Detection Meta -->
+    <meta name="x-ua-compatible" content="ie=edge">
+<script>
+// ===== TABLET DETECTION & LAYOUT SWITCHER =====
+(function() {
+  'use strict';
+  
+  function isTabletDevice() {
+    const ua = navigator.userAgent.toLowerCase();
+    const platform = navigator.platform?.toLowerCase() || '';
+    const maxWidth = screen.width || window.innerWidth;
+    const maxHeight = screen.height || window.innerHeight;
+    const minDimension = Math.min(maxWidth, maxHeight);
+    
+    const tabletPatterns = [
+      'ipad', 'tablet', 'playbook', 'silk', 'kindle',
+      'android(?!.*mobile)', 'p1000', 'p5100', 'p7300',
+      'sm-t', 'sm-p', 'tab-', 'gt-p', 'sch-i800',
+      'a100', 'a101', 'a200', 'a210', 'a211', 'a500',
+      'a501', 'a510', 'a511', 'a700', 'a701'
+    ];
+    
+    const isTabletUA = tabletPatterns.some(p => new RegExp(p).test(ua));
+    const isIPad = /macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+    const isTabletScreen = minDimension >= 768 && minDimension < 1366;
+    const isAndroidTablet = /android/.test(ua) && !/mobile/.test(ua);
+    
+    return isTabletUA || isIPad || isAndroidTablet || (isTabletScreen && !/mobile/.test(ua));
+  }
+  
+  if (isTabletDevice()) {
+    document.documentElement.classList.add('is-tablet');
+    window.__isTablet = true;
+    document.documentElement.setAttribute('data-device-type', 'tablet');
+  } else {
+    document.documentElement.setAttribute('data-device-type', 'phone');
+  }
+  
+  window.isTabletDevice = isTabletDevice;
+})();
+</script>
     <meta name="theme-color" content="#0a1628">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
