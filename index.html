@@ -1286,13 +1286,9 @@
         </div>
       </div>
 
-      <!-- 🔥 مقارنة فروق أسعار بين عميلين (مثل فروق أسعار عميل واحد) -->
+      <!-- 🔥 مقارنة فروق أسعار بين عميلين -->
       <div class="glass-card" style="margin-top:14px;background:rgba(0,200,150,0.05);border-color:rgba(0,200,150,0.3)">
         <div class="section-title" style="color:var(--emerald)">⚖️ فروق أسعار بين عميلين</div>
-        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(0,200,150,0.07);border:1px dashed rgba(0,200,150,0.3);margin-bottom:14px;font-size:12px;color:var(--emerald)">
-          <span>💡</span>
-          <span>اختر فترة زمنية وعميلين لعرض فرق أسعارهما في كل الأصناف - يظهر الفرق بين العميلين مباشرة</span>
-        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
             <label class="form-label" style="font-size:10px">📅 من تاريخ</label>
@@ -1305,13 +1301,14 @@
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
-            <label class="form-label" style="font-size:10px">👤 العميل الأول (الأساسي)</label>
+            <label class="form-label" style="font-size:10px">👤 العميل الأول (هو اللي عايز تعرف خسائره)</label>
             <select id="compare2-client1" class="form-select" style="padding:8px" onchange="renderTwoClientsComparison()"></select>
           </div>
           <div>
             <label class="form-label" style="font-size:10px">👤 العميل الثاني (للمقارنة)</label>
             <select id="compare2-client2" class="form-select" style="padding:8px" onchange="renderTwoClientsComparison()"></select>
           </div>
+        </div>
         </div>
       </div>
 
@@ -4478,7 +4475,6 @@ window.renderTwoClientsComparison = function() {
   });
 
   // بناء خريطة لكل صنف: بيانات العميل الأول + بيانات العميل الثاني للمقارنة
-  // نفس منطق "فروق أسعار عميل واحد" لكن المقارنة تكون مع العميل الثاني بدل أعلى سعر عام
   const fishMap = {};
   filtered.forEach(inv => {
     (inv.items || []).forEach(item => {
@@ -4486,43 +4482,36 @@ window.renderTwoClientsComparison = function() {
       const fishName = item.fish;
       const price = item.pricePerKg || 0;
       const qty = item.kg || 0;
-      const invDate = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
 
       if (!fishMap[fishName]) {
         fishMap[fishName] = { 
-          clientPrice: 0,       // سعر العميل الأول (الأساسي)
-          clientQty: 0,         // كمية العميل الأول
-          clientSubtotal: 0,    // إجمالي العميل الأول
-          comparePrice: 0,      // سعر العميل الثاني (للمقارنة)
-          compareQty: 0,        // كمية العميل الثاني
-          dates: new Set()
+          clientPrice: 0,
+          clientQty: 0,
+          comparePrice: 0
         };
       }
 
-      // بيانات العميل الأول (الأساسي) - مثل clientPrice في فروق أسعار عميل واحد
+      // بيانات العميل الأول (الأساسي)
       if (inv.clientName === c1Val) {
         if (price > fishMap[fishName].clientPrice) {
           fishMap[fishName].clientPrice = price;
         }
         fishMap[fishName].clientQty += qty;
-        fishMap[fishName].clientSubtotal += (item.subtotal || 0);
-        fishMap[fishName].dates.add(invDate);
       }
 
-      // بيانات العميل الثاني (للمقارنة) - مثل highestPrice في فروق أسعار عميل واحد
+      // بيانات العميل الثاني (للمقارنة)
       if (inv.clientName === c2Val) {
         if (price > fishMap[fishName].comparePrice) {
           fishMap[fishName].comparePrice = price;
         }
-        fishMap[fishName].compareQty += qty;
       }
     });
   });
 
-  // فلترة الأصناف اللي العميل الأول اشتراها فقط (نفس سلوك فروق أسعار عميل واحد)
-  const clientFishEntries = Object.entries(fishMap).filter(([, d]) => d.clientQty > 0);
+  // فلترة الأصناف اللي العميل الأول اشتراها
+  let allFishEntries = Object.entries(fishMap).filter(([, d]) => d.clientQty > 0);
 
-  if (clientFishEntries.length === 0) {
+  if (allFishEntries.length === 0) {
     if (summaryEl) summaryEl.style.display = 'none';
     if (actionsEl) actionsEl.style.display = 'none';
     tableContainer.innerHTML = `
@@ -4533,61 +4522,66 @@ window.renderTwoClientsComparison = function() {
     return;
   }
 
-  // حساب الفروق - نفس منطق فروق أسعار عميل واحد
-  let totalDiffAmount = 0;
-  let totalClientQty = 0;
-  const rows = clientFishEntries.map(([fishName, data]) => {
-    // فرق السعر = سعر العميل الثاني - سعر العميل الأول (موجب يعني العميل الثاني أغلى)
+  // حساب الفروق لكل صنف
+  const allRows = allFishEntries.map(([fishName, data]) => {
     const priceDiff = data.comparePrice - data.clientPrice;
-    // قيمة الفرق = كمية العميل الأول × فرق السعر
     const diffAmount = data.clientQty * priceDiff;
-    totalDiffAmount += diffAmount;
-    totalClientQty += data.clientQty;
     
-    // تحديد من منهما أعلى سعراً
-    let higherClient = '';
-    if (data.comparePrice > data.clientPrice && data.clientPrice > 0) {
-      higherClient = c2Val;
-    } else if (data.clientPrice > data.comparePrice && data.comparePrice > 0) {
-      higherClient = c1Val;
-    } else if (data.clientPrice > 0 && data.comparePrice > 0) {
-      higherClient = 'تعادل';
-    } else if (data.clientPrice > 0) {
-      higherClient = c1Val;
-    } else {
-      higherClient = c2Val;
+    let rowType = 'neutral';
+    if (priceDiff > 0 && data.comparePrice > 0) {
+      rowType = 'loss'; // 🔴 خسارة - العميل الأول أقل سعر
+    } else if (priceDiff < 0 && data.comparePrice > 0) {
+      rowType = 'profit'; // 🟢 ربح - العميل الأول أعلى سعر
     }
 
-    return { fishName, ...data, priceDiff, diffAmount, higherClient };
+    return { fishName, ...data, priceDiff, diffAmount, rowType };
   });
 
-  // ترتيب حسب قيمة الفرق من الأعلى (نفس ترتيب فروق أسعار عميل واحد)
-  rows.sort((a, b) => b.diffAmount - a.diffAmount);
+  // 🎯 دائماً نعرض كل الصفوف (الأحمر والأخضر)
+  let displayRows = [...allRows];
 
-  // عرض الملخص - نفس شكل فروق أسعار عميل واحد
+  // ترتيب: الأحمر (الخسارات) أولاً، ثم الأخضر
+  displayRows.sort((a, b) => {
+    if (a.rowType === 'loss' && b.rowType !== 'loss') return -1;
+    if (a.rowType !== 'loss' && b.rowType === 'loss') return 1;
+    return b.diffAmount - a.diffAmount;
+  });
+
+  // 🎯 الإجمالي = مجموع الأحمر فقط!
+  const totalRedOnly = allRows.filter(r => r.rowType === 'loss').reduce((s, r) => s + r.diffAmount, 0);
+  const redCount = allRows.filter(r => r.rowType === 'loss').length;
+
+  // عرض الملخص
   if (summaryEl) {
     summaryEl.style.display = 'block';
     summaryEl.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-        <div style="background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.25);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">👤 العميل الأساسي</div>
-          <div style="font-size:14px;font-weight:700;color:var(--emerald)">${c1Val}</div>
+        <div style="background:rgba(255,71,87,0.12);border:2px solid rgba(255,71,87,0.4);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">🔴 عدد الأصناف</div>
+          <div style="font-size:22px;font-weight:900;color:var(--danger)">${redCount}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">صنف ${c1Val} أقل سعر</div>
         </div>
-        <div style="background:rgba(0,180,216,0.08);border:1px solid rgba(0,180,216,0.25);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">🐟 عدد الأصناف</div>
-          <div style="font-size:18px;font-weight:900;color:var(--cyan-glow)">${rows.length}</div>
-          <div style="font-size:10px;color:var(--text-secondary)">صنف</div>
+        <div style="background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">💰 إجمالي الأصناف الحمراء</div>
+          <div style="font-size:20px;font-weight:900;color:var(--danger)">${formatNum(totalRedOnly)} <span style="font-size:11px">ج.م</span></div>
+          <div style="font-size:9px;color:var(--text-secondary)">الأحمر فقط</div>
         </div>
-        <div style="background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">📅 الفترة</div>
-          <div style="font-size:11px;font-weight:600;color:var(--text-primary)">${isoToArabicDate(fromVal)}</div>
-          <div style="font-size:10px;color:var(--text-secondary)">إلى ${isoToArabicDate(toVal)}</div>
+        <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">🐟 إجمالي الأصناف</div>
+          <div style="font-size:18px;font-weight:900;color:var(--gold)">${allRows.length}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">صنف</div>
         </div>
       </div>
     `;
   }
 
-  // عرض الجدول - نفس شكل فروق أسعار عميل واحد بالضبط!
+  // عرض الجدول
+  if (displayRows.length === 0) {
+    tableContainer.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات للعرض</div></div>`;
+    if (actionsEl) actionsEl.style.display = 'none';
+    return;
+  }
+
   let tableHtml = `
     <table class="pricediff-table">
       <thead>
@@ -4599,44 +4593,45 @@ window.renderTwoClientsComparison = function() {
           <th>الأعلى<br><span style="font-size:9px">سعراً</span></th>
           <th>العدد<br><span style="font-size:9px">(كيلو)</span></th>
           <th>فرق السعر<br><span style="font-size:9px">(ج.م)</span></th>
-          <th>قيمة الفرق<br><span style="font-size:9px">(العدد × فرق السعر)</span></th>
+          <th>💸 قيمة الفرق<br><span style="font-size:9px">(العدد × الفرق)</span></th>
         </tr>
       </thead>
       <tbody>
   `;
 
-  rows.forEach((r, i) => {
-    const isZero = r.priceDiff === 0;
-    const c2Higher = r.priceDiff > 0; // العميل الثاني أعلى سعراً
-    const c1Higher = r.priceDiff < 0; // العميل الأول أعلى سعراً
+  displayRows.forEach((r, i) => {
+    const isLoss = r.rowType === 'loss';
+    const isProfit = r.rowType === 'profit';
     
     tableHtml += `
-      <tr class="${isZero ? 'highest-price-row' : ''}">
+      <tr style="background:${isLoss?'rgba(255,71,87,0.08)':isProfit?'rgba(0,200,150,0.08)':'transparent'};${isLoss?'border-left:3px solid var(--danger)':isProfit?'border-left:3px solid var(--emerald)':''}">
         <td>${i + 1}</td>
-        <td style="font-weight:700;color:${isZero ? 'var(--gold)' : 'var(--text-primary)'}">${r.fishName}</td>
-        <td style="font-weight:600;color:var(--emerald)">${r.clientPrice}</td>
-        <td style="font-weight:700;color:${c2Higher ? 'var(--gold)' : 'var(--cyan-glow)'}">${r.comparePrice || '-'}</td>
-        <td style="font-size:11px;color:var(--text-secondary)">${r.higherClient}</td>
+        <td style="font-weight:700;color:${isLoss?'var(--danger)':isProfit?'var(--emerald)':'var(--text-primary)'}">${r.fishName}</td>
+        <td style="font-weight:600;color:var(--cyan-glow)">${r.clientPrice}</td>
+        <td style="font-weight:700;color:${isLoss?'var(--gold)':'var(--text-secondary)'}">${r.comparePrice || '-'}</td>
+        <td style="font-size:11px;color:${isLoss?'var(--gold)':isProfit?c1Val:'var(--text-secondary)'};font-weight:${isLoss?700:600}">${isLoss ? c2Val : isProfit ? c1Val : '-'}</td>
         <td>${formatNum(r.clientQty)}</td>
-        <td style="color:${r.priceDiff > 0 ? 'var(--danger)' : r.priceDiff < 0 ? 'var(--emerald)' : 'var(--text-secondary)'};font-weight:700">
-          ${r.priceDiff > 0 ? '+' + formatNum(r.priceDiff) : r.priceDiff < 0 ? formatNum(Math.abs(r.priceDiff)) : '0'}
+        <td style="color:${isLoss?'var(--danger)':isProfit?'var(--emerald)':'var(--text-secondary)'};font-weight:700">
+          ${isLoss ? '+' + formatNum(r.priceDiff) : isProfit ? '-' + formatNum(Math.abs(r.priceDiff)) : '0'}
         </td>
-        <td style="color:${r.diffAmount > 0 ? 'var(--danger)' : r.diffAmount < 0 ? 'var(--emerald)' : 'var(--text-secondary)'};font-weight:900">
-          ${r.diffAmount > 0 ? '+' + formatNum(r.diffAmount) : r.diffAmount < 0 ? formatNum(Math.abs(r.diffAmount)) : '0'} <span style="font-size:9px;color:var(--text-secondary)">ج.م</span>
+        <td style="color:${isLoss?'var(--danger)':isProfit?'var(--emerald)':'var(--text-secondary)'};font-weight:900">
+          ${isLoss ? '+' + formatNum(r.diffAmount) : isProfit ? formatNum(r.diffAmount) : '0'} <span style="font-size:9px;color:var(--text-secondary)">ج.م</span>
         </td>
       </tr>
     `;
   });
 
+  // 🎯 صندوق الإجمالي - الأحمر فقط!
   tableHtml += `
       </tbody>
     </table>
-    <div class="pricediff-total-box" style="background:linear-gradient(135deg, rgba(0,200,150,0.12), rgba(0,180,216,0.12));border-color:rgba(0,200,150,0.3)">
-      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">💰 إجمالي فروق الأسعار بين ${c1Val} و ${c2Val} في هذه الفترة</div>
-      <div style="font-size:24px;font-weight:900;color:${totalDiffAmount > 0 ? 'var(--danger)' : totalDiffAmount < 0 ? 'var(--emerald)' : 'var(--text-primary)'}">${totalDiffAmount > 0 ? '+' : ''}${formatNum(totalDiffAmount)} <span style="font-size:12px;color:var(--text-secondary)">ج.م</span></div>
-      <div style="font-size:10px;color:var(--text-secondary);margin-top:4px">
-        💡 المعادلة: لكل صنف = عدد ${c1Val} × (سعر ${c2Val} - سعر ${c1Val}) | 
-        ${totalDiffAmount > 0 ? `⚠️ ${c2Val} أعلى سعراً بإجمالي ${formatNum(totalDiffAmount)} ج.م` : totalDiffAmount < 0 ? `✅ ${c1Val} أعلى سعراً بإجمالي ${formatNum(Math.abs(totalDiffAmount))} ج.م` : '🤝 الأسعار متقاربة'}
+    <div class="pricediff-total-box" style="background:linear-gradient(135deg, rgba(255,71,87,0.15), rgba(255,71,87,0.05));border-color:rgba(255,71,87,0.5)">
+      <div style="font-size:14px;color:var(--danger);margin-bottom:6px;font-weight:700">💸 إجمالي الأصناف الحمراء — ${c1Val} VS ${c2Val}</div>
+      <div style="font-size:32px;font-weight:900;color:var(--danger)">+${formatNum(totalRedOnly)} <span style="font-size:13px;color:var(--text-secondary)">ج.م</span></div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.6">
+        💡 هذا المبلغ كان يمكن كسبه لو ${c1Val} اشترى بنفس سعر ${c2Val}<br>
+        ⚠️ المعادلة: لكل صنف أحمر = عدد ${c1Val} × (سعر ${c2Val} - سعر ${c1Val})<br>
+        📊 عدد الأصناف الحمراء: ${redCount} | إجمالي الأصناف: ${allRows.length}
       </div>
     </div>
   `;
@@ -4644,7 +4639,7 @@ window.renderTwoClientsComparison = function() {
   tableContainer.innerHTML = tableHtml;
 
   // إظهار أزرار التصدير والواتساب
-  if (actionsEl && rows.length > 0) actionsEl.style.display = 'grid';
+  if (actionsEl && displayRows.length > 0) actionsEl.style.display = 'grid';
 };
 
 // ============================================================
@@ -4692,39 +4687,50 @@ window.exportTwoClientsComparePDF = function() {
     .map(([fishName, data]) => {
       const priceDiff = data.comparePrice - data.clientPrice;
       const diffAmount = data.clientQty * priceDiff;
+      let rowType = 'neutral';
+      if (priceDiff > 0 && data.comparePrice > 0) rowType = 'loss';
+      else if (priceDiff < 0 && data.comparePrice > 0) rowType = 'profit';
       let higherClient = '';
       if (data.comparePrice > data.clientPrice && data.clientPrice > 0) higherClient = c2Val;
       else if (data.clientPrice > data.comparePrice && data.comparePrice > 0) higherClient = c1Val;
       else if (data.clientPrice > 0 && data.comparePrice > 0) higherClient = 'تعادل';
       else higherClient = data.clientPrice > 0 ? c1Val : c2Val;
-      return { fishName, ...data, priceDiff, diffAmount, higherClient };
-    }).sort((a, b) => b.diffAmount - a.diffAmount);
+      return { fishName, ...data, priceDiff, diffAmount, rowType, higherClient };
+    }).sort((a, b) => {
+      // ترتيب: الأحمر أولاً
+      if (a.rowType === 'loss' && b.rowType !== 'loss') return -1;
+      if (a.rowType !== 'loss' && b.rowType === 'loss') return 1;
+      return b.diffAmount - a.diffAmount;
+    });
 
   if (!rows.length) return showToast('❌ لا توجد بيانات للتصدير');
 
-  let totalDiffAmount = 0;
-  rows.forEach(r => totalDiffAmount += r.diffAmount);
+  // 🎯 الإجمالي = الأحمر فقط!
+  const totalRedOnly = rows.filter(r => r.rowType === 'loss').reduce((s, r) => s + r.diffAmount, 0);
 
   // نفس شكل جدول فروق أسعار عميل واحد في PDF
-  const htmlRows = rows.map((r, i) => `
-    <tr style="background:${i%2===0?'#f8f9ff':'#ffffff'}">
+  const htmlRows = rows.map((r, i) => {
+    const isLoss = r.rowType === 'loss';
+    const isProfit = r.rowType === 'profit';
+    return `
+    <tr style="background:${isLoss?'#fff5f5':isProfit?'#f0fff4':i%2===0?'#f8f9ff':'#ffffff'};${isLoss?'border-left:3px solid #e74c3c':isProfit?'border-left:3px solid #27ae60':''}">
       <td style="text-align:center;padding:8px;border:1px solid #ddd">${i+1}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:${r.priceDiff===0?'900':'600'};color:${r.priceDiff===0?'#b8860b':'#1a1a2e'}">${r.fishName}</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:700;color:${isLoss?'#e74c3c':isProfit?'#27ae60':'#1a1a2e'}">${r.fishName}</td>
       <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:700;color:#059669">${r.clientPrice}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:700;color:${r.priceDiff>0?'#b8860b':'#0891b2'}">${r.comparePrice||'-'}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-size:11px;color:#666">${r.higherClient}</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:700;color:${isLoss?'#b8860b':'#0891b2'}">${r.comparePrice||'-'}</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-size:11px;color:#666;font-weight:700">${r.higherClient}</td>
       <td style="text-align:center;padding:8px;border:1px solid #ddd">${formatNum(r.clientQty)}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;color:${r.priceDiff>0?'#e74c3c':r.priceDiff<0?'#27ae60':'#888'};font-weight:700">${r.priceDiff!==0?(r.priceDiff>0?'+':'')+formatNum(Math.abs(r.priceDiff)):'0'}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;color:${r.diffAmount>0?'#e74c3c':r.diffAmount<0?'#27ae60':'#888'};font-weight:900">${r.diffAmount!==0?(r.diffAmount>0?'+':'')+formatNum(Math.abs(r.diffAmount)):'0'} ج.م</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;color:${isLoss?'#e74c3c':isProfit?'#27ae60':'#888'};font-weight:700">${isLoss ? '+' + formatNum(r.priceDiff) : isProfit ? '-' + formatNum(Math.abs(r.priceDiff)) : '0'}</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;color:${isLoss?'#e74c3c':isProfit?'#27ae60':'#888'};font-weight:900">${isLoss ? '+' + formatNum(r.diffAmount) : isProfit ? formatNum(r.diffAmount) : '0'} ج.م</td>
     </tr>
-  `).join('');
+  `}).join('');
 
-  const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"><style>body{font-family:'Cairo',sans-serif;padding:30px;max-width:900px;margin:auto;color:#1a1a2e}h1{color:#059669;text-align:center;font-size:22px}h2{color:#0891b2;text-align:center;font-size:16px}table{width:100%;border-collapse:collapse;margin:20px 0}th{background:linear-gradient(135deg,#059669,#0891b2);color:#fff;padding:10px;text-align:center;font-size:12px}.total-box{background:linear-gradient(135deg,#f0fdf4,#ecfeff);border:2px solid #059669;border-radius:12px;padding:16px;text-align:center;margin-top:20px}.total-val{font-size:28px;font-weight:900;color:${totalDiffAmount>0?'#e74c3c':totalDiffAmount<0?'#27ae60':'#1a1a2e'}}.info-bar{background:#f0fdf4;padding:12px;border-radius:10px;text-align:center;margin:15px 0;color:#047857;font-size:13px}</style></head><body>
+  const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"><style>body{font-family:'Cairo',sans-serif;padding:30px;max-width:900px;margin:auto;color:#1a1a2e}h1{color:#e74c3c;text-align:center;font-size:22px}h2{color:#0891b2;text-align:center;font-size:16px}table{width:100%;border-collapse:collapse;margin:20px 0}th{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;padding:10px;text-align:center;font-size:12px}.total-box{background:linear-gradient(135deg,#fff5f5,#ffe8e8);border:2px solid #e74c3c;border-radius:12px;padding:16px;text-align:center;margin-top:20px}.total-val{font-size:32px;font-weight:900;color:#e74c3c}.info-bar{background:#fff5f5;padding:12px;border-radius:10px;text-align:center;margin:15px 0;color:#c0392b;font-size:13px}.red-row{background:#fff5f5}.green-row{background:#f0fff4}</style></head><body>
     <h1>⚖️ فروق أسعار بين عميلين</h1>
     <h2>🏪 الحاج أحمد الحديدي - تجارة الأسماك</h2>
-    <div class="info-bar">📅 الفترة: ${isoToArabicDate(fromVal)} إلى ${isoToArabicDate(toVal)} | 👤 ${c1Val} VS ${c2Val}</div>
+    <div class="info-bar">📅 الفترة: ${isoToArabicDate(fromVal)} إلى ${isoToArabicDate(toVal)} | 👤 ${c1Val} VS ${c2Val} | 🔴 الإجمالي = الأصناف الحمراء فقط</div>
     <table><thead><tr><th>#</th><th>الصنف</th><th>سعر ${c1Val} (ج.م/ك)</th><th>سعر ${c2Val} (ج.م/ك)</th><th>الأعلى سعراً</th><th>العدد (كيلو)</th><th>فرق السعر</th><th>قيمة الفرق</th></tr></thead><tbody>${htmlRows}</tbody></table>
-    <div class="total-box"><div>💰 إجمالي فروق الأسعار بين ${c1Val} و ${c2Val}</div><div class="total-val">${totalDiffAmount>0?'+':''}${formatNum(totalDiffAmount)} ج.م</div><div style="font-size:11px;color:#888;margin-top:4px">المعادلة: لكل صنف = عدد ${c1Val} × (سعر ${c2Val} - سعر ${c1Val})</div></div>
+    <div class="total-box"><div style="font-size:14px;color:#c0392b;font-weight:700">💸 إجمالي الأصناف الحمراء — ${c1Val} مقارنة بـ ${c2Val}</div><div class="total-val">+${formatNum(totalRedOnly)} ج.م</div><div style="font-size:11px;color:#888;margin-top:6px;line-height:1.5">💡 هذا المبلغ كان يمكن كسبه لو ${c1Val} اشترى بنفس سعر ${c2Val}<br>⚠️ المعادلة: لكل صنف أحمر = عدد ${c1Val} × (سعر ${c2Val} - سعر ${c1Val})<br>📊 عدد الأصناف الحمراء: ${rows.filter(r=>r.rowType==='loss').length} | إجمالي الأصناف: ${rows.length}</div></div>
   </body></html>`;
 
   const fileName = `فروق_أسعار_${c1Val}_${c2Val}_${fromVal.replace(/-/g,'')}`;
@@ -4776,39 +4782,47 @@ window.sendTwoClientsCompareWA = function() {
     .map(([fishName, data]) => {
       const priceDiff = data.comparePrice - data.clientPrice;
       const diffAmount = data.clientQty * priceDiff;
-      return { fishName, ...data, priceDiff, diffAmount };
-    }).sort((a, b) => b.diffAmount - a.diffAmount);
+      let rowType = 'neutral';
+      if (priceDiff > 0 && data.comparePrice > 0) rowType = 'loss';
+      else if (priceDiff < 0 && data.comparePrice > 0) rowType = 'profit';
+      return { fishName, ...data, priceDiff, diffAmount, rowType };
+    }).sort((a, b) => {
+      if (a.rowType === 'loss' && b.rowType !== 'loss') return -1;
+      if (a.rowType !== 'loss' && b.rowType === 'loss') return 1;
+      return b.diffAmount - a.diffAmount;
+    });
 
   if (!rows.length) return showToast('❌ لا توجد بيانات للإرسال');
 
-  let totalDiffAmount = 0;
-  rows.forEach(r => totalDiffAmount += r.diffAmount);
+  // 🎯 الإجمالي = الأحمر فقط!
+  const totalRedOnly = rows.filter(r => r.rowType === 'loss').reduce((s, r) => s + r.diffAmount, 0);
+  const redCount = rows.filter(r => r.rowType === 'loss').length;
 
-  // بناء رسالة واتساب - نفس شكل فروق أسعار عميل واحد
+  // بناء رسالة واتساب
   let text = `⚖️ *فروق أسعار بين عميلين*\n🏪 الحاج أحمد الحديدي - تجارة الأسماك\n━━━━━━━━━━━━━━━━━━━━\n`;
   text += `📅 الفترة: ${isoToArabicDate(fromVal)} إلى ${isoToArabicDate(toVal)}\n`;
-  text += `👤 *${c1Val}* (الأساسي) VS *${c2Val}* (للمقارنة)\n━━━━━━━━━━━━━━━━━━━━\n\n`;
+  text += `👤 *${c1Val}* VS *${c2Val}*\n`;
+  text += `🔴 الإجمالي = الأصناف الحمراء فقط\n━━━━━━━━━━━━━━━━━━━━\n\n`;
 
   rows.forEach((r, i) => {
-    text += `*${i+1}. 🐟 ${r.fishName}*\n`;
-    text += `   💰 سعر ${c1Val}: ${r.clientPrice} ج.م/ك\n`;
-    text += `   💰 سعر ${c2Val}: ${r.comparePrice || 'لم يشترِ'} ج.م/ك\n`;
-    text += `   📦 عدد ${c1Val}: ${formatNum(r.clientQty)} كيلو\n`;
-    if (r.priceDiff > 0) {
-      text += `   📈 ${c2Val} أعلى بـ ${formatNum(r.priceDiff)} ج.م/ك\n`;
-      text += `   ❌ قيمة الفرق: *+${formatNum(r.diffAmount)} ج.م*\n`;
-    } else if (r.priceDiff < 0) {
-      text += `   📉 ${c1Val} أعلى بـ ${formatNum(Math.abs(r.priceDiff))} ج.م/ك\n`;
-      text += `   ✅ قيمة الفرق: *${formatNum(r.diffAmount)} ج.م*\n`;
+    const isLoss = r.rowType === 'loss';
+    const isProfit = r.rowType === 'profit';
+    text += `${isLoss ? '🔴' : isProfit ? '🟢' : '⚪'} *${i+1}. ${r.fishName}*\n`;
+    text += `   💰 سعر ${c1Val}: ${r.clientPrice} | سعر ${c2Val}: ${r.comparePrice || '-'}\n`;
+    text += `   📦 عدد: ${formatNum(r.clientQty)} كيلو | `;
+    if (isLoss) {
+      text += `فرق: +${formatNum(r.priceDiff)} | *+${formatNum(r.diffAmount)} ج.م*\n`;
+    } else if (isProfit) {
+      text += `فرق: ${formatNum(r.priceDiff)} | ${formatNum(r.diffAmount)} ج.م\n`;
     } else {
-      text += `   🤝 نفس السعر!\n`;
+      text += `فرق: 0\n`;
     }
-    text += `─────────────────────\n`;
   });
 
   text += `\n━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `💰 *إجمالي الفرق: ${totalDiffAmount > 0 ? '+' : ''}${formatNum(totalDiffAmount)} ج.م*\n`;
-  text += `${totalDiffAmount > 0 ? `⚠️ ${c2Val} أعلى سعراً` : totalDiffAmount < 0 ? `✅ ${c1Val} أعلى سعراً` : '🤝 الأسعار متقاربة'}\n`;
+  text += `💸 *إجمالي الأصناف الحمراء: +${formatNum(totalRedOnly)} ج.م*\n`;
+  text += `📊 عدد الأصناف الحمراء: ${redCount} من ${rows.length}\n`;
+  text += `⚠️ هذا المبلغ كان يمكن كسبه لو ${c1Val} اشترى بنفس سعر ${c2Val}\n`;
   text += `━━━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
 
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
