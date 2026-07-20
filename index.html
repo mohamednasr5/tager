@@ -655,13 +655,13 @@
 
   /* ===================== LOGIN SCREEN ===================== */
   #login-screen {
-    position: fixed; inset: 0; z-index: 9999;
+    position: fixed; inset: 0; z-index: 99999;
     background: linear-gradient(135deg, #040d1a 0%, #061525 50%, #050f1e 100%);
     display: flex; align-items: center; justify-content: center;
     padding: 20px;
     animation: fadeIn 0.4s ease;
   }
-  #login-screen.hidden { display: none; }
+  #login-screen.hidden { display: none !important; }
 
   .login-box {
     width: 100%; max-width: 380px;
@@ -716,6 +716,13 @@
   .welcome-greeting { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 400; }
   .welcome-name { font-size: 18px; font-weight: 900; color: white; line-height: 1.3; }
   .welcome-role { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  
+  /* Shake animation for login error */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
 
   .role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; }
   .role-badge.admin { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
@@ -7530,6 +7537,9 @@ window.doLogin = function() {
   const pwd = document.getElementById('login-password').value;
   const err = document.getElementById('login-error');
   
+  // Debug: ensure function is called
+  console.log('[Login] Attempting login with password length:', pwd.length);
+  
   if (pwd === '123456' || pwd === '666666') { 
     // تسجيل دخول بصلاحيات الأدمن
     window.currentUser = { role: 'admin', name: 'أحمد الحديدي' };
@@ -7540,11 +7550,22 @@ window.doLogin = function() {
     document.getElementById('admin-tools-card').style.display = 'none'; // إخفاء أزرار الأدمن
   } else {
     err.textContent = '❌ كلمة السر غير صحيحة';
+    // Shake animation for error feedback
+    const loginBox = document.querySelector('.login-box');
+    if (loginBox) {
+      loginBox.style.animation = 'none';
+      setTimeout(() => {
+        loginBox.style.animation = 'shake 0.5s ease';
+      }, 10);
+    }
     return;
   }
   
   // تفعيل النظام
-  document.getElementById('login-screen').classList.add('hidden');
+  const loginScreen = document.getElementById('login-screen');
+  if (loginScreen) {
+    loginScreen.classList.add('hidden');
+  }
   
   // رسالة ترحيب
   const toast = document.createElement('div');
@@ -7565,6 +7586,8 @@ window.doLogin = function() {
 
   updateDate();
   setupListeners();
+  
+  console.log('[Login] Success! User:', window.currentUser.name);
 };
 
 window.confirmLogout = function() {
