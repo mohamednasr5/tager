@@ -2,48 +2,20 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<!-- PWA Professional Meta Tags -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
-<meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: light)">
-<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
+<meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="الحديدي للأسماك">
 <meta name="application-name" content="الحديدي للأسماك">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no">
-<meta name="msapplication-TileColor" content="#0a1628">
-<meta name="msapplication-tap-highlight" content="no">
-<meta name="description" content="نظام محاسبة احترافي لتجارة الأسماك — الحاج أحمد الحديدي">
-<meta name="keywords" content="أسماك,تجارة,محاسبة,فواتير,عملاء,حسابات">
-<meta name="author" content="الحاج أحمد الحديدي">
-<meta name="referrer" content="no-referrer-when-downgrade">
-
-<!-- Apple Icons -->
-<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
-<!-- Splash Screens for iOS -->
-<link rel="apple-touch-startup-image" href="icon-512.png">
-
-<!-- Standard Icons -->
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<link rel="icon" type="image/png" href="icon-192.png">
-
-<!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json">
-
-<!-- Preconnect to external resources -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdnjs.cloudflare.com">
-<link rel="preconnect" href="https://firebaseio.com">
-<link rel="preconnect" href="https://www.googleapis.com">
-
 <title>الحاج أحمد الحديدي - تجارة الأسماك</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -836,44 +808,6 @@
   @media all and (display-mode: standalone) {
     .app-header { padding-top: max(12px, env(safe-area-inset-top)); }
     #pwa-install-bar { display: none !important; }
-    
-    /* Professional standalone mode enhancements */
-    html, body {
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior-y: contain;
-    }
-    
-    .bottom-nav {
-      padding-bottom: max(8px, env(safe-area-inset-bottom));
-    }
-    
-    .content {
-      padding-bottom: max(90px, calc(90px + env(safe-area-inset-bottom)));
-    }
-  }
-
-  /* PWA Standalone class (added via JS) */
-  body.pwa-standalone .app-header {
-    background: linear-gradient(135deg, rgba(10,22,40,0.98) 0%, rgba(13,33,55,0.98) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-  
-  body.pwa-standalone #pwa-install-bar {
-    display: none !important;
-  }
-
-  /* Safe area support for notched devices */
-  @supports (padding: max(0px)) {
-    body.pwa-standalone .app-header {
-      padding-left: max(16px, env(safe-area-inset-left));
-      padding-right: max(16px, env(safe-area-inset-right));
-    }
-    
-    body.pwa-standalone .content {
-      padding-left: max(12px, env(safe-area-inset-left));
-      padding-right: max(12px, env(safe-area-inset-right));
-    }
   }
 </style>
 </head>
@@ -1352,9 +1286,13 @@
         </div>
       </div>
 
-      <!-- 🔥 مقارنة فروق أسعار بين عميلين -->
-      <div class="glass-card" style="margin-top:14px;background:rgba(0,200,150,0.05);border-color:rgba(0,200,150,0.3)">
-        <div class="section-title" style="color:var(--emerald)">⚖️ فروق أسعار بين عميلين</div>
+      <!-- 🔥 مقارنة بين عميلين (جديد) -->
+      <div class="glass-card" style="margin-top:14px;background:linear-gradient(135deg, rgba(0,200,150,0.05), rgba(0,180,216,0.05));border-color:rgba(0,200,150,0.3)">
+        <div class="section-title" style="color:var(--emerald)">⚖️ مقارنة شاملة بين عميلين</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:rgba(0,200,150,0.07);border:1px dashed rgba(0,200,150,0.3);margin-bottom:14px;font-size:12px;color:var(--emerald)">
+          <span>💡</span>
+          <span>قارن بين عميلين في جميع الأصناف خلال فترة زمنية محددة - اكتشف الفروق في الأسعار والكميات</span>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
             <label class="form-label" style="font-size:10px">📅 من تاريخ</label>
@@ -1367,23 +1305,28 @@
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
-            <label class="form-label" style="font-size:10px">👤 العميل الأول (هو اللي عايز تعرف خسائره)</label>
+            <label class="form-label" style="font-size:10px">👤 العميل الأول</label>
             <select id="compare2-client1" class="form-select" style="padding:8px" onchange="renderTwoClientsComparison()"></select>
           </div>
           <div>
-            <label class="form-label" style="font-size:10px">👤 العميل الثاني (للمقارنة)</label>
+            <label class="form-label" style="font-size:10px">👤 العميل الثاني</label>
             <select id="compare2-client2" class="form-select" style="padding:8px" onchange="renderTwoClientsComparison()"></select>
           </div>
         </div>
-        </div>
-      </div>
-
-      <div class="glass-card">
-        <div class="section-title">📋 فروق الأسعار بين العميلين حسب الصنف</div>
+        <button class="btn btn-primary" style="padding:8px;font-size:12px;width:100%;margin-bottom:10px;background:linear-gradient(135deg,var(--emerald),var(--cyan-glow));border-color:rgba(0,200,150,0.5)" onclick="renderTwoClientsComparison()">🔍 قارن الآن</button>
+        
+        <!-- ملخص المقارنة -->
         <div id="compare2-summary" style="display:none;margin-bottom:12px"></div>
-        <div id="compare2-table-container">
-          <div class="empty-state"><div class="empty-icon">⚖️</div><div class="empty-text">اختر الفترة والعميلين لعرض فروق الأسعار بينهما</div></div>
+        
+        <!-- جدول المقارنة -->
+        <div class="glass-card" style="background:rgba(0,0,0,0.2)">
+          <div class="section-title" style="font-size:13px;color:var(--emerald)">📋 تفاصيل المقارنة حسب الصنف</div>
+          <div id="compare2-table-container">
+            <div class="empty-state"><div class="empty-icon">⚖️</div><div class="empty-text">اختر الفترة والعميلين لبدء المقارنة</div></div>
+          </div>
         </div>
+
+        <!-- أزرار الإجراءات -->
         <div id="compare2-actions" style="display:none;margin-top:12px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <button class="btn" onclick="exportTwoClientsComparePDF()" style="background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.4);color:var(--emerald)">📄 تصدير PDF</button>
@@ -4520,7 +4463,7 @@ window.renderTwoClientsComparison = function() {
   if (!fromVal || !toVal || !c1Val || !c2Val) {
     if (summaryEl) summaryEl.style.display = 'none';
     if (actionsEl) actionsEl.style.display = 'none';
-    tableContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">⚖️</div><div class="empty-text">اختر الفترة والعميلين لعرض فروق الأسعار بينهما</div></div>';
+    tableContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">⚖️</div><div class="empty-text">اختر الفترة والعميلين لبدء المقارنة</div></div>';
     return;
   }
 
@@ -4540,7 +4483,7 @@ window.renderTwoClientsComparison = function() {
     return true;
   });
 
-  // بناء خريطة لكل صنف: بيانات العميل الأول + بيانات العميل الثاني للمقارنة
+  // بناء خريطة لكل صنف: بيانات العميلين
   const fishMap = {};
   filtered.forEach(inv => {
     (inv.items || []).forEach(item => {
@@ -4551,165 +4494,186 @@ window.renderTwoClientsComparison = function() {
 
       if (!fishMap[fishName]) {
         fishMap[fishName] = { 
-          clientPrice: 0,
-          clientQty: 0,
-          comparePrice: 0
+          c1Price: 0, c1Qty: 0, c1Total: 0, c1Count: 0,
+          c2Price: 0, c2Qty: 0, c2Total: 0, c2Count: 0,
+          highestPrice: 0, highestClient: ''
         };
       }
 
-      // بيانات العميل الأول (الأساسي)
-      if (inv.clientName === c1Val) {
-        if (price > fishMap[fishName].clientPrice) {
-          fishMap[fishName].clientPrice = price;
-        }
-        fishMap[fishName].clientQty += qty;
+      // تحديث أعلى سعر عام
+      if (price > fishMap[fishName].highestPrice) {
+        fishMap[fishName].highestPrice = price;
+        fishMap[fishName].highestClient = inv.clientName;
       }
 
-      // بيانات العميل الثاني (للمقارنة)
+      // بيانات العميل الأول
+      if (inv.clientName === c1Val) {
+        if (price > fishMap[fishName].c1Price) fishMap[fishName].c1Price = price;
+        fishMap[fishName].c1Qty += qty;
+        fishMap[fishName].c1Total += (item.subtotal || 0);
+        fishMap[fishName].c1Count++;
+      }
+
+      // بيانات العميل الثاني
       if (inv.clientName === c2Val) {
-        if (price > fishMap[fishName].comparePrice) {
-          fishMap[fishName].comparePrice = price;
-        }
+        if (price > fishMap[fishName].c2Price) fishMap[fishName].c2Price = price;
+        fishMap[fishName].c2Qty += qty;
+        fishMap[fishName].c2Total += (item.subtotal || 0);
+        fishMap[fishName].c2Count++;
       }
     });
   });
 
-  // فلترة الأصناف اللي العميل الأول اشتراها
-  let allFishEntries = Object.entries(fishMap).filter(([, d]) => d.clientQty > 0);
+  // فلترة الأصناف اللي اتعامل فيها العميلين (الأقل على الأقل عميل واحد)
+  const comparisonEntries = Object.entries(fishMap).filter(([, d]) => d.c1Qty > 0 || d.c2Qty > 0);
 
-  if (allFishEntries.length === 0) {
+  if (comparisonEntries.length === 0) {
     if (summaryEl) summaryEl.style.display = 'none';
     if (actionsEl) actionsEl.style.display = 'none';
     tableContainer.innerHTML = `
       <div style="text-align:center;padding:20px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:12px">
         <div style="font-size:32px;margin-bottom:8px">📭</div>
-        <div style="font-size:13px;color:var(--text-secondary)">لا توجد بيانات للعميل "${c1Val}" في الفترة المختارة</div>
+        <div style="font-size:13px;color:var(--text-secondary)">لا توجد بيانات لهذين العميلين في الفترة المختارة</div>
       </div>`;
     return;
   }
 
-  // حساب الفروق لكل صنف
-  const allRows = allFishEntries.map(([fishName, data]) => {
-    const priceDiff = data.comparePrice - data.clientPrice;
-    const diffAmount = data.clientQty * priceDiff;
+  // حساب الفروق والإجماليات
+  let totalC1Qty = 0, totalC2Qty = 0;
+  let totalC1Amount = 0, totalC2Amount = 0;
+  let c1Wins = 0, c2Wins = 0, ties = 0;
+  let totalDiffValue = 0; // إجمالي قيمة الفرق
+
+  const rows = comparisonEntries.map(([fishName, data]) => {
+    const priceDiff = data.c1Price - data.c2Price; // فرق السعر (موجب = C1 أعلى)
+    const diffValue = Math.abs(data.c1Qty * data.c1Price - data.c2Qty * data.c2Price); // فرق القيمة
     
-    let rowType = 'neutral';
-    if (priceDiff > 0 && data.comparePrice > 0) {
-      rowType = 'loss'; // 🔴 خسارة - العميل الأول أقل سعر
-    } else if (priceDiff < 0 && data.comparePrice > 0) {
-      rowType = 'profit'; // 🟢 ربح - العميل الأول أعلى سعر
-    }
+    totalC1Qty += data.c1Qty;
+    totalC2Qty += data.c2Qty;
+    totalC1Amount += data.c1Total;
+    totalC2Amount += data.c2Total;
+    
+    if (data.c1Price > data.c2Price && data.c2Price > 0) c1Wins++;
+    else if (data.c2Price > data.c1Price && data.c1Price > 0) c2Wins++;
+    else if (data.c1Price > 0 && data.c2Price > 0) ties++;
+    
+    totalDiffValue += (data.c1Qty > 0 && data.c2Qty > 0) ? (Math.abs(data.c1Price - data.c2Price) * Math.min(data.c1Qty, data.c2Qty)) : 0;
 
-    return { fishName, ...data, priceDiff, diffAmount, rowType };
+    return { fishName, ...data, priceDiff, diffValue };
   });
 
-  // 🎯 دائماً نعرض كل الصفوف (الأحمر والأخضر)
-  let displayRows = [...allRows];
-
-  // ترتيب: الأحمر (الخسارات) أولاً، ثم الأخضر
-  displayRows.sort((a, b) => {
-    if (a.rowType === 'loss' && b.rowType !== 'loss') return -1;
-    if (a.rowType !== 'loss' && b.rowType === 'loss') return 1;
-    return b.diffAmount - a.diffAmount;
-  });
-
-  // 🎯 الإجمالي = مجموع الأحمر فقط!
-  const totalRedOnly = allRows.filter(r => r.rowType === 'loss').reduce((s, r) => s + r.diffAmount, 0);
-  const redCount = allRows.filter(r => r.rowType === 'loss').length;
+  // ترتيب حسب قيمة الفرق من الأعلى
+  rows.sort((a, b) => b.diffValue - a.diffValue);
 
   // عرض الملخص
   if (summaryEl) {
     summaryEl.style.display = 'block';
     summaryEl.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-        <div style="background:rgba(255,71,87,0.12);border:2px solid rgba(255,71,87,0.4);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">🔴 عدد الأصناف</div>
-          <div style="font-size:22px;font-weight:900;color:var(--danger)">${redCount}</div>
-          <div style="font-size:9px;color:var(--text-secondary)">صنف ${c1Val} أقل سعر</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+        <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--text-secondary);margin-bottom:4px">👤 ${c1Val}</div>
+          <div style="font-size:14px;font-weight:900;color:var(--emerald)">${formatNum(totalC1Qty)}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">كيلو مجموع</div>
         </div>
-        <div style="background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.3);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">💰 إجمالي الأصناف الحمراء</div>
-          <div style="font-size:20px;font-weight:900;color:var(--danger)">${formatNum(totalRedOnly)} <span style="font-size:11px">ج.م</span></div>
-          <div style="font-size:9px;color:var(--text-secondary)">الأحمر فقط</div>
+        <div style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--text-secondary);margin-bottom:4px">👤 ${c2Val}</div>
+          <div style="font-size:14px;font-weight:900;color:var(--cyan-glow)">${formatNum(totalC2Qty)}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">كيلو مجموع</div>
         </div>
-        <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">🐟 إجمالي الأصناف</div>
-          <div style="font-size:18px;font-weight:900;color:var(--gold)">${allRows.length}</div>
-          <div style="font-size:9px;color:var(--text-secondary)">صنف</div>
+        <div style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--text-secondary);margin-bottom:4px">🐟 عدد الأصناف</div>
+          <div style="font-size:16px;font-weight:900;color:var(--gold)">${rows.length}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">صنف مشترك</div>
         </div>
+        <div style="background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--text-secondary);margin-bottom:4px">💰 قيمة الفرق</div>
+          <div style="font-size:14px;font-weight:900;color:var(--danger)">${formatNum(totalDiffValue)}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">ج.م تقريبي</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <div style="background:rgba(0,200,150,0.08);padding:4px 12px;border-radius:20px;font-size:11px;color:var(--emerald);font-weight:600">🏆 ${c1Val}: ${c1Wins} أعلى سعر</div>
+        <div style="background:rgba(0,180,216,0.08);padding:4px 12px;border-radius:20px;font-size:11px;color:var(--cyan-glow);font-weight:600">🏆 ${c2Val}: ${c2Wins} أعلى سعر</div>
+        <div style="background:rgba(255,215,0,0.08);padding:4px 12px;border-radius:20px;font-size:11px;color:var(--gold);font-weight:600">🤝 تعادل: ${ties}</div>
       </div>
     `;
   }
 
   // عرض الجدول
-  if (displayRows.length === 0) {
-    tableContainer.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">لا توجد بيانات للعرض</div></div>`;
-    if (actionsEl) actionsEl.style.display = 'none';
-    return;
-  }
-
   let tableHtml = `
-    <table class="pricediff-table">
+    <table class="pricediff-table" style="border-color:rgba(0,200,150,0.3)">
       <thead>
         <tr>
           <th>#</th>
-          <th>الصنف</th>
-          <th>سعر ${c1Val}<br><span style="font-size:9px">(ج.م/ك)</span></th>
-          <th>سعر ${c2Val}<br><span style="font-size:9px">(ج.م/ك)</span></th>
+          <th>🐟 الصنف</th>
+          <th>${c1Val}<br><span style="font-size:9px">(سعر/كمية)</span></th>
+          <th>${c2Val}<br><span style="font-size:9px">(سعر/كمية)</span></th>
+          <th>فرق السعر<br><span style="font-size:9px">(ج.م/ك)</span></th>
           <th>الأعلى<br><span style="font-size:9px">سعراً</span></th>
-          <th>العدد<br><span style="font-size:9px">(كيلو)</span></th>
-          <th>فرق السعر<br><span style="font-size:9px">(ج.م)</span></th>
-          <th>💸 قيمة الفرق<br><span style="font-size:9px">(العدد × الفرق)</span></th>
+          <th>قيمة الفرق<br><span style="font-size:9px">(تقريبية)</span></th>
         </tr>
       </thead>
       <tbody>
   `;
 
-  displayRows.forEach((r, i) => {
-    const isLoss = r.rowType === 'loss';
-    const isProfit = r.rowType === 'profit';
+  rows.forEach((r, i) => {
+    const c1Higher = r.priceDiff > 0;
+    const c2Higher = r.priceDiff < 0;
+    const equal = r.priceDiff === 0 && r.c1Price > 0 && r.c2Price > 0;
+    const onlyC1 = r.c2Price === 0 && r.c1Price > 0;
+    const onlyC2 = r.c1Price === 0 && r.c2Price > 0;
     
     tableHtml += `
-      <tr style="background:${isLoss?'rgba(255,71,87,0.08)':isProfit?'rgba(0,200,150,0.08)':'transparent'};${isLoss?'border-left:3px solid var(--danger)':isProfit?'border-left:3px solid var(--emerald)':''}">
+      <tr style="background:${i%2===0?'rgba(0,200,150,0.03)':'transparent'}">
         <td>${i + 1}</td>
-        <td style="font-weight:700;color:${isLoss?'var(--danger)':isProfit?'var(--emerald)':'var(--text-primary)'}">${r.fishName}</td>
-        <td style="font-weight:600;color:var(--cyan-glow)">${r.clientPrice}</td>
-        <td style="font-weight:700;color:${isLoss?'var(--gold)':'var(--text-secondary)'}">${r.comparePrice || '-'}</td>
-        <td style="font-size:11px;color:${isLoss?'var(--gold)':isProfit?c1Val:'var(--text-secondary)'};font-weight:${isLoss?700:600}">${isLoss ? c2Val : isProfit ? c1Val : '-'}</td>
-        <td>${formatNum(r.clientQty)}</td>
-        <td style="color:${isLoss?'var(--danger)':isProfit?'var(--emerald)':'var(--text-secondary)'};font-weight:700">
-          ${isLoss ? '+' + formatNum(r.priceDiff) : isProfit ? '-' + formatNum(Math.abs(r.priceDiff)) : '0'}
+        <td style="font-weight:700;color:var(--emerald)">${r.fishName}</td>
+        <td style="color:${onlyC1?'var(--emerald)':c1Higher?'var(--gold)':'var(--text-primary)'};font-weight:${c1Higher?700:600}">
+          ${r.c1Price > 0 ? r.c1Price : '-'}<br><span style="font-size:9px;color:var(--text-secondary)">${r.c1Qty > 0 ? formatNum(r.c1Qty) + ' ك' : '-'}</span>
         </td>
-        <td style="color:${isLoss?'var(--danger)':isProfit?'var(--emerald)':'var(--text-secondary)'};font-weight:900">
-          ${isLoss ? '+' + formatNum(r.diffAmount) : isProfit ? formatNum(r.diffAmount) : '0'} <span style="font-size:9px;color:var(--text-secondary)">ج.م</span>
+        <td style="color:${onlyC2?'var(--cyan-glow)':c2Higher?'var(--gold)':'var(--text-primary)'};font-weight:${c2Higher?700:600}">
+          ${r.c2Price > 0 ? r.c2Price : '-'}<br><span style="font-size:9px;color:var(--text-secondary)">${r.c2Qty > 0 ? formatNum(r.c2Qty) + ' ك' : '-'}</span>
+        </td>
+        <td style="color:${Math.abs(r.priceDiff) > 0 ? 'var(--danger)' : 'var(--emerald)'};font-weight:700;text-align:center">
+          ${r.c1Price > 0 && r.c2Price > 0 ? (r.priceDiff !== 0 ? Math.abs(r.priceDiff) : '0') : '-'}
+        </td>
+        <td style="font-size:11px;color:var(--gold);font-weight:600;text-align:center">
+          ${equal ? '🤝 تعادل' : c1Higher ? `🥇 ${c1Val}` : c2Higher ? `🥇 ${c2Val}` : onlyC1 ? `🥇 ${c1Val}` : onlyC2 ? `🥇 ${c2Val}` : '-'}
+        </td>
+        <td style="color:${r.diffValue > 0 ? 'var(--warning)' : 'var(--text-secondary)'};font-weight:700;text-align:center">
+          ${r.diffValue > 0 ? formatNum(r.diffValue) + ' ج.م' : '-'}
         </td>
       </tr>
     `;
   });
 
-  // 🎯 صندوق الإجمالي - الأحمر فقط!
   tableHtml += `
       </tbody>
     </table>
-    <div class="pricediff-total-box" style="background:linear-gradient(135deg, rgba(255,71,87,0.15), rgba(255,71,87,0.05));border-color:rgba(255,71,87,0.5)">
-      <div style="font-size:14px;color:var(--danger);margin-bottom:6px;font-weight:700">💸 إجمالي الأصناف الحمراء — ${c1Val} VS ${c2Val}</div>
-      <div style="font-size:32px;font-weight:900;color:var(--danger)">+${formatNum(totalRedOnly)} <span style="font-size:13px;color:var(--text-secondary)">ج.م</span></div>
-      <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.6">
-        💡 هذا المبلغ كان يمكن كسبه لو ${c1Val} اشترى بنفس سعر ${c2Val}<br>
-        ⚠️ المعادلة: لكل صنف أحمر = عدد ${c1Val} × (سعر ${c2Val} - سعر ${c1Val})<br>
-        📊 عدد الأصناف الحمراء: ${redCount} | إجمالي الأصناف: ${allRows.length}
+    <div class="pricediff-total-box" style="background:linear-gradient(135deg, rgba(0,200,150,0.12), rgba(0,180,216,0.12));border-color:rgba(0,200,150,0.3)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">👤 ${c1Val} - الإجمالي</div>
+          <div style="font-size:18px;font-weight:900;color:var(--emerald)">${formatNum(totalC1Amount)} <span style="font-size:10px;color:var(--text-secondary)">ج.م | ${formatNum(totalC1Qty)} كيلو</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">👤 ${c2Val} - الإجمالي</div>
+          <div style="font-size:18px;font-weight:900;color:var(--cyan-glow)">${formatNum(totalC2Amount)} <span style="font-size:10px;color:var(--text-secondary)">ج.م | ${formatNum(totalC2Qty)} كيلو</span></div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text-secondary);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1)">
+        💡 الفرق في الأسعار قد يعني فرص تحسين أو تفاوض أفضل مع العملاء
       </div>
     </div>
   `;
 
   tableContainer.innerHTML = tableHtml;
 
-  // إظهار أزرار التصدير والواتساب
-  if (actionsEl && displayRows.length > 0) actionsEl.style.display = 'grid';
+  // إظهار أزرار التصدير
+  if (actionsEl && rows.length > 0) actionsEl.style.display = 'grid';
 };
 
 // ============================================================
-// ★ EXPORT TWO CLIENTS COMPARISON PDF (نفس شكل فروق أسعار عميل واحد) ★
+// ★ EXPORT TWO CLIENTS COMPARISON PDF ★
 // ============================================================
 window.exportTwoClientsComparePDF = function() {
   const fromVal = document.getElementById('compare2-from')?.value;
@@ -4718,7 +4682,7 @@ window.exportTwoClientsComparePDF = function() {
   const c2Val = document.getElementById('compare2-client2')?.value;
   if (!fromVal || !toVal || !c1Val || !c2Val) return showToast('❌ اختر الفترة والعميلين أولاً');
 
-  // إعادة حساب البيانات - نفس منطق renderTwoClientsComparison
+  // إعادة حساب البيانات
   const invoices = Object.values(window.appState.invoices);
   const filtered = invoices.filter(inv => {
     const invDate = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
@@ -4736,76 +4700,63 @@ window.exportTwoClientsComparePDF = function() {
       const price = item.pricePerKg || 0;
       const qty = item.kg || 0;
       if (!fishMap[fishName]) {
-        fishMap[fishName] = { clientPrice: 0, clientQty: 0, clientSubtotal: 0, comparePrice: 0 };
+        fishMap[fishName] = { c1Price: 0, c1Qty: 0, c1Total: 0, c2Price: 0, c2Qty: 0, c2Total: 0 };
       }
       if (inv.clientName === c1Val) {
-        if (price > fishMap[fishName].clientPrice) fishMap[fishName].clientPrice = price;
-        fishMap[fishName].clientQty += qty;
-        fishMap[fishName].clientSubtotal += (item.subtotal || 0);
+        if (price > fishMap[fishName].c1Price) fishMap[fishName].c1Price = price;
+        fishMap[fishName].c1Qty += qty;
+        fishMap[fishName].c1Total += (item.subtotal || 0);
       }
       if (inv.clientName === c2Val) {
-        if (price > fishMap[fishName].comparePrice) fishMap[fishName].comparePrice = price;
+        if (price > fishMap[fishName].c2Price) fishMap[fishName].c2Price = price;
+        fishMap[fishName].c2Qty += qty;
+        fishMap[fishName].c2Total += (item.subtotal || 0);
       }
     });
   });
 
-  const rows = Object.entries(fishMap).filter(([, d]) => d.clientQty > 0)
+  const rows = Object.entries(fishMap).filter(([, d]) => d.c1Qty > 0 || d.c2Qty > 0)
     .map(([fishName, data]) => {
-      const priceDiff = data.comparePrice - data.clientPrice;
-      const diffAmount = data.clientQty * priceDiff;
-      let rowType = 'neutral';
-      if (priceDiff > 0 && data.comparePrice > 0) rowType = 'loss';
-      else if (priceDiff < 0 && data.comparePrice > 0) rowType = 'profit';
-      let higherClient = '';
-      if (data.comparePrice > data.clientPrice && data.clientPrice > 0) higherClient = c2Val;
-      else if (data.clientPrice > data.comparePrice && data.comparePrice > 0) higherClient = c1Val;
-      else if (data.clientPrice > 0 && data.comparePrice > 0) higherClient = 'تعادل';
-      else higherClient = data.clientPrice > 0 ? c1Val : c2Val;
-      return { fishName, ...data, priceDiff, diffAmount, rowType, higherClient };
-    }).sort((a, b) => {
-      // ترتيب: الأحمر أولاً
-      if (a.rowType === 'loss' && b.rowType !== 'loss') return -1;
-      if (a.rowType !== 'loss' && b.rowType === 'loss') return 1;
-      return b.diffAmount - a.diffAmount;
-    });
+      const priceDiff = data.c1Price - data.c2Price;
+      const diffValue = Math.abs(data.c1Qty * data.c1Price - data.c2Qty * data.c2Price);
+      return { fishName, ...data, priceDiff, diffValue };
+    }).sort((a, b) => b.diffValue - a.diffValue);
 
   if (!rows.length) return showToast('❌ لا توجد بيانات للتصدير');
 
-  // 🎯 الإجمالي = الأحمر فقط!
-  const totalRedOnly = rows.filter(r => r.rowType === 'loss').reduce((s, r) => s + r.diffAmount, 0);
-
-  // نفس شكل جدول فروق أسعار عميل واحد في PDF
-  const htmlRows = rows.map((r, i) => {
-    const isLoss = r.rowType === 'loss';
-    const isProfit = r.rowType === 'profit';
-    return `
-    <tr style="background:${isLoss?'#fff5f5':isProfit?'#f0fff4':i%2===0?'#f8f9ff':'#ffffff'};${isLoss?'border-left:3px solid #e74c3c':isProfit?'border-left:3px solid #27ae60':''}">
+  const htmlRows = rows.map((r, i) => `
+    <tr style="background:${i%2===0?'#f0fdf4':'#ffffff'}">
       <td style="text-align:center;padding:8px;border:1px solid #ddd">${i+1}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:700;color:${isLoss?'#e74c3c':isProfit?'#27ae60':'#1a1a2e'}">${r.fishName}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:700;color:#059669">${r.clientPrice}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:700;color:${isLoss?'#b8860b':'#0891b2'}">${r.comparePrice||'-'}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-size:11px;color:#666;font-weight:700">${r.higherClient}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd">${formatNum(r.clientQty)}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;color:${isLoss?'#e74c3c':isProfit?'#27ae60':'#888'};font-weight:700">${isLoss ? '+' + formatNum(r.priceDiff) : isProfit ? '-' + formatNum(Math.abs(r.priceDiff)) : '0'}</td>
-      <td style="text-align:center;padding:8px;border:1px solid #ddd;color:${isLoss?'#e74c3c':isProfit?'#27ae60':'#888'};font-weight:900">${isLoss ? '+' + formatNum(r.diffAmount) : isProfit ? formatNum(r.diffAmount) : '0'} ج.م</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:700;color:#059669">${r.fishName}</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:600;color:#059669">${r.c1Price || '-'}<br><small>${r.c1Qty ? formatNum(r.c1Qty)+' ك' : '-'}</small></td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:600;color:#0891b2">${r.c2Price || '-'}<br><small>${r.c2Qty ? formatNum(r.c2Qty)+' ك' : '-'}</small></td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;color:${Math.abs(r.priceDiff)>0?'#e74c3c':'#27ae60'};font-weight:700">${r.c1Price&&r.c2Price?(r.priceDiff!==0?Math.abs(r.priceDiff):'0'):'-'}</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;font-weight:600;color:#b8860b">${r.priceDiff>0?c1Val:r.priceDiff<0?c2Val:r.c1Price&&r2Price?'تعادل':'-'}</td>
+      <td style="text-align:center;padding:8px;border:1px solid #ddd;color:#f59e0b;font-weight:700">${r.diffValue>0?formatNum(r.diffValue)+' ج.م':'-'}</td>
     </tr>
-  `}).join('');
+  `).join('');
 
-  const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"><style>body{font-family:'Cairo',sans-serif;padding:30px;max-width:900px;margin:auto;color:#1a1a2e}h1{color:#e74c3c;text-align:center;font-size:22px}h2{color:#0891b2;text-align:center;font-size:16px}table{width:100%;border-collapse:collapse;margin:20px 0}th{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;padding:10px;text-align:center;font-size:12px}.total-box{background:linear-gradient(135deg,#fff5f5,#ffe8e8);border:2px solid #e74c3c;border-radius:12px;padding:16px;text-align:center;margin-top:20px}.total-val{font-size:32px;font-weight:900;color:#e74c3c}.info-bar{background:#fff5f5;padding:12px;border-radius:10px;text-align:center;margin:15px 0;color:#c0392b;font-size:13px}.red-row{background:#fff5f5}.green-row{background:#f0fff4}</style></head><body>
-    <h1>⚖️ فروق أسعار بين عميلين</h1>
+  const totalC1 = rows.reduce((s,r)=>s+r.c1Total,0);
+  const totalC2 = rows.reduce((s,r)=>s+r.c2Total,0);
+
+  const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"><style>body{font-family:'Cairo',sans-serif;padding:30px;max-width:900px;margin:auto;color:#1a1a2e}h1{color:#059669;text-align:center;font-size:22px}h2{color:#0891b2;text-align:center;font-size:16px}.info-bar{background:#f0fdf4;padding:12px;border-radius:10px;text-align:center;margin:15px 0;color:#047857;font-size:13px}table{width:100%;border-collapse:collapse;margin:15px 0}th{background:linear-gradient(135deg,#059669,#0891b2);color:#fff;padding:10px;text-align:center;font-size:12px}.total-box{background:linear-gradient(135deg,#f0fdf4,#ecfeff);border:2px solid #059669;border-radius:12px;padding:16px;margin-top:15px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.total-item{text-align:center}.total-val{font-size:22px;font-weight:900;color:#059669}</style></head><body>
+    <h1>⚖️ مقارنة شاملة بين عميلين</h1>
     <h2>🏪 الحاج أحمد الحديدي - تجارة الأسماك</h2>
-    <div class="info-bar">📅 الفترة: ${isoToArabicDate(fromVal)} إلى ${isoToArabicDate(toVal)} | 👤 ${c1Val} VS ${c2Val} | 🔴 الإجمالي = الأصناف الحمراء فقط</div>
-    <table><thead><tr><th>#</th><th>الصنف</th><th>سعر ${c1Val} (ج.م/ك)</th><th>سعر ${c2Val} (ج.م/ك)</th><th>الأعلى سعراً</th><th>العدد (كيلو)</th><th>فرق السعر</th><th>قيمة الفرق</th></tr></thead><tbody>${htmlRows}</tbody></table>
-    <div class="total-box"><div style="font-size:14px;color:#c0392b;font-weight:700">💸 إجمالي الأصناف الحمراء — ${c1Val} مقارنة بـ ${c2Val}</div><div class="total-val">+${formatNum(totalRedOnly)} ج.م</div><div style="font-size:11px;color:#888;margin-top:6px;line-height:1.5">💡 هذا المبلغ كان يمكن كسبه لو ${c1Val} اشترى بنفس سعر ${c2Val}<br>⚠️ المعادلة: لكل صنف أحمر = عدد ${c1Val} × (سعر ${c2Val} - سعر ${c1Val})<br>📊 عدد الأصناف الحمراء: ${rows.filter(r=>r.rowType==='loss').length} | إجمالي الأصناف: ${rows.length}</div></div>
+    <div class="info-bar">📅 الفترة: ${isoToArabicDate(fromVal)} إلى ${isoToArabicDate(toVal)} | 👤 ${c1Val} VS ${c2Val}</div>
+    <table><thead><tr><th>#</th><th>الصنف</th><th>${c1Val} (سعر/كم)</th><th>${c2Val} (سعر/كم)</th><th>فرق السعر</th><th>الأعلى</th><th>قيمة الفرق</th></tr></thead><tbody>${htmlRows}</tbody></table>
+    <div class="total-box">
+      <div class="total-item"><div style="font-size:11px;color:#666;margin-bottom:4px">👤 ${c1Val} - الإجمالي</div><div class="total-val" style="color:#059669">${formatNum(totalC1)} ج.م</div></div>
+      <div class="total-item"><div style="font-size:11px;color:#666;margin-bottom:4px">👤 ${c2Val} - الإجمالي</div><div class="total-val" style="color:#0891b2">${formatNum(totalC2)} ج.م</div></div>
+    </div>
   </body></html>`;
 
-  const fileName = `فروق_أسعار_${c1Val}_${c2Val}_${fromVal.replace(/-/g,'')}`;
+  const fileName = `مقارنة_${c1Val}_${c2Val}_${fromVal.replace(/-/g,'')}`;
   openPrintWindow(html, fileName);
   showToast('📄 اختر "حفظ كـ PDF" من نافذة الطباعة');
 };
 
 // ============================================================
-// ★ SEND TWO CLIENTS COMPARISON VIA WHATSAPP (نفس شكل فروق أسعار عميل واحد) ★
+// ★ SEND TWO CLIENTS COMPARISON VIA WHATSAPP ★
 // ============================================================
 window.sendTwoClientsCompareWA = function() {
   const fromVal = document.getElementById('compare2-from')?.value;
@@ -4814,7 +4765,7 @@ window.sendTwoClientsCompareWA = function() {
   const c2Val = document.getElementById('compare2-client2')?.value;
   if (!fromVal || !toVal || !c1Val || !c2Val) return showToast('❌ اختر الفترة والعميلين أولاً');
 
-  // إعادة حساب البيانات - نفس منطق renderTwoClientsComparison
+  // إعادة حساب البيانات
   const invoices = Object.values(window.appState.invoices);
   const filtered = invoices.filter(inv => {
     const invDate = inv.invDateISO || (inv.date ? inv.date.split('T')[0] : '');
@@ -4832,64 +4783,53 @@ window.sendTwoClientsCompareWA = function() {
       const price = item.pricePerKg || 0;
       const qty = item.kg || 0;
       if (!fishMap[fishName]) {
-        fishMap[fishName] = { clientPrice: 0, clientQty: 0, comparePrice: 0 };
+        fishMap[fishName] = { c1Price: 0, c1Qty: 0, c2Price: 0, c2Qty: 0 };
       }
       if (inv.clientName === c1Val) {
-        if (price > fishMap[fishName].clientPrice) fishMap[fishName].clientPrice = price;
-        fishMap[fishName].clientQty += qty;
+        if (price > fishMap[fishName].c1Price) fishMap[fishName].c1Price = price;
+        fishMap[fishName].c1Qty += qty;
       }
       if (inv.clientName === c2Val) {
-        if (price > fishMap[fishName].comparePrice) fishMap[fishName].comparePrice = price;
+        if (price > fishMap[fishName].c2Price) fishMap[fishName].c2Price = price;
+        fishMap[fishName].c2Qty += qty;
       }
     });
   });
 
-  const rows = Object.entries(fishMap).filter(([, d]) => d.clientQty > 0)
+  const rows = Object.entries(fishMap).filter(([, d]) => d.c1Qty > 0 || d.c2Qty > 0)
     .map(([fishName, data]) => {
-      const priceDiff = data.comparePrice - data.clientPrice;
-      const diffAmount = data.clientQty * priceDiff;
-      let rowType = 'neutral';
-      if (priceDiff > 0 && data.comparePrice > 0) rowType = 'loss';
-      else if (priceDiff < 0 && data.comparePrice > 0) rowType = 'profit';
-      return { fishName, ...data, priceDiff, diffAmount, rowType };
-    }).sort((a, b) => {
-      if (a.rowType === 'loss' && b.rowType !== 'loss') return -1;
-      if (a.rowType !== 'loss' && b.rowType === 'loss') return 1;
-      return b.diffAmount - a.diffAmount;
-    });
+      const priceDiff = data.c1Price - data.c2Price;
+      return { fishName, ...data, priceDiff };
+    }).sort((a, b) => Math.abs(b.priceDiff) - Math.abs(a.priceDiff));
 
   if (!rows.length) return showToast('❌ لا توجد بيانات للإرسال');
 
-  // 🎯 الإجمالي = الأحمر فقط!
-  const totalRedOnly = rows.filter(r => r.rowType === 'loss').reduce((s, r) => s + r.diffAmount, 0);
-  const redCount = rows.filter(r => r.rowType === 'loss').length;
-
   // بناء رسالة واتساب
-  let text = `⚖️ *فروق أسعار بين عميلين*\n🏪 الحاج أحمد الحديدي - تجارة الأسماك\n━━━━━━━━━━━━━━━━━━━━\n`;
+  let text = `⚖️ *مقارنة شاملة بين عميلين*\n🏪 الحاج أحمد الحديدي - تجارة الأسماك\n━━━━━━━━━━━━━━━━━━━━\n`;
   text += `📅 الفترة: ${isoToArabicDate(fromVal)} إلى ${isoToArabicDate(toVal)}\n`;
-  text += `👤 *${c1Val}* VS *${c2Val}*\n`;
-  text += `🔴 الإجمالي = الأصناف الحمراء فقط\n━━━━━━━━━━━━━━━━━━━━\n\n`;
+  text += `👤 *${c1Val}* VS *${c2Val}*\n━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-  rows.forEach((r, i) => {
-    const isLoss = r.rowType === 'loss';
-    const isProfit = r.rowType === 'profit';
-    text += `${isLoss ? '🔴' : isProfit ? '🟢' : '⚪'} *${i+1}. ${r.fishName}*\n`;
-    text += `   💰 سعر ${c1Val}: ${r.clientPrice} | سعر ${c2Val}: ${r.comparePrice || '-'}\n`;
-    text += `   📦 عدد: ${formatNum(r.clientQty)} كيلو | `;
-    if (isLoss) {
-      text += `فرق: +${formatNum(r.priceDiff)} | *+${formatNum(r.diffAmount)} ج.م*\n`;
-    } else if (isProfit) {
-      text += `فرق: ${formatNum(r.priceDiff)} | ${formatNum(r.diffAmount)} ج.م\n`;
-    } else {
-      text += `فرق: 0\n`;
+  rows.slice(0, 15).forEach((r, i) => {
+    text += `${i+1}. 🐟 *${r.fishName}*\n`;
+    text += `   ${c1Val}: ${r.c1Price || 'لم يشترِ'} ج.م (${r.c1Qty ? formatNum(r.c1Qty)+' ك' : '0 ك'})\n`;
+    text += `   ${c2Val}: ${r.c2Price || 'لم يشترِ'} ج.م (${r.c2Qty ? formatNum(r.c2Qty)+' ك' : '0 ك'})\n`;
+    if (r.c1Price > 0 && r.c2Price > 0) {
+      if (r.priceDiff > 0) {
+        text += `   📈 ${c1Val} أعلى بـ ${formatNum(r.priceDiff)} ج.م/ك\n`;
+      } else if (r.priceDiff < 0) {
+        text += `   📈 ${c2Val} أعلى بـ ${formatNum(Math.abs(r.priceDiff))} ج.م/ك\n`;
+      } else {
+        text += `   🤝 نفس السعر\n`;
+      }
     }
+    text += `─────────────────────\n`;
   });
 
-  text += `\n━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `💸 *إجمالي الأصناف الحمراء: +${formatNum(totalRedOnly)} ج.م*\n`;
-  text += `📊 عدد الأصناف الحمراء: ${redCount} من ${rows.length}\n`;
-  text += `⚠️ هذا المبلغ كان يمكن كسبه لو ${c1Val} اشترى بنفس سعر ${c2Val}\n`;
-  text += `━━━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
+  if (rows.length > 15) {
+    text += `\n... و ${rows.length - 15} أصناف أخرى\n`;
+  }
+
+  text += `\n━━━━━━━━━━━━━━━━━━━━\nشكراً لتعاملكم معنا 🙏`;
 
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 };
@@ -5470,24 +5410,12 @@ window.confirmDeleteClient = function(clientKey, clientName) {
   const installCta = document.getElementById('install-cta');
   const installClose = document.getElementById('install-close');
 
-  // ----- Professional Standalone Detection -----
-  window.isStandalone = 
+  // ----- Standalone detection (already installed) -----
+  const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: fullscreen)').matches ||
-    window.matchMedia('(display-mode: minimal-ui)').matches ||
     window.navigator.standalone === true ||
-    document.referrer.startsWith('android-app://') ||
-    document.referrer.startsWith('ms-appx-web://') ||
-    (window.location.search.includes('source=pwa'));
-  
-  // Add class to body for CSS targeting
-  if (window.isStandalone) {
-    document.body.classList.add('pwa-standalone');
-    if (installBar) installBar.style.display = 'none';
-    console.log('[PWA] Running in standalone mode');
-  } else {
-    console.log('[PWA] Running in browser mode - showing install prompt');
-  }
+    document.referrer.startsWith('android-app://');
+  if (isStandalone && installBar) installBar.style.display = 'none';
 
   // ----- beforeinstallprompt: show professional bar -----
   let deferredPrompt = null;
@@ -5498,89 +5426,44 @@ window.confirmDeleteClient = function(clientKey, clientName) {
     deferredPrompt = e;
     window.appState.deferredPrompt = e;
     // Don't show if user dismissed recently, or if already installed
-    if (installDismissed || window.isStandalone) return;
-    
-    // Show install bar with animation
-    setTimeout(() => {
-      if (installBar) installBar.classList.add('visible');
-    }, 1500);
-  });
-
-  // Listen for successful installation
-  window.addEventListener('appinstalled', () => {
-    console.log('[PWA] App installed successfully!');
-    deferredPrompt = null;
-    if (installBar) {
-      installBar.classList.remove('visible');
-      installBar.classList.add('dismissed');
-    }
-    showToast('✅ تم تثبيت التطبيق بنجاح! يمكنك فتحه من الشاشة الرئيسية');
-    
-    // Track installation (optional analytics)
-    if (window.gtag) {
-      gtag('event', 'pwa_installed', {
-        'event_category': 'PWA',
-        'event_label': 'App Installed'
-      });
-    }
+    if (installDismissed || isStandalone) return;
+    setTimeout(() => installBar.classList.add('visible'), 1200);
   });
 
   // ----- Install CTA handler -----
   async function triggerInstall() {
     if (!deferredPrompt) {
       // Fallback for iOS Safari / browsers without beforeinstallprompt
-      showInstallInstructions();
+      showToast('ℹ️ من قائمة المتصفح (⋮) اختر: «إضافة إلى الشاشة الرئيسية»');
       return;
     }
-    
-    try {
-      deferredPrompt.prompt();
-      const result = await deferredPrompt.userChoice;
-      if (result.outcome === 'accepted') {
-        if (installBar) {
-          installBar.classList.remove('visible');
-          installBar.classList.add('dismissed');
-        }
-        showToast('✅ جاري تثبيت التطبيق...');
-      }
-      deferredPrompt = null;
-    } catch (err) {
-      console.warn('[PWA] Install prompt error:', err);
-      showInstallInstructions();
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === 'accepted') {
+      installBar.classList.remove('visible');
+      installBar.classList.add('dismissed');
+      showToast('✅ جاري تثبيت التطبيق...');
     }
+    deferredPrompt = null;
+    window.appState.deferredPrompt = null;
   }
-
-  // Show platform-specific instructions
-  function showInstallInstructions() {
-    const ua = navigator.userAgent.toLowerCase();
-    let instructions = '';
-    
-    if (ua.includes('iphone') || ua.includes('ipad')) {
-      instructions = '📱 iOS: اضغط على زر المشاركة (⬆️) ثم «إضافة إلى الشاشة الرئيسية»';
-    } else if (ua.includes('android')) {
-      instructions = '🤖 Android: اضغط على قائمة المتصفح (⋮) ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»';
-    } else if (ua.includes('samsungbrowser')) {
-      instructions = '🌐 Samsung Internet: اضغط على قائمة (⋮) ثم «إضافة إلى الأجهزة»';
-    } else {
-      instructions = '💻 من قائمة المتصفح اختر: «إضافة إلى الشاشة الرئيسية» أو «تثبيت كتطبيق»';
-    }
-    
-    showToast(instructions, 8000);
-  }
+  if (installCta) installCta.addEventListener('click', triggerInstall);
+  window.installPWA = triggerInstall; // backward compatibility
 
   // ----- Close (dismiss) install bar -----
   if (installClose) installClose.addEventListener('click', () => {
-    if (installBar) {
-      installBar.classList.remove('visible');
-      installBar.classList.add('dismissed');
-    }
+    installBar.classList.remove('visible');
+    installBar.classList.add('dismissed');
     installDismissed = true;
     sessionStorage.setItem('pwa-install-dismissed', '1');
   });
 
-  // ----- Install button click handler -----
-  if (installCta) installCta.addEventListener('click', triggerInstall);
-  window.installPWA = triggerInstall; // backward compatibility
+  // ----- appinstalled event -----
+  window.addEventListener('appinstalled', () => {
+    if (installBar) { installBar.classList.remove('visible'); installBar.classList.add('dismissed'); }
+    showToast('🎉 تم تثبيت التطبيق بنجاح!');
+    // Optional: send analytics event
+  });
 
   // ----- Service worker registration -----
   if ('serviceWorker' in navigator) {
