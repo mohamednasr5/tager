@@ -1578,7 +1578,8 @@ window.switchPage = function(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
+  
   if (page === 'invoice') initInvoiceForm();
   if (page === 'clients') renderClients();
   if (page === 'history') renderHistory();
@@ -1586,6 +1587,11 @@ window.switchPage = function(page, btn) {
   if (page === 'prices') renderPricesPage();
   if (page === 'pricediff') { initPriceDiffPage(); if(typeof initTwoClientsComparisonDropdowns === 'function') initTwoClientsComparisonDropdowns(); }
   if (page === 'entered-invoices') { if (typeof renderEnteredInvoices === 'function') renderEnteredInvoices(); }
+  
+  // إعادة تطبيق قيود المشاهد بعد تحميل الصفحة
+  if (window.currentUser?.role === 'viewer') {
+    setTimeout(() => applyViewerRestrictions(), 150);
+  }
 };
 
 // ============================================================
@@ -6620,14 +6626,16 @@ window.doLogin = function() {
   const pwd = document.getElementById('login-password').value;
   const err = document.getElementById('login-error');
   
-  if (pwd === '123456' || pwd === '666666') { 
-    // تسجيل دخول بصلاحيات الأدمن
+  if (pwd === '666666') { 
+    // كلمة السر 666666 → تحكم كامل (أدمن)
     window.currentUser = { role: 'admin', name: 'أحمد الحديدي' };
-    document.getElementById('admin-tools-card').style.display = 'block'; // إظهار أزرار التصدير PDF والتصفير
-  } else if (pwd === '111111') {
-    // تسجيل دخول بصلاحيات مشاهد
-    window.currentUser = { role: 'viewer', name: 'مستخدم' };
-    document.getElementById('admin-tools-card').style.display = 'none'; // إخفاء أزرار الأدمن
+    window.appState.userRole = 'admin';
+    document.getElementById('admin-tools-card').style.display = 'block'; // إظهار أدوات الإدارة
+  } else if (pwd === '123456') {
+    // كلمة السر 123456 → عرض فقط (مشاهد)
+    window.currentUser = { role: 'viewer', name: 'زائر' };
+    window.appState.userRole = 'viewer';
+    document.getElementById('admin-tools-card').style.display = 'none'; // إخفاء أدوات الإدارة
   } else {
     err.textContent = '❌ كلمة السر غير صحيحة';
     return;
@@ -6636,15 +6644,24 @@ window.doLogin = function() {
   // تفعيل النظام
   document.getElementById('login-screen').classList.add('hidden');
   
+  // تحديث شارة الدور
+  updateRoleBadge();
+  
+  // تطبيق قيود المشاهد إذا لزم
+  if (window.currentUser.role === 'viewer') {
+    setTimeout(() => applyViewerRestrictions(), 100);
+  }
+  
   // رسالة ترحيب
   const toast = document.createElement('div');
   toast.className = 'welcome-toast';
+  const roleText = window.currentUser.role === 'admin' ? '👑 تحكم كامل' : '👁️ عرض فقط';
   toast.innerHTML = `
     <div class="welcome-icon">👋</div>
     <div class="welcome-text">
-      <div class="welcome-greeting">مرحباً بك في النظام</div>
+      <div class="welcome-greeting">مرحباً بك في نظام الحديدي للأسماك</div>
       <div class="welcome-name">${window.currentUser.name}</div>
-      <div class="welcome-role">${window.currentUser.role === 'admin' ? 'صلاحيات المدير' : 'صلاحيات العرض'}</div>
+      <div class="welcome-role">${roleText}</div>
     </div>
   `;
   document.body.appendChild(toast);
@@ -6655,6 +6672,79 @@ window.doLogin = function() {
 
   updateDate();
   setupListeners();
+};
+
+// ============================================================
+// تحديث شارة الدور في الهيدر
+// ============================================================
+window.updateRoleBadge = function() {
+  const badge = document.getElementById('role-badge');
+  if (!badge) return;
+  
+  if (window.currentUser?.role === 'admin') {
+    badge.className = 'role-badge admin';
+    badge.innerHTML = '👑 أدمن • تحكم كامل • خروج';
+  } else if (window.currentUser?.role === 'viewer') {
+    badge.className = 'role-badge viewer';
+    badge.innerHTML = '👁️ عرض فقط • خروج';
+  }
+};
+
+// ============================================================
+// تطبيق قيود وضع المشاهد (عرض فقط)
+// ============================================================
+window.applyViewerRestrictions = function() {
+  // 1. تعطيل جميع حقول الإدخال
+  const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="tel"], input[type="date"], input[type="password"], textarea, select');
+  inputs.forEach(el => {
+    el.disabled = true;
+    el.style.opacity = '0.6';
+    el.style.cursor = 'not-allowed';
+    el.placeholder = 'وضع العرض فقط';
+  });
+  
+  // 2. إخفاء/تعطيل أزرار الإضافة والحفظ
+  const addSaveButtons = document.querySelectorAll('#save-invoice-btn, button[onclick*="addExpenseRow"], button[onclick*="addOtherFish"], button[onclick*="saveEditInvoice"], button[onclick*="saveEditPayment"], button[onclick*="saveEditClient"]');
+  addSaveButtons.forEach(btn => {
+    btn.style.display = 'none';
+  });
+  
+  // 3. إخفاء أزرار التعديل والحذف
+  const editDeleteBtns = document.querySelectorAll('button[onclick*="editInvoiceModal"], button[onclick*="editClientModal"], button[onclick*="editPaymentModal"], button[onclick*="confirmDeleteInvoice"], button[onclick*="confirmDeleteClient"], button[onclick*="confirmDeletePayment"], button[onclick*="removeFishItem"], button[onclick*="removeExpenseRow"], .remove-fish-btn, .expense-remove-btn');
+  editDeleteBtns.forEach(btn => {
+    btn.style.display = 'none';
+  });
+  
+  // 4. إخفاء زر إضافة صنف "أخرى"
+  const otherChip = document.querySelector('.fish-chip.other-chip');
+  if (otherChip) otherChip.style.display = 'none';
+  
+  // 5. إخفاء زر تصفير النظام
+  const resetBtn = document.querySelector('button[onclick*="showResetDataModal"]');
+  if (resetBtn) resetBtn.style.display = 'none';
+  
+  // 6. تعطيل رقائق الأسماك (fish chips)
+  const fishChips = document.querySelectorAll('.fish-chip:not(.other-chip)');
+  fishChips.forEach(chip => {
+    chip.style.pointerEvents = 'none';
+    chip.style.opacity = '0.5';
+  });
+  
+  // 7. إضافة شارة وضع العرض فقط على الصفحة
+  const viewerNotice = document.createElement('div');
+  viewerNotice.id = 'viewer-mode-notice';
+  viewerNotice.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:999;background:linear-gradient(135deg,rgba(0,180,216,0.95),rgba(21,101,192,0.95));color:white;padding:8px 20px;border-radius:20px;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;box-shadow:0 4px 15px rgba(0,180,216,0.4);display:flex;align-items:center;gap:6px;';
+  viewerNotice.innerHTML = '👁️ وضع العرض فقط — العرض والطباعة والتصدير متاحان';
+  document.body.appendChild(viewerNotice);
+  
+  // 8. إخفاء صفحة الفاتورة من التنقل (لأنها للإضافة فقط)
+  const invoiceNavBtn = document.querySelector('.nav-item[onclick*="page-invoice"]');
+  if (invoiceNavBtn) {
+    invoiceNavBtn.style.display = 'none';
+    invoiceNavBtn.style.pointerEvents = 'none';
+  }
+  
+  console.log('[نظام الصلاحيات] تم تقييد الوضع لـ: عرض فقط');
 };
 
 window.confirmLogout = function() {
