@@ -784,37 +784,47 @@
   }
 
   /* ===================== TABLET LAYOUT (auto-switch) ===================== */
-  /* On wide screens (landscape tablets), convert bottom-nav to right-side Rail */
+  /* On wide screens (landscape tablets) - KEEP BOTTOM NAV AT BOTTOM for PWA Tablet UX */
   @media (min-width: 900px) and (orientation: landscape) {
-    /* Move nav from bottom to right side (RTL: visually on right) */
+    /* Keep nav at BOTTOM even in landscape mode - optimized for tablet PWA */
     .bottom-nav {
-      position: fixed; top: 0; bottom: 0; right: 0; left: auto;
-      width: 92px; flex-direction: column;
-      padding: max(16px, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom));
-      border-top: none; border-left: 1px solid var(--glass-border);
-      background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(13,33,55,0.97) 100%);
-      overflow-y: auto;
+      position: fixed; bottom: 0; left: 0; right: 0; top: auto;
+      flex-direction: row;
+      padding: 4px 0 max(4px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--glass-border);
+      border-left: none;
+      background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(10,22,40,1) 100%);
+      overflow-y: visible;
+      justify-content: center;
+      gap: 2px;
     }
     .bottom-nav::-webkit-scrollbar { width: 0; }
-    .nav-item { padding: 10px 4px; }
-    .nav-item .nav-icon { font-size: 24px; }
-    .nav-item .nav-label { font-size: 9px; }
+    
+    /* Compact touch targets for tablet landscape */
+    .nav-item { 
+      padding: 6px 12px; 
+      min-width: 70px;
+      flex: 0 1 auto;
+    }
+    .nav-item .nav-icon { font-size: 22px; }
+    .nav-item .nav-label { font-size: 10px; }
 
-    /* Push content to the right of the rail */
-    .content { padding-right: 92px; padding-bottom: 24px; }
-    #pwa-install-bar { right: calc(92px + 12px); left: 12px; max-width: none; transform: translateY(140%); width: auto; }
+    /* Content uses full width - minimal space above nav */
+    .content { 
+      padding-bottom: 70px; 
+      padding-left: 24px; 
+      padding-right: 24px;
+    }
+    #pwa-install-bar { right: 24px; left: 24px; max-width: 600px; margin: 0 auto; }
     #pwa-install-bar.visible { transform: translateY(0); }
     #pwa-install-bar.dismissed { transform: translateY(140%); }
 
-    /* App header gets wider too */
-    .app-header { padding-right: 92px; }
+    /* App header full width */
+    .app-header { padding-left: 24px; padding-right: 24px; }
 
     /* Better use of wide screen — multi-column grids */
     .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
     .glass-card { max-width: 100%; }
-
-    /* Master-Detail: make some grids side by side on tablet */
-    .content { padding-left: 24px; padding-right: calc(92px + 24px); }
   }
 
   /* Portrait tablet — keep bottom nav but make it more spacious */
@@ -828,8 +838,9 @@
 
   /* Very wide (desktop / large landscape tablet) — center content card */
   @media (min-width: 1200px) {
-    .content { max-width: 1100px; margin: 0 auto; padding-right: calc(92px + 32px); padding-left: 32px; }
-    .app-header { max-width: 100%; padding-right: calc(92px + 32px); padding-left: 32px; }
+    .content { max-width: 1100px; margin: 0 auto; padding-left: 32px; padding-right: 32px; padding-bottom: 70px; }
+    .app-header { max-width: 100%; padding-left: 32px; padding-right: 32px; }
+    .bottom-nav { max-width: 1100px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; }
   }
 
   /* Standalone PWA tweaks (only when installed) */
