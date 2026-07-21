@@ -4,69 +4,6 @@
 <meta charset="UTF-8">
 <!-- PWA Professional Meta Tags -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
-<!-- Tablet Detection Meta -->
-<meta name="x-ua-compatible" content="ie=edge">
-<script>
-// ===== TABLET DETECTION & LAYOUT SWITCHER =====
-// This script runs BEFORE the page renders to prevent layout shift
-(function() {
-  'use strict';
-  
-  function isTabletDevice() {
-    const ua = navigator.userAgent.toLowerCase();
-    const platform = navigator.platform?.toLowerCase() || '';
-    const maxWidth = screen.width || window.innerWidth;
-    const maxHeight = screen.height || window.innerHeight;
-    const minDimension = Math.min(maxWidth, maxHeight);
-    
-    // Check for tablet patterns in user agent
-    const tabletPatterns = [
-      'ipad', 'tablet', 'playbook', 'silk', 'kindle',
-      'android(?!.*mobile)', 'p1000', 'p5100', 'p7300',
-      'sm-t', 'sm-p', 'tab-', 'gt-p', 'sch-i800',
-      'a100', 'a101', 'a200', 'a210', 'a211', 'a500',
-      'a501', 'a510', 'a511', 'a700', 'a701'
-    ];
-    
-    const isTabletUA = tabletPatterns.some(p => new RegExp(p).test(ua));
-    
-    // Check for iPad on iOS 13+ (no longer identifies as iPad in UA)
-    const isIPad = /macintosh/.test(ua) && navigator.maxTouchPoints > 1;
-    
-    // Screen size based detection (tablets typically 768px+)
-    const isTabletScreen = minDimension >= 768 && minDimension < 1366;
-    
-    // Android tablets with large screens
-    const isAndroidTablet = /android/.test(ua) && !/mobile/.test(ua);
-    
-    return isTabletUA || isIPad || isAndroidTablet || (isTabletScreen && !/mobile/.test(ua));
-  }
-  
-  // Apply detection immediately
-  if (isTabletDevice()) {
-    document.documentElement.classList.add('is-tablet');
-    
-    // Store for later use
-    window.__isTablet = true;
-    
-    // Force full-width viewport behavior
-    const meta = document.querySelector('meta[name="viewport"]');
-    if (meta) {
-      meta.setAttribute('content', 
-        'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes'
-      );
-    }
-    
-    // Add data attribute for CSS targeting
-    document.documentElement.setAttribute('data-device-type', 'tablet');
-  } else {
-    document.documentElement.setAttribute('data-device-type', 'phone');
-  }
-  
-  // Expose detection function globally
-  window.isTabletDevice = isTabletDevice;
-})();
-</script>
 <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: light)">
 <meta name="color-scheme" content="dark">
@@ -655,13 +592,13 @@
 
   /* ===================== LOGIN SCREEN ===================== */
   #login-screen {
-    position: fixed; inset: 0; z-index: 99999;
+    position: fixed; inset: 0; z-index: 9999;
     background: linear-gradient(135deg, #040d1a 0%, #061525 50%, #050f1e 100%);
     display: flex; align-items: center; justify-content: center;
     padding: 20px;
     animation: fadeIn 0.4s ease;
   }
-  #login-screen.hidden { display: none !important; }
+  #login-screen.hidden { display: none; }
 
   .login-box {
     width: 100%; max-width: 380px;
@@ -716,13 +653,6 @@
   .welcome-greeting { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 400; }
   .welcome-name { font-size: 18px; font-weight: 900; color: white; line-height: 1.3; }
   .welcome-role { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
-  
-  /* Shake animation for login error */
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
-  }
 
   .role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; }
   .role-badge.admin { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
@@ -794,745 +724,112 @@
   .splash-bubble.b2 { width: 180px; height: 180px; bottom: -40px; left: -40px; animation: splashFloat 6s ease-in-out infinite reverse; }
   @keyframes splashFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-20px)} }
 
-  /* ===================== PROFESSIONAL INSTALL BANNER ===================== */
-  
-  /* Main Install Banner - Premium Design */
+  /* ===================== PROFESSIONAL INSTALL BAR ===================== */
   #pwa-install-bar {
-    position: fixed;
-    bottom: calc(80px + env(safe-area-inset-bottom) + 12px);
-    left: 50%;
-    transform: translateX(-50%) translateY(140%);
-    width: calc(100% - 32px);
-    max-width: 420px;
-    background: linear-gradient(145deg, rgba(15, 25, 45, 0.98) 0%, rgba(8, 16, 32, 0.98) 100%);
-    border: 1px solid rgba(0, 200, 255, 0.3);
-    border-radius: 24px;
-    padding: 0;
-    box-shadow: 
-      0 20px 60px rgba(0, 0, 0, 0.6),
-      0 0 40px rgba(0, 180, 216, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    display: flex;
-    flex-direction: column;
+    position: fixed; bottom: calc(72px + env(safe-area-inset-bottom) + 12px);
+    left: 50%; transform: translateX(-50%) translateY(140%);
+    width: calc(100% - 24px); max-width: 560px;
+    background: linear-gradient(135deg, rgba(13,33,55,0.97) 0%, rgba(10,22,40,0.97) 100%);
+    border: 1px solid rgba(0,180,216,0.4);
+    border-radius: 20px; padding: 14px 16px;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.05), inset 0 1px 0 rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    display: flex; align-items: center; gap: 12px;
     z-index: 10001;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
     opacity: 0;
-    overflow: hidden;
   }
-  
-  #pwa-install-bar.visible {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
+  #pwa-install-bar.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+  #pwa-install-bar.dismissed { transform: translateX(-50%) translateY(140%); opacity: 0; }
+  .install-bar-icon {
+    width: 44px; height: 44px; flex-shrink: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #00b4d8 0%, #0d7fb3 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; box-shadow: 0 4px 16px rgba(0,180,216,0.4);
   }
-  
-  #pwa-install-bar.dismissed {
-    transform: translateX(-50%) translateY(140%);
-    opacity: 0;
-    pointer-events: none;
+  .install-bar-content { flex: 1; min-width: 0; }
+  .install-bar-title { font-size: 14px; font-weight: 800; color: #e8f4f8; margin-bottom: 2px; }
+  .install-bar-sub { font-size: 11px; color: #90caf9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .install-bar-cta {
+    background: linear-gradient(135deg, #00b4d8 0%, #00e5ff 100%);
+    color: #0a1628; font-weight: 800; font-size: 13px;
+    padding: 10px 18px; border-radius: 12px; border: none;
+    cursor: pointer; font-family: 'Cairo', sans-serif;
+    white-space: nowrap; flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,180,216,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
+  .install-bar-cta:active { transform: scale(0.96); }
+  .install-bar-close {
+    position: absolute; top: -8px; left: -8px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(10,22,40,0.95); color: #90caf9;
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer; line-height: 1;
+  }
+  .install-bar-close:active { transform: scale(0.9); }
 
-  /* Animated gradient border effect */
-  #pwa-install-bar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      #00b4d8 20%,
-      #00e5ff 50%,
-      #00b4d8 80%,
-      transparent 100%
-    );
-    animation: installBorderGlow 3s ease-in-out infinite;
-  }
-  
-  @keyframes installBorderGlow {
-    0%, 100% { opacity: 0.5; transform: scaleX(0.8); }
-    50% { opacity: 1; transform: scaleX(1); }
-  }
-
-  /* Banner Header with App Icon */
-  .install-banner-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 18px 18px 14px;
-    position: relative;
-  }
-  
-  .install-app-icon {
-    width: 58px;
-    height: 58px;
-    flex-shrink: 0;
-    border-radius: 16px;
-    background: linear-gradient(145deg, #0a1628 0%, #1565c0 50%, #00b4d8 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    box-shadow: 
-      0 6px 20px rgba(0, 180, 216, 0.4),
-      inset 0 2px 0 rgba(255, 255, 255, 0.15);
-    position: relative;
-    animation: iconFloat 3s ease-in-out infinite;
-  }
-  
-  @keyframes iconFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-  }
-  
-  .install-app-icon::after {
-    content: '';
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 16px;
-    height: 16px;
-    background: linear-gradient(135deg, #ffd700, #ff8c00);
-    border-radius: 50%;
-    border: 2px solid #0a1628;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #0a1628;
-    font-weight: 900;
-    font-size: 9px;
-  }
-
-  .install-app-info {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .install-app-name {
-    font-size: 16px;
-    font-weight: 900;
-    color: #ffffff;
-    margin-bottom: 3px;
-    letter-spacing: -0.3px;
-  }
-  
-  .install-app-developer {
-    font-size: 12px;
-    color: #90caf9;
-    margin-bottom: 4px;
-  }
-  
-  .install-app-rating {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    color: #ffd700;
-  }
-  
-  .install-stars {
-    letter-spacing: 1px;
-  }
-  
-  .install-rating-text {
-    color: #90caf9;
-    margin-left: 4px;
-  }
-
-  .install-banner-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #90caf9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-    line-height: 1;
-  }
-  
-  .install-banner-close:hover {
-    background: rgba(255, 71, 87, 0.2);
-    border-color: rgba(255, 71, 87, 0.4);
-    color: #ff4757;
-    transform: rotate(90deg);
-  }
-
-  /* Features List */
-  .install-features {
-    display: flex;
-    gap: 8px;
-    padding: 0 18px 12px;
-    overflow-x: auto;
-  }
-  
-  .install-features::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .install-feature-tag {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    background: rgba(0, 180, 216, 0.1);
-    border: 1px solid rgba(0, 180, 216, 0.25);
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #00e5ff;
-    white-space: nowrap;
-  }
-  
-  .install-feature-icon {
-    font-size: 12px;
-  }
-
-  /* Install Button Area */
-  .install-banner-actions {
-    padding: 12px 18px 18px;
-    display: flex;
-    gap: 10px;
-  }
-  
-  .install-btn-primary {
-    flex: 1;
-    background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
-    color: #ffffff;
-    font-weight: 800;
-    font-size: 14px;
-    padding: 14px 20px;
-    border-radius: 14px;
-    border: none;
-    cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: 
-      0 6px 24px rgba(0, 180, 216, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .install-btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent
-    );
-    transition: left 0.5s;
-  }
-  
-  .install-btn-primary:hover::before {
-    left: 100%;
-  }
-  
-  .install-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      0 10px 35px rgba(0, 180, 216, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  }
-  
-  .install-btn-primary:active {
-    transform: translateY(0) scale(0.98);
-  }
-  
-  .install-btn-icon {
-    font-size: 18px;
-  }
-
-  .install-btn-secondary {
-    padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 14px;
-    color: #90caf9;
-    font-weight: 600;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    transition: all 0.2s;
-  }
-  
-  .install-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
-  }
-
-  /* Pulse ring animation for attention */
+  /* Pulse effect to grab attention */
   #pwa-install-bar.visible::after {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: 26px;
-    border: 2px solid rgba(0, 229, 255, 0.4);
-    animation: installPulseRing 2.5s ease-in-out infinite;
+    content: ''; position: absolute; inset: -2px;
+    border-radius: 22px; border: 2px solid rgba(0,180,216,0.5);
+    animation: installPulse 2s ease-in-out infinite;
     pointer-events: none;
   }
-  
-  @keyframes installPulseRing {
-    0%, 100% { 
-      opacity: 0; 
-      transform: scale(1); 
-    }
-    50% { 
-      opacity: 1; 
-      transform: scale(1.02); 
-    }
-  }
-
-  /* ===================== INSTALL MODAL (Full Screen Instructions) ===================== */
-  .install-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 100002;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  .install-modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .install-modal {
-    background: linear-gradient(160deg, rgba(15, 25, 45, 0.99) 0%, rgba(8, 16, 32, 0.99) 100%);
-    border: 1px solid rgba(0, 200, 255, 0.3);
-    border-radius: 28px;
-    max-width: 480px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
-    box-shadow: 
-      0 30px 80px rgba(0, 0, 0, 0.6),
-      0 0 60px rgba(0, 180, 216, 0.2);
-    transform: scale(0.9) translateY(20px);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  
-  .install-modal-overlay.active .install-modal {
-    transform: scale(1) translateY(0);
-  }
-
-  .install-modal-header {
-    text-align: center;
-    padding: 28px 24px 20px;
-    position: relative;
-  }
-  
-  .install-modal-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 16px;
-    border-radius: 22px;
-    background: linear-gradient(145deg, #0a1628 0%, #1565c0 50%, #00b4d8 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 42px;
-    box-shadow: 
-      0 10px 30px rgba(0, 180, 216, 0.4),
-      inset 0 2px 0 rgba(255, 255, 255, 0.15);
-    animation: modalIconBounce 2s ease-in-out infinite;
-  }
-  
-  @keyframes modalIconBounce {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-5px) scale(1.03); }
-  }
-  
-  .install-modal-title {
-    font-size: 22px;
-    font-weight: 900;
-    color: #ffffff;
-    margin-bottom: 8px;
-  }
-  
-  .install-modal-subtitle {
-    font-size: 14px;
-    color: #90caf9;
-    line-height: 1.5;
-  }
-
-  .install-modal-close {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #90caf9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .install-modal-close:hover {
-    background: rgba(255, 71, 87, 0.2);
-    border-color: rgba(255, 71, 87, 0.4);
-    color: #ff4757;
-  }
-
-  .install-modal-body {
-    padding: 0 24px 24px;
-}
-
-  .install-benefit-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  
-  .install-benefit-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px;
-    background: rgba(0, 180, 216, 0.06);
-    border: 1px solid rgba(0, 180, 216, 0.15);
-    border-radius: 14px;
-    transition: all 0.2s;
-  }
-  
-  .install-benefit-item:hover {
-    background: rgba(0, 180, 216, 0.1);
-    border-color: rgba(0, 180, 216, 0.25);
-    transform: translateX(4px);
-  }
-  
-  .install-benefit-icon {
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(0, 180, 216, 0.2), rgba(0, 180, 216, 0.05));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-  }
-  
-  .install-benefit-text h4 {
-    font-size: 13px;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 3px;
-  }
-  
-  .install-benefit-text p {
-    font-size: 11px;
-    color: #90caf9;
-    line-height: 1.4;
-  }
-
-  .install-instructions-box {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 140, 0, 0.05));
-    border: 1px solid rgba(255, 215, 0, 0.25);
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 20px;
-  }
-  
-  .install-instructions-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #ffd700;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .install-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .install-step {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .install-step-num {
-    width: 26px;
-    height: 26px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ffd700, #ff8c00);
-    color: #1a1200;
-    font-weight: 900;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .install-step-text {
-    font-size: 12px;
-    color: #e8f4f8;
-    line-height: 1.4;
-  }
-
-  .install-modal-cta {
-    width: 100%;
-    background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
-    color: #ffffff;
-    font-weight: 800;
-    font-size: 16px;
-    padding: 16px 24px;
-    border-radius: 16px;
-    border: none;
-    cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    box-shadow: 0 8px 30px rgba(0, 180, 216, 0.4);
-    transition: all 0.3s;
-  }
-  
-  .install-modal-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 180, 216, 0.5);
-  }
-  
-  .install-modal-cta:active {
-    transform: translateY(0) scale(0.98);
-  }
-
-  /* Platform-specific badges */
-  .platform-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #90caf9;
-    margin-bottom: 16px;
+  @keyframes installPulse {
+    0%,100% { opacity: 0; transform: scale(1); }
+    50%     { opacity: 0.8; transform: scale(1.02); }
   }
 
   /* ===================== TABLET LAYOUT (auto-switch) ===================== */
-  
-  /* ===== TABLET DETECTION VIA JS CLASS ===== */
-  /* When JavaScript detects a tablet device, apply tablet-optimized layout */
-  html.is-tablet,
-  html[data-device-type="tablet"] {
-    /* Force full-width rendering on tablets */
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-  }
-  
-  /* Tablet - Keep BOTTOM NAVIGATION (not sidebar) - Spacious & Professional */
-  html.is-tablet .bottom-nav,
-  html[data-device-type="tablet"] .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    top: auto;
-    width: 100%;
-    flex-direction: row;
-    padding: 10px 20px max(12px, env(safe-area-inset-bottom));
-    border-top: 1px solid var(--glass-border);
-    border-left: none;
-    background: linear-gradient(180deg, rgba(10,22,40,0.98) 0%, rgba(10,22,40,1) 100%);
-    overflow-y: visible;
-    border-radius: 24px 24px 0 0;
-    transform: none !important;
-    left: 0 !important;
-    right: 0 !important;
-    max-width: none !important;
-    box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
-  }
-  
-  html.is-tablet .bottom-nav::-webkit-scrollbar,
-  html[data-device-type="tablet"] .bottom-nav::-webkit-scrollbar {
-    display: none;
-  }
-  
-  /* Tablet nav items - larger and more spacious */
-  html.is-tablet .nav-item,
-  html[data-device-type="tablet"] .nav-item {
-    padding: 10px 16px;
-    flex: 1;
-    max-width: 120px;
-  }
-  
-  html.is-tablet .nav-item .nav-icon,
-  html[data-device-type="tablet"] .nav-item .nav-icon {
-    font-size: 28px;
-  }
-  
-  html.is-tablet .nav-item .nav-label,
-  html[data-device-type="tablet"] .nav-item .nav-label {
-    font-size: 11px;
-    font-weight: 700;
-  }
-  
-  /* Tablet content area - full width with bottom padding for nav */
-  html.is-tablet .content,
-  html[data-device-type="tablet"] .content {
-    padding-right: 32px;
-    padding-left: 32px;
-    padding-bottom: 100px;
-    max-width: 1200px !important;
-    margin: 0 auto !important;
-  }
-  
-  html.is-tablet #pwa-install-bar,
-  html[data-device-type="tablet"] #pwa-install-bar {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%) translateY(140%);
-    max-width: 500px;
-    width: 90%;
-  }
-  
-  html.is-tablet #pwa-install-bar.visible,
-  html[data-device-type="tablet"] #pwa-install-bar.visible {
-    transform: translateX(-50%) translateY(0);
-  }
-  
-  html.is-tablet .app-header,
-  html[data-device-type="tablet"] .app-header {
-    padding-right: 32px;
-    padding-left: 32px;
-    max-width: 1200px !important;
-    margin: 0 auto;
-  }
-  
-  /* Better use of wide screen — multi-column grids on tablet */
-  html.is-tablet .stats-grid,
-  html[data-device-type="tablet"] .stats-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 16px;
-  }
-  
-  html.is-tablet .glass-card,
-  html[data-device-type="tablet"] .glass-card {
-    max-width: 100%;
-    padding: 20px;
-  }
-
-  /* On wide screens (landscape tablets) - KEEP BOTTOM NAV */
+  /* On wide screens (landscape tablets), convert bottom-nav to right-side Rail */
   @media (min-width: 900px) and (orientation: landscape) {
-    /* Keep bottom navigation but make it more spacious */
+    /* Move nav from bottom to right side (RTL: visually on right) */
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; top: auto;
-      flex-direction: row;
-      padding: 12px 30px max(14px, env(safe-area-inset-bottom));
-      border-top: 1px solid var(--glass-border);
-      border-left: none;
-      background: linear-gradient(180deg, rgba(10,22,40,0.98) 0%, rgba(10,22,40,1) 100%);
-      border-radius: 24px 24px 0 0;
-      box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
+      position: fixed; top: 0; bottom: 0; right: 0; left: auto;
+      width: 92px; flex-direction: column;
+      padding: max(16px, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom));
+      border-top: none; border-left: 1px solid var(--glass-border);
+      background: linear-gradient(180deg, rgba(10,22,40,0.97) 0%, rgba(13,33,55,0.97) 100%);
+      overflow-y: auto;
     }
-    .bottom-nav::-webkit-scrollbar { display: none; }
-    
-    .nav-item { 
-      padding: 10px 18px; 
-      flex: 1;
-      max-width: 130px;
-    }
-    .nav-item .nav-icon { font-size: 28px; }
-    .nav-item .nav-label { font-size: 11px; font-weight: 700; }
+    .bottom-nav::-webkit-scrollbar { width: 0; }
+    .nav-item { padding: 10px 4px; }
+    .nav-item .nav-icon { font-size: 24px; }
+    .nav-item .nav-label { font-size: 9px; }
 
-    /* Content uses full width with bottom padding */
-    .content { 
-      padding: 16px 40px 110px; 
-      max-width: 1400px; 
-      margin: 0 auto;
-    }
-    
-    #pwa-install-bar { 
-      left: 50%; 
-      right: auto;
-      transform: translateX(-50%) translateY(140%); 
-      max-width: 480px;
-      width: auto;
-    }
-    #pwa-install-bar.visible { transform: translateX(-50%) translateY(0); }
-    #pwa-install-bar.dismissed { transform: translateX(-50%) translateY(140%); }
+    /* Push content to the right of the rail */
+    .content { padding-right: 92px; padding-bottom: 24px; }
+    #pwa-install-bar { right: calc(92px + 12px); left: 12px; max-width: none; transform: translateY(140%); width: auto; }
+    #pwa-install-bar.visible { transform: translateY(0); }
+    #pwa-install-bar.dismissed { transform: translateY(140%); }
 
-    /* App header centered */
-    .app-header { 
-      padding: 14px 40px; 
-      max-width: 1400px;
-      margin: 0 auto;
-    }
+    /* App header gets wider too */
+    .app-header { padding-right: 92px; }
 
-    /* Multi-column grids for wide screens */
-    .stats-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 16px; }
-    .glass-card { max-width: 100%; padding: 20px; }
+    /* Better use of wide screen — multi-column grids */
+    .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    .glass-card { max-width: 100%; }
+
+    /* Master-Detail: make some grids side by side on tablet */
+    .content { padding-left: 24px; padding-right: calc(92px + 24px); }
   }
 
   /* Portrait tablet — keep bottom nav but make it more spacious */
   @media (min-width: 600px) and (max-width: 899px) {
-    .bottom-nav { 
-      max-width: 560px; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      border-radius: 20px 20px 0 0; 
-      margin: 0 auto;
-      padding: 10px 16px max(12px, env(safe-area-inset-bottom));
-    }
+    .bottom-nav { max-width: 560px; left: 50%; transform: translateX(-50%); border-radius: 20px 20px 0 0; margin: 0 auto; }
     .nav-item .nav-label { font-size: 11px; }
     .nav-item .nav-icon { font-size: 24px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .content { max-width: 720px; margin: 0 auto; padding-bottom: 90px; }
+    .content { max-width: 720px; margin: 0 auto; }
   }
 
   /* Very wide (desktop / large landscape tablet) — center content card */
   @media (min-width: 1200px) {
-    .content { max-width: 1400px; margin: 0 auto; padding: 16px 40px 110px; }
-    .app-header { max-width: 1400px; margin: 0 auto; padding: 14px 40px; }
-    .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    .content { max-width: 1100px; margin: 0 auto; padding-right: calc(92px + 32px); padding-left: 32px; }
+    .app-header { max-width: 100%; padding-right: calc(92px + 32px); padding-left: 32px; }
   }
 
   /* Standalone PWA tweaks (only when installed) */
@@ -1606,122 +903,15 @@
 })();
 </script>
 
-<!-- ============ PROFESSIONAL INSTALL BANNER ============ -->
+<!-- ============ PROFESSIONAL INSTALL BAR ============ -->
 <div id="pwa-install-bar" role="dialog" aria-label="تثبيت التطبيق">
-  <!-- Banner Header -->
-  <div class="install-banner-header">
-    <div class="install-app-icon">🐟</div>
-    <div class="install-app-info">
-      <div class="install-app-name">الحديدي للأسماك</div>
-      <div class="install-app-developer">الحاج أحمد الحديدي</div>
-      <div class="install-app-rating">
-        <span class="install-stars">★★★★★</span>
-        <span class="install-rating-text">تطبيق احترافي</span>
-      </div>
-    </div>
-    <button class="install-banner-close" id="install-close" aria-label="إغلاق">✕</button>
+  <button class="install-bar-close" id="install-close" aria-label="إغلاق">✕</button>
+  <div class="install-bar-icon">📲</div>
+  <div class="install-bar-content">
+    <div class="install-bar-title">ثبّت التطبيق الآن</div>
+    <div class="install-bar-sub">وصول سريع • يعمل بدون إنترنت • تجربة احترافية</div>
   </div>
-  
-  <!-- Features Tags -->
-  <div class="install-features">
-    <div class="install-feature-tag">
-      <span class="install-feature-icon">🚀</span>
-      <span>سريع وخفيف</span>
-    </div>
-    <div class="install-feature-tag">
-      <span class="install-feature-icon">📴</span>
-      <span>يعمل بدون إنترنت</span>
-    </div>
-    <div class="install-feature-tag">
-      <span class="install-feature-icon">🔒</span>
-      <span>آمن ومشفر</span>
-    </div>
-  </div>
-  
-  <!-- Action Buttons -->
-  <div class="install-banner-actions">
-    <button class="install-btn-primary" id="install-cta">
-      <span class="install-btn-icon">⬇️</span>
-      <span>ثبّت التطبيق الآن</span>
-    </button>
-    <button class="install-btn-secondary" id="install-info-btn">
-      ℹ️
-    </button>
-  </div>
-</div>
-
-<!-- ============ INSTALL MODAL (Full Instructions) ============ -->
-<div class="install-modal-overlay" id="install-modal-overlay">
-  <div class="install-modal">
-    <!-- Modal Header -->
-    <div class="install-modal-header">
-      <button class="install-modal-close" id="modal-close" aria-label="إغلاق">✕</button>
-      <div class="install-modal-icon">🐟</div>
-      <h2 class="install-modal-title">ثبّت تطبيق الحديدي للأسماك</h2>
-      <p class="install-modal-subtitle">تطبيق مستقل يعمل بشكل كامل بعيداً عن المتصفح</p>
-      
-      <!-- Platform Badge -->
-      <div class="platform-badge" id="platform-badge">
-        <span>📱</span>
-        <span>جارٍ الكشف عن جهازك...</span>
-      </div>
-    </div>
-    
-    <!-- Modal Body -->
-    <div class="install-modal-body">
-      <!-- Benefits List -->
-      <div class="install-benefit-list">
-        <div class="install-benefit-item">
-          <div class="install-benefit-icon">🚀</div>
-          <div class="install-benefit-text">
-            <h4>تطبيق مستقل تماماً</h4>
-            <p>يفتح في نافذة خاصة بدون شريط المتصفح أو العنوان</p>
-          </div>
-        </div>
-        
-        <div class="install-benefit-item">
-          <div class="install-benefit-icon">📴</div>
-          <div class="install-benefit-text">
-            <h4>يعمل بدون إنترنت</h4>
-            <p>احفظ جميع البيانات محلياً واستخدمها في أي وقت</p>
-          </div>
-        </div>
-        
-        <div class="install-benefit-item">
-          <div class="install-benefit-icon">⚡</div>
-          <div class="install-benefit-text">
-            <h4>فتح فوري من الشاشة</h4>
-            <p>أيقونة على الشاشة الرئيسية مثل أي تطبيق حقيقي</p>
-          </div>
-        </div>
-        
-        <div class="install-benefit-item">
-          <div class="install-benefit-icon">🔄</div>
-          <div class="install-benefit-text">
-            <h4>تحديثات تلقائية</h4>
-            <p>يتم تحديث التطبيق تلقائياً عند توفر إصدار جديد</p>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Platform-specific Instructions -->
-      <div class="install-instructions-box" id="install-instructions-box">
-        <div class="install-instructions-title">
-          <span>📋</span>
-          <span>خطوات التثبيت</span>
-        </div>
-        <div class="install-steps" id="install-steps">
-          <!-- Steps will be populated by JS based on platform -->
-        </div>
-      </div>
-      
-      <!-- Install CTA Button -->
-      <button class="install-modal-cta" id="modal-install-cta">
-        <span>⬇️</span>
-        <span>ابدأ التثبيت الآن</span>
-      </button>
-    </div>
-  </div>
+  <button class="install-bar-cta" id="install-cta">تثبيت</button>
 </div>
 
 <div id="login-screen">
@@ -2234,115 +1424,6 @@
 </div>
 
 <div id="modals-container"></div>
-
-<!-- ============ GLOBAL LOGIN FUNCTIONS (Must be outside module) ============ -->
-<script>
-// ============================================================
-// LOGIN FUNCTIONS - Global Scope (accessible from HTML onclick)
-// ============================================================
-window.currentUser = null;
-
-window.onLoginInput = function(val) {
-  const dots = document.querySelectorAll('.login-dot');
-  dots.forEach((dot, idx) => {
-    if (idx < val.length) {
-      dot.classList.add('filled');
-    } else {
-      dot.classList.remove('filled');
-    }
-  });
-};
-
-window.toggleLoginEye = function() {
-  const inp = document.getElementById('login-password');
-  if (inp.type === 'password') {
-    inp.type = 'text';
-  } else {
-    inp.type = 'password';
-  }
-};
-
-window.doLogin = function() {
-  const pwdInput = document.getElementById('login-password');
-  const err = document.getElementById('login-error');
-  
-  // Safety check
-  if (!pwdInput) {
-    console.error('[Login] Password input not found!');
-    alert('خطأ: حقل كلمة المرور غير موجود');
-    return;
-  }
-  
-  const pwd = pwdInput.value;
-  console.log('[Login] Attempting login...');
-  
-  if (pwd === '123456' || pwd === '666666') { 
-    window.currentUser = { role: 'admin', name: 'أحمد الحديدي' };
-    const adminCard = document.getElementById('admin-tools-card');
-    if (adminCard) adminCard.style.display = 'block';
-  } else if (pwd === '111111') {
-    window.currentUser = { role: 'viewer', name: 'مستخدم' };
-    const adminCard = document.getElementById('admin-tools-card');
-    if (adminCard) adminCard.style.display = 'none';
-  } else {
-    if (err) err.textContent = '❌ كلمة السر غير صحيحة';
-    
-    // Shake animation
-    const loginBox = document.querySelector('.login-box');
-    if (loginBox) {
-      loginBox.style.animation = 'none';
-      setTimeout(() => { loginBox.style.animation = 'shake 0.5s ease'; }, 10);
-    }
-    return;
-  }
-  
-  // Hide login screen
-  const loginScreen = document.getElementById('login-screen');
-  if (loginScreen) {
-    loginScreen.style.display = 'none';
-    loginScreen.classList.add('hidden');
-  }
-  
-  // Welcome toast
-  const toast = document.createElement('div');
-  toast.className = 'welcome-toast';
-  toast.innerHTML = `
-    <div class="welcome-icon">👋</div>
-    <div class="welcome-text">
-      <div class="welcome-greeting">مرحباً بك في النظام</div>
-      <div class="welcome-name">${window.currentUser.name}</div>
-      <div class="welcome-role">${window.currentUser.role === 'admin' ? 'صلاحيات المدير' : 'صلاحيات العرض'}</div>
-    </div>
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add('hiding');
-    setTimeout(() => toast.remove(), 400);
-  }, 3000);
-
-  console.log('[Login] Success! User:', window.currentUser.name);
-  
-  // Initialize app (these functions are defined in the module script)
-  if (typeof updateDate === 'function') updateDate();
-  if (typeof setupListeners === 'function') setupListeners();
-};
-
-window.confirmLogout = function() {
-  if (typeof showConfirmModal === 'function') {
-    showConfirmModal({
-      icon: '👋', title: 'تسجيل الخروج',
-      msg: 'هل أنت متأكد أنك تريد تسجيل الخروج من النظام؟',
-      confirmLabel: 'تسجيل الخروج',
-      confirmColor: 'linear-gradient(135deg,var(--ocean-surface),var(--danger))',
-      onConfirm: () => location.reload()
-    });
-  } else {
-    if (confirm('هل تريد تسجيل الخروج؟')) location.reload();
-  }
-};
-
-console.log('[Init] Login functions loaded successfully');
-</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -6412,144 +5493,12 @@ window.confirmDeleteClient = function(clientKey, clientName) {
   let deferredPrompt = null;
   let installDismissed = sessionStorage.getItem('pwa-install-dismissed') === '1';
 
-  // Get new modal elements
-  const installModalOverlay = document.getElementById('install-modal-overlay');
-  const modalClose = document.getElementById('modal-close');
-  const modalInstallCta = document.getElementById('modal-install-cta');
-  const installInfoBtn = document.getElementById('install-info-btn');
-  const platformBadge = document.getElementById('platform-badge');
-  const installStepsContainer = document.getElementById('install-steps');
-
-  // Detect platform and update UI
-  function detectPlatformAndUpdateUI() {
-    const ua = navigator.userAgent.toLowerCase();
-    let platformName = '';
-    let platformIcon = '';
-    let steps = [];
-
-    if (ua.includes('iphone') || ua.includes('ipad')) {
-      platformName = 'iOS / iPhone / iPad';
-      platformIcon = '🍎';
-      steps = [
-        { num: 1, text: 'اضغط على زر <strong>المشاركة</strong> (⬆️) في أسفل الشاشة' },
-        { num: 2, text: 'اختر <strong>«إضافة إلى الشاشة الرئيسية»</strong>' },
-        { num: 3, text: 'اضغط <strong>«إضافة»</strong> في الزاوية العلوية' },
-        { num: 4, text: 'سيتم إنشاء التطبيق على شاشتك الرئيسية! 🎉' }
-      ];
-    } else if (ua.includes('android')) {
-      if (ua.includes('samsungbrowser')) {
-        platformName = 'Samsung Internet';
-        platformIcon = '🌐';
-        steps = [
-          { num: 1, text: 'اضغط على قائمة (⋮) في الزاوية' },
-          { num: 2, text: 'اختر <strong>«إضافة إلى الأجهزة»</strong>' },
-          { num: 3, text: 'اضغط <strong>«إضافة»</strong>' },
-          { num: 4, text: 'تم! التطبيق جاهز للاستخدام 🎉' }
-        ];
-      } else {
-        platformName = 'Android';
-        platformIcon = '🤖';
-        steps = [
-          { num: 1, text: 'سيظهر لك <strong>بانر التثبيت</strong> تلقائياً' },
-          { num: 2, text: 'أو اضغط على قائمة (⋮) ثم <strong>«تثبيت التطبيق»</strong>' },
-          { num: 3, text: 'اضغط <strong>«تثبيت»</strong> في النافذة المنبثقة' },
-          { num: 4, text: 'مبارك! التطبيق مثبت بنجاح 🎉' }
-        ];
-      }
-    } else if (ua.includes('mac')) {
-      platformName = 'macOS';
-      platformIcon = '💻';
-      steps = [
-        { num: 1, text: 'اضغط على زر <strong>المشاركة</strong> في شريط العنوان' },
-        { num: 2, text: 'اختر <strong>«إضافة إلى Dock»</strong>' },
-        { num: 3, text: 'أو استخدم القائمة: ملف → إضافة إلى الشاشة الرئيسية' },
-        { num: 4, text: 'التطبيق جاهز في الـ Dock! 🎉' }
-      ];
-    } else {
-      platformName = 'المتصفح';
-      platformIcon = '🌐';
-      steps = [
-        { num: 1, text: 'ابحث عن أيقونة التثبيت في شريط العنوان أو القائمة' },
-        { num: 2, text: 'أو اضغط زر <strong>«ثبّت التطبيق الآن»</strong>' أدناه' },
-        { num: 3, text: 'وافق على التثبيت في النافذة المنبثقة' },
-        { num: 4, text: 'تم تثبيت التطبيق بنجاح! 🎉' }
-      ];
-    }
-
-    // Update platform badge
-    if (platformBadge) {
-      platformBadge.innerHTML = `<span>${platformIcon}</span><span>${platformName}</span>`;
-    }
-
-    // Update steps
-    if (installStepsContainer) {
-      installStepsContainer.innerHTML = steps.map(step => `
-        <div class="install-step">
-          <div class="install-step-num">${step.num}</div>
-          <div class="install-step-text">${step.text}</div>
-        </div>
-      `).join('');
-    }
-
-    return { platformName, platformIcon, steps };
-  }
-
-  // Show/Hide Modal functions
-  function showInstallModal() {
-    detectPlatformAndUpdateUI();
-    if (installModalOverlay) {
-      installModalOverlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-  }
-
-  function hideInstallModal() {
-    if (installModalOverlay) {
-      installModalOverlay.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-  }
-
-  // Info button click handler
-  if (installInfoBtn) {
-    installInfoBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      showInstallModal();
-    });
-  }
-
-  // Modal close handlers
-  if (modalClose) {
-    modalClose.addEventListener('click', hideInstallModal);
-  }
-
-  // Close modal on overlay click
-  if (installModalOverlay) {
-    installModalOverlay.addEventListener('click', (e) => {
-      if (e.target === installModalOverlay) {
-        hideInstallModal();
-      }
-    });
-  }
-
-  // Modal CTA click handler
-  if (modalInstallCta) {
-    modalInstallCta.addEventListener('click', () => {
-      hideInstallModal();
-      setTimeout(() => triggerInstall(), 300);
-    });
-  }
-
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     window.appState.deferredPrompt = e;
     // Don't show if user dismissed recently, or if already installed
     if (installDismissed || window.isStandalone) return;
-    
-    // Detect platform and update UI
-    detectPlatformAndUpdateUI();
     
     // Show install bar with animation
     setTimeout(() => {
@@ -6565,8 +5514,7 @@ window.confirmDeleteClient = function(clientKey, clientName) {
       installBar.classList.remove('visible');
       installBar.classList.add('dismissed');
     }
-    hideInstallModal();
-    showToast('✅ تم تثبيت التطبيق بنجاح كبرنامج مستقل!');
+    showToast('✅ تم تثبيت التطبيق بنجاح! يمكنك فتحه من الشاشة الرئيسية');
     
     // Track installation (optional analytics)
     if (window.gtag) {
@@ -6581,7 +5529,7 @@ window.confirmDeleteClient = function(clientKey, clientName) {
   async function triggerInstall() {
     if (!deferredPrompt) {
       // Fallback for iOS Safari / browsers without beforeinstallprompt
-      showInstallModal();
+      showInstallInstructions();
       return;
     }
     
@@ -6593,13 +5541,31 @@ window.confirmDeleteClient = function(clientKey, clientName) {
           installBar.classList.remove('visible');
           installBar.classList.add('dismissed');
         }
-        showToast('✅ جاري تثبيت التطبيق كبرنامج مستقل...');
+        showToast('✅ جاري تثبيت التطبيق...');
       }
       deferredPrompt = null;
     } catch (err) {
       console.warn('[PWA] Install prompt error:', err);
-      showInstallModal();
+      showInstallInstructions();
     }
+  }
+
+  // Show platform-specific instructions
+  function showInstallInstructions() {
+    const ua = navigator.userAgent.toLowerCase();
+    let instructions = '';
+    
+    if (ua.includes('iphone') || ua.includes('ipad')) {
+      instructions = '📱 iOS: اضغط على زر المشاركة (⬆️) ثم «إضافة إلى الشاشة الرئيسية»';
+    } else if (ua.includes('android')) {
+      instructions = '🤖 Android: اضغط على قائمة المتصفح (⋮) ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»';
+    } else if (ua.includes('samsungbrowser')) {
+      instructions = '🌐 Samsung Internet: اضغط على قائمة (⋮) ثم «إضافة إلى الأجهزة»';
+    } else {
+      instructions = '💻 من قائمة المتصفح اختر: «إضافة إلى الشاشة الرئيسية» أو «تثبيت كتطبيق»';
+    }
+    
+    showToast(instructions, 8000);
   }
 
   // ----- Close (dismiss) install bar -----
@@ -6615,9 +5581,6 @@ window.confirmDeleteClient = function(clientKey, clientName) {
   // ----- Install button click handler -----
   if (installCta) installCta.addEventListener('click', triggerInstall);
   window.installPWA = triggerInstall; // backward compatibility
-
-  // Initialize platform detection on load
-  detectPlatformAndUpdateUI();
 
   // ----- Service worker registration -----
   if ('serviceWorker' in navigator) {
@@ -7618,8 +6581,80 @@ window.executeResetData = async function() {
 };
 
 // ============================================================
-// SECTORS RENDER (لتكتمل الواجهة)
+// LOGIN LOGIC & SECTORS RENDER (لتكتمل الواجهة)
 // ============================================================
+window.currentUser = null;
+
+window.onLoginInput = function(val) {
+  const dots = document.querySelectorAll('.login-dot');
+  dots.forEach((dot, idx) => {
+    if (idx < val.length) {
+      dot.classList.add('filled');
+    } else {
+      dot.classList.remove('filled');
+    }
+  });
+};
+
+window.toggleLoginEye = function() {
+  const inp = document.getElementById('login-password');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+  } else {
+    inp.type = 'password';
+  }
+};
+
+window.doLogin = function() {
+  const pwd = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  
+  if (pwd === '123456' || pwd === '666666') { 
+    // تسجيل دخول بصلاحيات الأدمن
+    window.currentUser = { role: 'admin', name: 'أحمد الحديدي' };
+    document.getElementById('admin-tools-card').style.display = 'block'; // إظهار أزرار التصدير PDF والتصفير
+  } else if (pwd === '111111') {
+    // تسجيل دخول بصلاحيات مشاهد
+    window.currentUser = { role: 'viewer', name: 'مستخدم' };
+    document.getElementById('admin-tools-card').style.display = 'none'; // إخفاء أزرار الأدمن
+  } else {
+    err.textContent = '❌ كلمة السر غير صحيحة';
+    return;
+  }
+  
+  // تفعيل النظام
+  document.getElementById('login-screen').classList.add('hidden');
+  
+  // رسالة ترحيب
+  const toast = document.createElement('div');
+  toast.className = 'welcome-toast';
+  toast.innerHTML = `
+    <div class="welcome-icon">👋</div>
+    <div class="welcome-text">
+      <div class="welcome-greeting">مرحباً بك في النظام</div>
+      <div class="welcome-name">${window.currentUser.name}</div>
+      <div class="welcome-role">${window.currentUser.role === 'admin' ? 'صلاحيات المدير' : 'صلاحيات العرض'}</div>
+    </div>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+
+  updateDate();
+  setupListeners();
+};
+
+window.confirmLogout = function() {
+  showConfirmModal({
+    icon: '👋', title: 'تسجيل الخروج',
+    msg: 'هل أنت متأكد أنك تريد تسجيل الخروج من النظام؟',
+    confirmLabel: 'تسجيل الخروج',
+    confirmColor: 'linear-gradient(135deg,var(--ocean-surface),var(--danger))',
+    onConfirm: () => location.reload()
+  });
+};
 
 window.renderSectors = function() {
   const from = document.getElementById('sector-date-from')?.value;
