@@ -2235,6 +2235,115 @@
 
 <div id="modals-container"></div>
 
+<!-- ============ GLOBAL LOGIN FUNCTIONS (Must be outside module) ============ -->
+<script>
+// ============================================================
+// LOGIN FUNCTIONS - Global Scope (accessible from HTML onclick)
+// ============================================================
+window.currentUser = null;
+
+window.onLoginInput = function(val) {
+  const dots = document.querySelectorAll('.login-dot');
+  dots.forEach((dot, idx) => {
+    if (idx < val.length) {
+      dot.classList.add('filled');
+    } else {
+      dot.classList.remove('filled');
+    }
+  });
+};
+
+window.toggleLoginEye = function() {
+  const inp = document.getElementById('login-password');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+  } else {
+    inp.type = 'password';
+  }
+};
+
+window.doLogin = function() {
+  const pwdInput = document.getElementById('login-password');
+  const err = document.getElementById('login-error');
+  
+  // Safety check
+  if (!pwdInput) {
+    console.error('[Login] Password input not found!');
+    alert('خطأ: حقل كلمة المرور غير موجود');
+    return;
+  }
+  
+  const pwd = pwdInput.value;
+  console.log('[Login] Attempting login...');
+  
+  if (pwd === '123456' || pwd === '666666') { 
+    window.currentUser = { role: 'admin', name: 'أحمد الحديدي' };
+    const adminCard = document.getElementById('admin-tools-card');
+    if (adminCard) adminCard.style.display = 'block';
+  } else if (pwd === '111111') {
+    window.currentUser = { role: 'viewer', name: 'مستخدم' };
+    const adminCard = document.getElementById('admin-tools-card');
+    if (adminCard) adminCard.style.display = 'none';
+  } else {
+    if (err) err.textContent = '❌ كلمة السر غير صحيحة';
+    
+    // Shake animation
+    const loginBox = document.querySelector('.login-box');
+    if (loginBox) {
+      loginBox.style.animation = 'none';
+      setTimeout(() => { loginBox.style.animation = 'shake 0.5s ease'; }, 10);
+    }
+    return;
+  }
+  
+  // Hide login screen
+  const loginScreen = document.getElementById('login-screen');
+  if (loginScreen) {
+    loginScreen.style.display = 'none';
+    loginScreen.classList.add('hidden');
+  }
+  
+  // Welcome toast
+  const toast = document.createElement('div');
+  toast.className = 'welcome-toast';
+  toast.innerHTML = `
+    <div class="welcome-icon">👋</div>
+    <div class="welcome-text">
+      <div class="welcome-greeting">مرحباً بك في النظام</div>
+      <div class="welcome-name">${window.currentUser.name}</div>
+      <div class="welcome-role">${window.currentUser.role === 'admin' ? 'صلاحيات المدير' : 'صلاحيات العرض'}</div>
+    </div>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+
+  console.log('[Login] Success! User:', window.currentUser.name);
+  
+  // Initialize app (these functions are defined in the module script)
+  if (typeof updateDate === 'function') updateDate();
+  if (typeof setupListeners === 'function') setupListeners();
+};
+
+window.confirmLogout = function() {
+  if (typeof showConfirmModal === 'function') {
+    showConfirmModal({
+      icon: '👋', title: 'تسجيل الخروج',
+      msg: 'هل أنت متأكد أنك تريد تسجيل الخروج من النظام؟',
+      confirmLabel: 'تسجيل الخروج',
+      confirmColor: 'linear-gradient(135deg,var(--ocean-surface),var(--danger))',
+      onConfirm: () => location.reload()
+    });
+  } else {
+    if (confirm('هل تريد تسجيل الخروج؟')) location.reload();
+  }
+};
+
+console.log('[Init] Login functions loaded successfully');
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, push, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -7509,96 +7618,8 @@ window.executeResetData = async function() {
 };
 
 // ============================================================
-// LOGIN LOGIC & SECTORS RENDER (لتكتمل الواجهة)
+// SECTORS RENDER (لتكتمل الواجهة)
 // ============================================================
-window.currentUser = null;
-
-window.onLoginInput = function(val) {
-  const dots = document.querySelectorAll('.login-dot');
-  dots.forEach((dot, idx) => {
-    if (idx < val.length) {
-      dot.classList.add('filled');
-    } else {
-      dot.classList.remove('filled');
-    }
-  });
-};
-
-window.toggleLoginEye = function() {
-  const inp = document.getElementById('login-password');
-  if (inp.type === 'password') {
-    inp.type = 'text';
-  } else {
-    inp.type = 'password';
-  }
-};
-
-window.doLogin = function() {
-  const pwd = document.getElementById('login-password').value;
-  const err = document.getElementById('login-error');
-  
-  // Debug: ensure function is called
-  console.log('[Login] Attempting login with password length:', pwd.length);
-  
-  if (pwd === '123456' || pwd === '666666') { 
-    // تسجيل دخول بصلاحيات الأدمن
-    window.currentUser = { role: 'admin', name: 'أحمد الحديدي' };
-    document.getElementById('admin-tools-card').style.display = 'block'; // إظهار أزرار التصدير PDF والتصفير
-  } else if (pwd === '111111') {
-    // تسجيل دخول بصلاحيات مشاهد
-    window.currentUser = { role: 'viewer', name: 'مستخدم' };
-    document.getElementById('admin-tools-card').style.display = 'none'; // إخفاء أزرار الأدمن
-  } else {
-    err.textContent = '❌ كلمة السر غير صحيحة';
-    // Shake animation for error feedback
-    const loginBox = document.querySelector('.login-box');
-    if (loginBox) {
-      loginBox.style.animation = 'none';
-      setTimeout(() => {
-        loginBox.style.animation = 'shake 0.5s ease';
-      }, 10);
-    }
-    return;
-  }
-  
-  // تفعيل النظام
-  const loginScreen = document.getElementById('login-screen');
-  if (loginScreen) {
-    loginScreen.classList.add('hidden');
-  }
-  
-  // رسالة ترحيب
-  const toast = document.createElement('div');
-  toast.className = 'welcome-toast';
-  toast.innerHTML = `
-    <div class="welcome-icon">👋</div>
-    <div class="welcome-text">
-      <div class="welcome-greeting">مرحباً بك في النظام</div>
-      <div class="welcome-name">${window.currentUser.name}</div>
-      <div class="welcome-role">${window.currentUser.role === 'admin' ? 'صلاحيات المدير' : 'صلاحيات العرض'}</div>
-    </div>
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add('hiding');
-    setTimeout(() => toast.remove(), 400);
-  }, 3000);
-
-  updateDate();
-  setupListeners();
-  
-  console.log('[Login] Success! User:', window.currentUser.name);
-};
-
-window.confirmLogout = function() {
-  showConfirmModal({
-    icon: '👋', title: 'تسجيل الخروج',
-    msg: 'هل أنت متأكد أنك تريد تسجيل الخروج من النظام؟',
-    confirmLabel: 'تسجيل الخروج',
-    confirmColor: 'linear-gradient(135deg,var(--ocean-surface),var(--danger))',
-    onConfirm: () => location.reload()
-  });
-};
 
 window.renderSectors = function() {
   const from = document.getElementById('sector-date-from')?.value;
