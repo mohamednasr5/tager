@@ -5283,11 +5283,16 @@ window.editInvoiceModal = function(invoiceId) {
   if (!inv) return;
   const fishTotal = inv.fishTotal || inv.gross || inv.total;
   window._editItems = inv.items || [];
+  // تحميل المصاريف والمبالغ المضافة من الفاتورة
+  window._editExpenses = (inv.expenses || []).map((e, i) => ({ ...e, _localId: Date.now() + i }));
+  window._editAdditions = (inv.additions || []).map((a, i) => ({ ...a, _localId: Date.now() + 1000 + i }));
+  window._editNextExpId = Date.now() + 10000;
+  window._editNextAddId = Date.now() + 20000;
   const currentDate = inv.invDateISO || getTodayISO();
   const modal = document.createElement('div');
   modal.className = 'modal-overlay'; modal.id = 'edit-invoice-modal';
   modal.innerHTML = `
-    <div class="modal-sheet" style="max-height:90vh">
+    <div class="modal-sheet" style="max-height:90vh;overflow-y:auto">
       <div class="modal-handle"></div>
       <div style="font-size:17px;font-weight:900;color:var(--gold);text-align:center;margin-bottom:16px">✏️ تعديل الفاتورة</div>
       <div class="form-group">
@@ -5354,19 +5359,80 @@ window.editInvoiceModal = function(invoiceId) {
           </div>`;
         }).join('')}
       </div>
+      <!-- قسم المصاريف المخصومة -->
+      <div style="background:rgba(255,71,87,0.05);border:1px solid rgba(255,71,87,0.2);border-radius:12px;padding:12px;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--danger);margin-bottom:8px;font-weight:700">⬇️ مصاريف تُخصم من الفاتورة</div>
+        <div id="ei-expenses-container">
+          ${(inv.expenses||[]).filter(e => e.amount > 0 || e.desc).map((exp) => `
+          <div id="ei-exp-row-${exp._localId}" style="display:flex;gap:6px;align-items:center;background:rgba(255,71,87,0.04);border:1px solid rgba(255,71,87,0.15);border-radius:8px;padding:8px;margin-bottom:6px">
+            <input type="text" id="ei-exp-desc-${exp._localId}" placeholder="وصف المصروف" value="${exp.desc||''}"
+              style="flex:1;min-width:0;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-primary);font-size:11px"
+              oninput="updateEditExpense(${exp._localId})">
+            <input type="number" id="ei-exp-amt-${exp._localId}" placeholder="0" min="0" value="${exp.amount||0}"
+              style="width:80px;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--danger);font-size:11px;text-align:center"
+              oninput="updateEditExpense(${exp._localId});calcEditInvoice()">
+            <button onclick="removeEditExpense(${exp._localId})" style="padding:5px 8px;border-radius:6px;border:1px solid rgba(255,71,87,0.3);background:rgba(255,71,87,0.1);color:var(--danger);font-size:12px;cursor:pointer;font-weight:700">✕</button>
+          </div>`).join('')}
+        </div>
+        <button onclick="addEditExpenseRow()" style="width:100%;padding:9px;border-radius:9px;border:1px dashed rgba(255,71,87,0.4);background:rgba(255,71,87,0.06);color:var(--danger);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px">➕ إضافة مصروف مخصوم</button>
+      </div>
+      <!-- قسم المبالغ المضافة -->
+      <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:12px;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--emerald);margin-bottom:8px;font-weight:700">⬆️ مبالغ تُضاف للفاتورة</div>
+        <div id="ei-additions-container">
+          ${(inv.additions||[]).filter(a => a.amount > 0 || a.name || a.desc).map((add) => `
+          <div id="ei-add-row-${add._localId}" style="display:flex;gap:6px;align-items:center;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.15);border-radius:8px;padding:8px;margin-bottom:6px;flex-wrap:wrap">
+            <input type="text" id="ei-add-name-${add._localId}" placeholder="اسم المبلغ" value="${add.name||''}"
+              style="flex:1;min-width:70px;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-primary);font-size:11px"
+              oninput="updateEditAddition(${add._localId})">
+            <input type="text" id="ei-add-desc-${add._localId}" placeholder="وصف/تفاصيل" value="${add.desc||''}"
+              style="flex:1;min-width:70px;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-primary);font-size:11px"
+              oninput="updateEditAddition(${add._localId})">
+            <input type="number" id="ei-add-amt-${add._localId}" placeholder="0" min="0" value="${add.amount||0}"
+              style="width:75px;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--emerald);font-size:11px;text-align:center"
+              oninput="updateEditAddition(${add._localId});calcEditInvoice()">
+            <button onclick="removeEditAddition(${add._localId})" style="padding:5px 8px;border-radius:6px;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.1);color:var(--emerald);font-size:12px;cursor:pointer;font-weight:700">✕</button>
+          </div>`).join('')}
+        </div>
+        <button onclick="addEditAdditionRow()" style="width:100%;padding:9px;border-radius:9px;border:1px dashed rgba(16,185,129,0.4);background:rgba(16,185,129,0.06);color:var(--emerald);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px">➕ إضافة مبلغ مالي</button>
+      </div>
       <div id="ei-preview" style="background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.25);border-radius:12px;padding:12px;margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-          <span style="font-size:12px;color:var(--text-secondary)">📦 إجمالي الأصناف</span>
-          <span id="ei-gross-label" style="font-size:13px;font-weight:700;color:var(--text-primary)">${formatNum(fishTotal)} ج.م</span>
+        <!-- إجمالي الأصناف - قابل للتعديل -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label style="font-size:12px;color:var(--text-secondary);cursor:pointer" for="ei-gross-input">📦 إجمالي الأصناف</label>
+          <input type="number" id="ei-gross-input" value="${fishTotal}" min="0" step="0.5"
+            style="width:130px;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,215,0,0.4);background:rgba(255,215,0,0.08);color:var(--text-primary);font-size:14px;font-weight:800;text-align:left;font-family:'Cairo',sans-serif;direction:ltr"
+            oninput="calcEditInvoice()" title="يمكنك تعديل هذا الرقم يدوياً">
         </div>
-        <div id="ei-comm-row" style="display:${inv.commissionPct>0?'flex':'none'};justify-content:space-between;margin-bottom:6px">
-          <span style="font-size:12px;color:var(--warning)">🤝 العمولة (<span id="ei-comm-pct">${inv.commissionPct||0}</span>%)</span>
-          <span id="ei-comm-val" style="font-size:13px;font-weight:700;color:var(--warning)">- ${formatNum(inv.commissionAmt||0)} ج.م</span>
+        <div id="ei-exp-row" style="display:${(inv.expTotal||0)>0?'flex':'none'};justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--danger)">⬇️ المصاريف المخصومة</span>
+          <span id="ei-exp-total" style="font-size:13px;font-weight:700;color:var(--danger)">- ${formatNum(inv.expTotal||0)} ج.م</span>
         </div>
-        <div style="height:1px;background:rgba(255,215,0,0.2);margin:6px 0"></div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="font-size:13px;font-weight:800;color:var(--gold)">💰 المتبقى</span>
-          <span id="ei-net-label" style="font-size:18px;font-weight:900;color:var(--gold)">${formatNum(inv.total)} ج.م</span>
+        <div id="ei-add-row" style="display:${(inv.addTotal||0)>0?'flex':'none'};justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--emerald)">⬆️ المبالغ المضافة</span>
+          <span id="ei-add-total" style="font-size:13px;font-weight:700;color:var(--emerald)">+ ${formatNum(inv.addTotal||0)} ج.م</span>
+        </div>
+        <!-- العمولة - قابل للتعديل -->
+        <div id="ei-comm-row" style="display:${inv.commissionPct>0 || true?'flex':'none'};justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label style="font-size:12px;color:var(--warning);cursor:pointer" for="ei-commission-manual">🤝 العمولة (%)</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="ei-commission-manual" value="${inv.commissionPct||0}" min="0" max="100" step="0.5"
+              style="width:70px;padding:6px 8px;border-radius:7px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.08);color:var(--warning);font-size:13px;font-weight:700;text-align:center;font-family:'Cairo',sans-serif;direction:ltr"
+              oninput="syncCommissionFromManual();calcEditInvoice()" title="يمكنك تعديل النسبة يدوياً">
+            <span id="ei-comm-val" style="font-size:12px;font-weight:700;color:var(--warning)">- ${formatNum(inv.commissionAmt||0)} ج.م</span>
+          </div>
+        </div>
+        <div style="height:1px;background:rgba(255,215,0,0.2);margin:8px 0"></div>
+        <!-- الصافي/المتبقى - قابل للتعديل -->
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <label style="font-size:13px;font-weight:800;color:var(--gold);cursor:pointer" for="ei-net-input">💰 الصافي (المتبقى)</label>
+          <input type="number" id="ei-net-input" value="${inv.total}" min="0" step="0.5"
+            style="width:140px;padding:9px 12px;border-radius:9px;border:2px solid rgba(255,215,0,0.5);background:rgba(255,215,0,0.12);color:var(--gold);font-size:18px;font-weight:900;text-align:left;font-family:'Cairo',sans-serif;direction:ltr"
+            oninput="document.getElementById('ei-net-label').textContent = formatNum(parseFloat(this.value)||0) + ' ج.م'"
+            title="يمكنك تعديل هذا الرقم يدوياً">
+        </div>
+        <div style="text-align:left;margin-top:4px">
+          <span id="ei-net-label" style="font-size:11px;color:var(--text-secondary)">${formatNum(inv.total)} ج.م</span>
         </div>
       </div>
       <button onclick="saveEditInvoice('${invoiceId}')" style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--warning),#e67e00);color:white;font-family:'Cairo',sans-serif;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:8px">💾 حفظ التعديلات</button>
@@ -5385,26 +5451,71 @@ window.closeEditInvoiceModal = function() {
 };
 
 window.calcEditInvoice = function() {
-  let newFishGross = 0;
-  (window._editItems || []).forEach((item, idx) => {
-    const kg = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
-    const price = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
-    newFishGross += kg * price;
+  // استخدام القيمة اليدوية لإجمالي الأصناف إن وجدت
+  const grossInput = document.getElementById('ei-gross-input');
+  let newFishGross = grossInput ? (parseFloat(grossInput.value) || 0) : 0;
+  
+  // إذا لم تكن هناك قيمة يدوية، احسب من الأصناف
+  if (!newFishGross) {
+    (window._editItems || []).forEach((item, idx) => {
+      const kg = parseFloat(document.getElementById('ei-kg-' + idx)?.value) || 0;
+      const price = parseFloat(document.getElementById('ei-price-' + idx)?.value) || 0;
+      newFishGross += kg * price;
+    });
+    if (grossInput) grossInput.value = newFishGross;
+  }
+  
+  // حساب إجمالي المصاريف المخصومة
+  let expTotal = 0;
+  (window._editExpenses || []).forEach(exp => {
+    expTotal += parseFloat(exp.amount) || 0;
   });
-  const commPct = parseFloat(document.getElementById('ei-commission')?.value) || 0;
+  // حساب إجمالي المبالغ المضافة
+  let addTotal = 0;
+  (window._editAdditions || []).forEach(add => {
+    addTotal += parseFloat(add.amount) || 0;
+  });
+  
+  // استخدام حقل العمولة اليدوي
+  const commManualEl = document.getElementById('ei-commission-manual');
+  const commPct = commManualEl ? (parseFloat(commManualEl.value) || 0) : (parseFloat(document.getElementById('ei-commission')?.value) || 0);
   const commAmt = (newFishGross * commPct) / 100;
-  const expTotal = window._editItems._expTotal || 0;
-  const net = newFishGross - commAmt - expTotal;
-  const grossEl = document.getElementById('ei-gross-label');
+  
+  // حساب الصافي
+  const net = newFishGross - expTotal + addTotal - commAmt;
+  
+  // تحديث عناصر واجهة المستخدم
+  const expRow = document.getElementById('ei-exp-row');
+  const expTotalEl = document.getElementById('ei-exp-total');
+  const addRow = document.getElementById('ei-add-row');
+  const addTotalEl = document.getElementById('ei-add-total');
   const commRow = document.getElementById('ei-comm-row');
-  const commPctEl = document.getElementById('ei-comm-pct');
   const commValEl = document.getElementById('ei-comm-val');
-  const netEl = document.getElementById('ei-net-label');
-  if (grossEl) grossEl.textContent = formatNum(newFishGross) + ' ج.م';
-  if (commPctEl) commPctEl.textContent = commPct;
+  const netInput = document.getElementById('ei-net-input');
+  const netLabel = document.getElementById('ei-net-label');
+  
+  if (expRow) expRow.style.display = expTotal > 0 ? 'flex' : 'none';
+  if (expTotalEl) expTotalEl.textContent = '- ' + formatNum(expTotal) + ' ج.م';
+  if (addRow) addRow.style.display = addTotal > 0 ? 'flex' : 'none';
+  if (addTotalEl) addTotalEl.textContent = '+ ' + formatNum(addTotal) + ' ج.م';
   if (commValEl) commValEl.textContent = '- ' + formatNum(commAmt) + ' ج.م';
-  if (netEl) netEl.textContent = formatNum(Math.max(net, 0)) + ' ج.م';
-  if (commRow) commRow.style.display = commPct > 0 ? 'flex' : 'none';
+  if (commRow) commRow.style.display = true ? 'flex' : 'none'; // دائماً ظاهر للتعديل
+  
+  // تحديث حقل الصافي إذا لم يكن المستخدم يعدله يدوياً
+  if (netInput && netLabel) {
+    const currentNetVal = parseFloat(netInput.value) || 0;
+    // تحديث التسمية فقط
+    netLabel.textContent = formatNum(Math.max(currentNetVal, 0)) + ' ج.م';
+  }
+};
+
+// دالة مزامنة العمولة من الحقل اليدوي
+window.syncCommissionFromManual = function() {
+  const manualVal = document.getElementById('ei-commission-manual')?.value;
+  const mainComm = document.getElementById('ei-commission');
+  if (mainComm && manualVal) {
+    mainComm.value = manualVal;
+  }
 };
 
 window.saveEditInvoice = async function(invoiceId) {
@@ -5414,7 +5525,15 @@ window.saveEditInvoice = async function(invoiceId) {
   const newPhone = document.getElementById('ei-phone')?.value.trim();
   const newShop = document.getElementById('ei-shop')?.value.trim();
     const newSector = document.getElementById('ei-sector')?.value || '';
-  const newCommPct = parseFloat(document.getElementById('ei-commission')?.value) || 0;
+  
+  // استخدام حقل العمولة اليدوي إن وجد، وإلا استخدم الأصلي
+  const commManualEl = document.getElementById('ei-commission-manual');
+  const newCommPct = commManualEl ? (parseFloat(commManualEl.value) || 0) : (parseFloat(document.getElementById('ei-commission')?.value) || 0);
+  
+  // استخدام القيمة اليدوية لإجمالي الأصناف
+  const grossInputEl = document.getElementById('ei-gross-input');
+  const manualFishGross = grossInputEl ? (parseFloat(grossInputEl.value) || 0) : 0;
+  
   const newDateISO = document.getElementById('ei-date')?.value || getTodayISO();
   if (!newClientName) return showToast('❌ اسم العميل مطلوب');
   if (!validatePhone(newPhone)) return showToast('❌ رقم الهاتف غير صحيح');
@@ -5427,15 +5546,35 @@ window.saveEditInvoice = async function(invoiceId) {
     const kgEquiv = qty * uDef.kgFactor;
     return { ...item, unit, unitLabel: uDef.label, qty, kg: kgEquiv, pricePerUnit: priceRaw, pricePerKg: +(priceRaw/uDef.kgFactor).toFixed(4), subtotal: qty * priceRaw };
   });
-  const newFishGross = newItems.reduce((s, i) => s + i.subtotal, 0);
-  const expTotal = inv.expTotal || 0;
+  const calcFishGross = newItems.reduce((s, i) => s + i.subtotal, 0);
+  // استخدام القيمة اليدوية إذا كانت موجودة، وإلا استخدم المحسوبة
+  const newFishGross = manualFishGross > 0 ? manualFishGross : calcFishGross;
+  
+  // تجهيز المصاريف المخصومة
+  const newExpenses = (window._editExpenses || [])
+    .filter(e => e.amount > 0 || e.desc)
+    .map(e => ({ desc: e.desc || 'مصروف', amount: e.amount || 0 }));
+  const expTotal = newExpenses.reduce((s, e) => s + e.amount, 0);
+  // تجهيز المبالغ المضافة
+  const newAdditions = (window._editAdditions || [])
+    .filter(a => a.amount > 0 || a.name || a.desc)
+    .map(a => ({ name: a.name || '', desc: a.desc || '', amount: a.amount || 0 }));
+  const addTotal = newAdditions.reduce((s, a) => s + a.amount, 0);
   const newCommAmt = (newFishGross * newCommPct) / 100;
-  const newNet = Math.max(newFishGross - expTotal - newCommAmt, 0);
+  
+  // استخدام القيمة اليدوية للصافي إن وجدت
+  const netInputEl = document.getElementById('ei-net-input');
+  const manualNet = netInputEl ? (parseFloat(netInputEl.value) || 0) : 0;
+  const calcNet = Math.max(newFishGross - expTotal + addTotal - newCommAmt, 0);
+  const newNet = manualNet > 0 ? manualNet : calcNet;
+  
   const diff = newNet - inv.total;
   try {
     await update(ref(db, 'invoices/' + invoiceId), {
       clientName: newClientName, phone: newPhone, shopName: newShop, sector: newSector, items: newItems,
+      expenses: newExpenses, additions: newAdditions,
       fishTotal: newFishGross, gross: newFishGross,
+      expTotal: expTotal, addTotal: addTotal,
       commissionPct: newCommPct, commissionAmt: newCommAmt, total: newNet,
       remaining: newNet, invDateISO: newDateISO, dateStr: newDateStr
     });
@@ -5474,6 +5613,88 @@ window.toggleEditUnit = function(idx, unit) {
   if (unitEl) unitEl.value = unit;
   if (qtyLbl) qtyLbl.textContent = def.label;
   if (prcLbl) prcLbl.textContent = 'سعر ال' + def.label;
+};
+
+// ============================================================
+// EDIT INVOICE - EXPENSES & ADDITIONS FUNCTIONS
+// ============================================================
+
+// إضافة صف مصروف جديد في نافذة التعديل
+window.addEditExpenseRow = function() {
+  const id = window._editNextExpId++;
+  window._editExpenses.push({ _localId: id, desc: '', amount: 0 });
+  const container = document.getElementById('ei-expenses-container');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.id = 'ei-exp-row-' + id;
+  row.style.cssText = 'display:flex;gap:6px;align-items:center;background:rgba(255,71,87,0.04);border:1px solid rgba(255,71,87,0.15);border-radius:8px;padding:8px;margin-bottom:6px';
+  row.innerHTML = `
+    <input type="text" id="ei-exp-desc-${id}" placeholder="وصف المصروف"
+      style="flex:1;min-width:0;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-primary);font-size:11px"
+      oninput="updateEditExpense(${id})">
+    <input type="number" id="ei-exp-amt-${id}" placeholder="0" min="0"
+      style="width:80px;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--danger);font-size:11px;text-align:center"
+      oninput="updateEditExpense(${id});calcEditInvoice()">
+    <button onclick="removeEditExpense(${id})" style="padding:5px 8px;border-radius:6px;border:1px solid rgba(255,71,87,0.3);background:rgba(255,71,87,0.1);color:var(--danger);font-size:12px;cursor:pointer;font-weight:700">✕</button>
+  `;
+  container.appendChild(row);
+};
+
+// حذف مصروف من نافذة التعديل
+window.removeEditExpense = function(id) {
+  const idx = window._editExpenses.findIndex(e => e._localId === id);
+  if (idx !== -1) window._editExpenses.splice(idx, 1);
+  document.getElementById('ei-exp-row-' + id)?.remove();
+  calcEditInvoice();
+};
+
+// تحديث بيانات المصروف في نافذة التعديل
+window.updateEditExpense = function(id) {
+  const exp = window._editExpenses.find(e => e._localId === id);
+  if (!exp) return;
+  exp.desc = document.getElementById('ei-exp-desc-' + id)?.value || '';
+  exp.amount = parseFloat(document.getElementById('ei-exp-amt-' + id)?.value) || 0;
+};
+
+// إضافة صف مبلغ مالي جديد في نافذة التعديل
+window.addEditAdditionRow = function() {
+  const id = window._editNextAddId++;
+  window._editAdditions.push({ _localId: id, name: '', desc: '', amount: 0 });
+  const container = document.getElementById('ei-additions-container');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.id = 'ei-add-row-' + id;
+  row.style.cssText = 'display:flex;gap:6px;align-items:center;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.15);border-radius:8px;padding:8px;margin-bottom:6px;flex-wrap:wrap';
+  row.innerHTML = `
+    <input type="text" id="ei-add-name-${id}" placeholder="اسم المبلغ"
+      style="flex:1;min-width:70px;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-primary);font-size:11px"
+      oninput="updateEditAddition(${id})">
+    <input type="text" id="ei-add-desc-${id}" placeholder="وصف/تفاصيل"
+      style="flex:1;min-width:70px;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text-primary);font-size:11px"
+      oninput="updateEditAddition(${id})">
+    <input type="number" id="ei-add-amt-${id}" placeholder="0" min="0"
+      style="width:75px;padding:7px 9px;border-radius:7px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--emerald);font-size:11px;text-align:center"
+      oninput="updateEditAddition(${id});calcEditInvoice()">
+    <button onclick="removeEditAddition(${id})" style="padding:5px 8px;border-radius:6px;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.1);color:var(--emerald);font-size:12px;cursor:pointer;font-weight:700">✕</button>
+  `;
+  container.appendChild(row);
+};
+
+// حذف مبلغ مالي من نافذة التعديل
+window.removeEditAddition = function(id) {
+  const idx = window._editAdditions.findIndex(a => a._localId === id);
+  if (idx !== -1) window._editAdditions.splice(idx, 1);
+  document.getElementById('ei-add-row-' + id)?.remove();
+  calcEditInvoice();
+};
+
+// تحديث بيانات المبلغ المالي في نافذة التعديل
+window.updateEditAddition = function(id) {
+  const add = window._editAdditions.find(a => a._localId === id);
+  if (!add) return;
+  add.name = document.getElementById('ei-add-name-' + id)?.value || '';
+  add.desc = document.getElementById('ei-add-desc-' + id)?.value || '';
+  add.amount = parseFloat(document.getElementById('ei-add-amt-' + id)?.value) || 0;
 };
 
 // ============================================================
